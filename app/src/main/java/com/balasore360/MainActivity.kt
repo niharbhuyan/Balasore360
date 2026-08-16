@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -45,7 +46,6 @@ import com.balasore360.ui.EventViewModel
 import com.balasore360.ui.NewsViewModel
 
 private data class Feature(val title: String, val description: String)
-
 private val features = listOf(
     Feature("Local Services", "Discover useful services and businesses around Balasore."),
     Feature("Places & Explore", "Find places, attractions and local points of interest."),
@@ -70,7 +70,7 @@ private fun Balasore360App() {
     val eventViewModel: EventViewModel = viewModel()
 
     MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
+        Surface(Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = { TopAppBar(title = { Text("Balasore 360", fontWeight = FontWeight.Bold) }) },
                 bottomBar = {
@@ -99,32 +99,29 @@ private fun Balasore360App() {
 
 @Composable
 private fun HomeScreen(modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    LazyColumn(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Text("Welcome to Balasore", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
             Text("Your local digital hub — built to grow into Balasore 360.")
         }
-        item { Spacer(Modifier.height(4.dp)) }
-        items(features) { feature -> FeatureCard(feature) }
+        items(features) { FeatureCard(it) }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExploreScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     newsViewModel: NewsViewModel,
     eventViewModel: EventViewModel
 ) {
     val newsState by newsViewModel.uiState.collectAsStateWithLifecycle()
     val eventState by eventViewModel.uiState.collectAsStateWithLifecycle()
+    val refreshing = newsState.isRefreshing || eventState.isRefreshing
 
     PullToRefreshBox(
-        isRefreshing = newsState.isRefreshing || eventState.isRefreshing,
+        isRefreshing = refreshing,
         onRefresh = {
             newsViewModel.refresh()
             eventViewModel.refresh()
@@ -141,34 +138,20 @@ private fun ExploreScreen(
                 Spacer(Modifier.height(8.dp))
             }
             item { Text("Latest News", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) }
-            contentItems(
-                isLoading = newsState.isLoading,
-                errorMessage = newsState.errorMessage,
-                isEmpty = newsState.items.isEmpty(),
-                emptyMessage = "No published news is available yet.",
-                onRetry = newsViewModel::refresh,
-                loadingMessage = "Loading news…"
-            )
+            contentItems(newsState.isLoading, newsState.errorMessage, newsState.items.isEmpty(), "No published news is available yet.", newsViewModel::refresh, "Loading news…")
             if (!newsState.isLoading && newsState.errorMessage == null) {
-                items(newsState.items, key = { it.id }) { news -> NewsCard(news) }
+                items(newsState.items, key = { it.id }) { NewsCard(it) }
             }
             item { Text("Upcoming Events", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) }
-            contentItems(
-                isLoading = eventState.isLoading,
-                errorMessage = eventState.errorMessage,
-                isEmpty = eventState.items.isEmpty(),
-                emptyMessage = "No published events are available yet.",
-                onRetry = eventViewModel::refresh,
-                loadingMessage = "Loading events…"
-            )
+            contentItems(eventState.isLoading, eventState.errorMessage, eventState.items.isEmpty(), "No published events are available yet.", eventViewModel::refresh, "Loading events…")
             if (!eventState.isLoading && eventState.errorMessage == null) {
-                items(eventState.items, key = { it.id }) { event -> EventCard(event) }
+                items(eventState.items, key = { it.id }) { EventCard(it) }
             }
         }
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.contentItems(
+private fun LazyListScope.contentItems(
     isLoading: Boolean,
     errorMessage: String?,
     isEmpty: Boolean,
@@ -178,20 +161,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.contentItems(
 ) {
     when {
         isLoading -> item {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator()
                 Spacer(Modifier.height(8.dp))
                 Text(loadingMessage)
             }
         }
         errorMessage != null -> item {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Couldn't load content", fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
                 Text(errorMessage)
@@ -199,66 +176,61 @@ private fun androidx.compose.foundation.lazy.LazyListScope.contentItems(
                 Button(onClick = onRetry) { Text("Try again") }
             }
         }
-        isEmpty -> item { Text(emptyMessage) }
+        isEmpty -> item { Text(emptyMessage, modifier = Modifier.padding(vertical = 8.dp)) }
     }
 }
 
 @Composable
 private fun ServicesScreen(modifier: Modifier = Modifier, viewModel: BusinessViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LazyColumn(modifier = modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Text("Local Services", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text("Published businesses from Balasore 360")
-            Spacer(Modifier.height(8.dp))
         }
         when {
-            state.isLoading -> item { Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator() } }
-            state.errorMessage != null -> item {
-                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Couldn't load businesses", fontWeight = FontWeight.Bold)
-                    Text(state.errorMessage!!)
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = viewModel::refresh) { Text("Try again") }
-                }
-            }
+            state.isLoading -> item { LoadingState() }
+            state.errorMessage != null -> item { ErrorState("Couldn't load businesses", state.errorMessage!!, viewModel::refresh) }
             state.businesses.isEmpty() -> item { Text("No published businesses are available yet.") }
-            else -> items(state.businesses, key = { it.id }) { business -> BusinessCard(business) }
+            else -> items(state.businesses, key = { it.id }) { BusinessCard(it) }
         }
     }
 }
 
-@Composable
-private fun NewsCard(news: News) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Text(news.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            news.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
-            news.summary?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            news.publishedAt?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        }
+@Composable private fun LoadingState() { Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator() } }
+
+@Composable private fun ErrorState(title: String, message: String, onRetry: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(title, fontWeight = FontWeight.Bold)
+        Text(message)
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = onRetry) { Text("Try again") }
     }
 }
 
-@Composable
-private fun EventCard(event: Event) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Text(event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text(event.date, style = MaterialTheme.typography.labelLarge)
-            event.category?.let { Text(it, style = MaterialTheme.typography.labelMedium) }
-            event.area?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            event.provider?.let { Text("By $it", style = MaterialTheme.typography.bodySmall) }
-        }
-    }
+@Composable private fun NewsCard(news: News) {
+    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
+        Text(news.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        news.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
+        news.summary?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        news.publishedAt?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    } }
 }
 
-@Composable
-private fun ProfileScreen(modifier: Modifier = Modifier) = EmptyState(modifier, "Profile", "Account, saved places, preferences and personalization will be connected here.")
+@Composable private fun EventCard(event: Event) {
+    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
+        Text(event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        event.date?.let { Text("Date: $it", style = MaterialTheme.typography.labelLarge) }
+        event.category?.let { Text(it, style = MaterialTheme.typography.labelMedium) }
+        event.area?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        event.provider?.let { Text("By $it", style = MaterialTheme.typography.bodySmall) }
+    } }
+}
 
-@Composable
-private fun EmptyState(modifier: Modifier, title: String, description: String) {
+@Composable private fun ProfileScreen(modifier: Modifier = Modifier) = EmptyState(modifier, "Profile", "Account, saved places, preferences and personalization will be connected here.")
+
+@Composable private fun EmptyState(modifier: Modifier, title: String, description: String) {
     Column(modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
@@ -266,38 +238,29 @@ private fun EmptyState(modifier: Modifier, title: String, description: String) {
     }
 }
 
-@Composable
-private fun FeatureCard(feature: Feature) {
-    Card(Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(Modifier.size(44.dp), shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(feature.title.take(1), fontWeight = FontWeight.Bold) }
-            }
-            Spacer(Modifier.size(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(feature.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(3.dp))
-                Text(feature.description, style = MaterialTheme.typography.bodyMedium)
-            }
+@Composable private fun FeatureCard(feature: Feature) {
+    Card(Modifier.fillMaxWidth()) { Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Surface(Modifier.size(44.dp), shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(feature.title.take(1), fontWeight = FontWeight.Bold) }
         }
-    }
+        Spacer(Modifier.size(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(feature.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(3.dp))
+            Text(feature.description, style = MaterialTheme.typography.bodyMedium)
+        }
+    } }
 }
 
-@Composable
-private fun BusinessCard(business: Business) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(business.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                if (business.verified) Text("✓ Verified", style = MaterialTheme.typography.labelMedium)
-            }
-            business.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
-            business.address?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            business.area?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            if (business.rating != null) {
-                Spacer(Modifier.height(4.dp))
-                Text("★ ${"%.1f".format(business.rating)} · ${business.reviewCount ?: 0} reviews")
-            }
+@Composable private fun BusinessCard(business: Business) {
+    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(business.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            if (business.verified) Text("✓ Verified", style = MaterialTheme.typography.labelMedium)
         }
-    }
+        business.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
+        business.address?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        business.area?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        business.rating?.let { Text("★ ${"%.1f".format(it)} · ${business.reviewCount ?: 0} reviews") }
+    } }
 }
