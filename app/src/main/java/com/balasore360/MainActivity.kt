@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -32,6 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.balasore360.data.Business
+import com.balasore360.ui.BusinessViewModel
 
 private data class Feature(val title: String, val description: String)
 
@@ -54,6 +60,7 @@ class MainActivity : ComponentActivity() {
 private fun Balasore360App() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Home", "Explore", "Services", "Profile")
+    val businessViewModel: BusinessViewModel = viewModel()
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -75,7 +82,7 @@ private fun Balasore360App() {
                 when (selectedTab) {
                     0 -> HomeScreen(Modifier.padding(padding))
                     1 -> ExploreScreen(Modifier.padding(padding))
-                    2 -> ServicesScreen(Modifier.padding(padding))
+                    2 -> ServicesScreen(Modifier.padding(padding), businessViewModel)
                     else -> ProfileScreen(Modifier.padding(padding))
                 }
             }
@@ -105,8 +112,47 @@ private fun ExploreScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ServicesScreen(modifier: Modifier = Modifier) {
-    EmptyState(modifier, "Local Services", "Business listings, categories, search and contact actions will be added here.")
+private fun ServicesScreen(modifier: Modifier = Modifier, viewModel: BusinessViewModel) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Local Services", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Published businesses from Balasore 360")
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (state.isLoading) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) { CircularProgressIndicator() }
+            }
+        } else if (state.errorMessage != null) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Couldn't load businesses", fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Text(state.errorMessage!!)
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = viewModel::refresh) { Text("Try again") }
+                }
+            }
+        } else if (state.businesses.isEmpty()) {
+            item {
+                Text("No published businesses are available yet.")
+            }
+        } else {
+            items(state.businesses, key = { it.id }) { business -> BusinessCard(business) }
+        }
+    }
 }
 
 @Composable
@@ -130,10 +176,7 @@ private fun EmptyState(modifier: Modifier, title: String, description: String) {
 @Composable
 private fun FeatureCard(feature: Feature) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(modifier = Modifier.size(44.dp), shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text(feature.title.take(1), fontWeight = FontWeight.Bold)
@@ -144,6 +187,25 @@ private fun FeatureCard(feature: Feature) {
                 Text(feature.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(3.dp))
                 Text(feature.description, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BusinessCard(business: Business) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(business.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                if (business.verified) Text("✓ Verified", style = MaterialTheme.typography.labelMedium)
+            }
+            business.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
+            business.address?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            business.area?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            if (business.rating != null) {
+                Spacer(Modifier.height(4.dp))
+                Text("★ ${"%.1f".format(business.rating)} · ${business.reviewCount ?: 0} reviews")
             }
         }
     }
