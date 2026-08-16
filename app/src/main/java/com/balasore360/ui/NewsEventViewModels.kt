@@ -17,7 +17,10 @@ data class NewsUiState(
     val isLoading: Boolean = false,
     val news: List<News> = emptyList(),
     val errorMessage: String? = null
-)
+) {
+    val isRefreshing: Boolean get() = isLoading && news.isNotEmpty()
+    val items: List<News> get() = news
+}
 
 class NewsViewModel(
     private val repository: NewsRepository = SupabaseNewsRepository()
@@ -33,7 +36,10 @@ class NewsViewModel(
             repository.getPublishedNews()
                 .onSuccess { items -> _uiState.value = NewsUiState(news = items) }
                 .onFailure { error ->
-                    _uiState.value = NewsUiState(errorMessage = error.message ?: "Unable to load news")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = error.message ?: "Unable to load news"
+                    )
                 }
         }
     }
@@ -43,7 +49,10 @@ data class EventUiState(
     val isLoading: Boolean = false,
     val events: List<Event> = emptyList(),
     val errorMessage: String? = null
-)
+) {
+    val isRefreshing: Boolean get() = isLoading && events.isNotEmpty()
+    val items: List<Event> get() = events
+}
 
 class EventViewModel(
     private val repository: EventRepository = SupabaseEventRepository()
@@ -59,7 +68,10 @@ class EventViewModel(
             repository.getPublishedEvents()
                 .onSuccess { items -> _uiState.value = EventUiState(events = items) }
                 .onFailure { error ->
-                    _uiState.value = EventUiState(errorMessage = error.message ?: "Unable to load events")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = error.message ?: "Unable to load events"
+                    )
                 }
         }
     }
