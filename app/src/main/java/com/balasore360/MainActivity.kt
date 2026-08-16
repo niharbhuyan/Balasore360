@@ -46,6 +46,7 @@ import com.balasore360.ui.EventViewModel
 import com.balasore360.ui.NewsViewModel
 
 private data class Feature(val title: String, val description: String)
+
 private val features = listOf(
     Feature("Local Services", "Discover useful services and businesses around Balasore."),
     Feature("Places & Explore", "Find places, attractions and local points of interest."),
@@ -60,14 +61,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Balasore360App() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Home", "Explore", "Services", "Profile")
-    val businessViewModel: BusinessViewModel = viewModel()
-    val newsViewModel: NewsViewModel = viewModel()
-    val eventViewModel: EventViewModel = viewModel()
 
     MaterialTheme {
         Surface(Modifier.fillMaxSize()) {
@@ -88,8 +85,8 @@ private fun Balasore360App() {
             ) { padding ->
                 when (selectedTab) {
                     0 -> HomeScreen(Modifier.padding(padding))
-                    1 -> ExploreScreen(Modifier.padding(padding), newsViewModel, eventViewModel)
-                    2 -> ServicesScreen(Modifier.padding(padding), businessViewModel)
+                    1 -> ExploreScreen(Modifier.padding(padding))
+                    2 -> ServicesScreen(Modifier.padding(padding))
                     else -> ProfileScreen(Modifier.padding(padding))
                 }
             }
@@ -111,11 +108,9 @@ private fun HomeScreen(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExploreScreen(
-    modifier: Modifier,
-    newsViewModel: NewsViewModel,
-    eventViewModel: EventViewModel
-) {
+private fun ExploreScreen(modifier: Modifier = Modifier) {
+    val newsViewModel: NewsViewModel = viewModel()
+    val eventViewModel: EventViewModel = viewModel()
     val newsState by newsViewModel.uiState.collectAsStateWithLifecycle()
     val eventState by eventViewModel.uiState.collectAsStateWithLifecycle()
     val refreshing = newsState.isRefreshing || eventState.isRefreshing
@@ -181,7 +176,8 @@ private fun LazyListScope.contentItems(
 }
 
 @Composable
-private fun ServicesScreen(modifier: Modifier = Modifier, viewModel: BusinessViewModel) {
+private fun ServicesScreen(modifier: Modifier = Modifier) {
+    val viewModel: BusinessViewModel = viewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LazyColumn(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
@@ -197,7 +193,11 @@ private fun ServicesScreen(modifier: Modifier = Modifier, viewModel: BusinessVie
     }
 }
 
-@Composable private fun LoadingState() { Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator() } }
+@Composable private fun LoadingState() {
+    Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        CircularProgressIndicator()
+    }
+}
 
 @Composable private fun ErrorState(title: String, message: String, onRetry: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
