@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -37,7 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.balasore360.data.Business
+import com.balasore360.data.Event
+import com.balasore360.data.News
 import com.balasore360.ui.BusinessViewModel
+import com.balasore360.ui.EventViewModel
+import com.balasore360.ui.NewsViewModel
 
 private data class Feature(val title: String, val description: String)
 
@@ -61,6 +66,8 @@ private fun Balasore360App() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Home", "Explore", "Services", "Profile")
     val businessViewModel: BusinessViewModel = viewModel()
+    val newsViewModel: NewsViewModel = viewModel()
+    val eventViewModel: EventViewModel = viewModel()
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -81,7 +88,7 @@ private fun Balasore360App() {
             ) { padding ->
                 when (selectedTab) {
                     0 -> HomeScreen(Modifier.padding(padding))
-                    1 -> ExploreScreen(Modifier.padding(padding))
+                    1 -> ExploreScreen(Modifier.padding(padding), newsViewModel, eventViewModel)
                     2 -> ServicesScreen(Modifier.padding(padding), businessViewModel)
                     else -> ProfileScreen(Modifier.padding(padding))
                 }
@@ -106,67 +113,153 @@ private fun HomeScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExploreScreen(modifier: Modifier = Modifier) {
-    EmptyState(modifier, "Explore Balasore", "Places, attractions, events and local discovery will live here.")
+private fun ExploreScreen(
+    modifier: Modifier = Modifier,
+    newsViewModel: NewsViewModel,
+    eventViewModel: EventViewModel
+) {
+    val newsState by newsViewModel.uiState.collectAsStateWithLifecycle()
+    val eventState by eventViewModel.uiState.collectAsStateWithLifecycle()
+
+    PullToRefreshBox(
+        isRefreshing = newsState.isRefreshing || eventState.isRefreshing,
+        onRefresh = {
+            newsViewModel.refresh()
+            eventViewModel.refresh()
+        },
+        modifier = modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Text("Explore Balasore", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("Local news and upcoming events")
+                Spacer(Modifier.height(8.dp))
+            }
+            item { Text("Latest News", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) }
+            contentItems(
+                isLoading = newsState.isLoading,
+                errorMessage = newsState.errorMessage,
+                isEmpty = newsState.items.isEmpty(),
+                emptyMessage = "No published news is available yet.",
+                onRetry = newsViewModel::refresh,
+                loadingMessage = "Loading news…"
+            )
+            if (!newsState.isLoading && newsState.errorMessage == null) {
+                items(newsState.items, key = { it.id }) { news -> NewsCard(news) }
+            }
+            item { Text("Upcoming Events", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) }
+            contentItems(
+                isLoading = eventState.isLoading,
+                errorMessage = eventState.errorMessage,
+                isEmpty = eventState.items.isEmpty(),
+                emptyMessage = "No published events are available yet.",
+                onRetry = eventViewModel::refresh,
+                loadingMessage = "Loading events…"
+            )
+            if (!eventState.isLoading && eventState.errorMessage == null) {
+                items(eventState.items, key = { it.id }) { event -> EventCard(event) }
+            }
+        }
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.contentItems(
+    isLoading: Boolean,
+    errorMessage: String?,
+    isEmpty: Boolean,
+    emptyMessage: String,
+    onRetry: () -> Unit,
+    loadingMessage: String
+) {
+    when {
+        isLoading -> item {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+                Spacer(Modifier.height(8.dp))
+                Text(loadingMessage)
+            }
+        }
+        errorMessage != null -> item {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Couldn't load content", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(4.dp))
+                Text(errorMessage)
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onRetry) { Text("Try again") }
+            }
+        }
+        isEmpty -> item { Text(emptyMessage) }
+    }
 }
 
 @Composable
 private fun ServicesScreen(modifier: Modifier = Modifier, viewModel: BusinessViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LazyColumn(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    LazyColumn(modifier = modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Text("Local Services", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text("Published businesses from Balasore 360")
             Spacer(Modifier.height(8.dp))
         }
-
-        if (state.isLoading) {
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) { CircularProgressIndicator() }
-            }
-        } else if (state.errorMessage != null) {
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+        when {
+            state.isLoading -> item { Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator() } }
+            state.errorMessage != null -> item {
+                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Couldn't load businesses", fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(6.dp))
                     Text(state.errorMessage!!)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
                     Button(onClick = viewModel::refresh) { Text("Try again") }
                 }
             }
-        } else if (state.businesses.isEmpty()) {
-            item {
-                Text("No published businesses are available yet.")
-            }
-        } else {
-            items(state.businesses, key = { it.id }) { business -> BusinessCard(business) }
+            state.businesses.isEmpty() -> item { Text("No published businesses are available yet.") }
+            else -> items(state.businesses, key = { it.id }) { business -> BusinessCard(business) }
         }
     }
 }
 
 @Composable
-private fun ProfileScreen(modifier: Modifier = Modifier) {
-    EmptyState(modifier, "Profile", "Account, saved places, preferences and personalization will be connected here.")
+private fun NewsCard(news: News) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(news.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            news.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
+            news.summary?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            news.publishedAt?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        }
+    }
 }
 
 @Composable
+private fun EventCard(event: Event) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(event.date, style = MaterialTheme.typography.labelLarge)
+            event.category?.let { Text(it, style = MaterialTheme.typography.labelMedium) }
+            event.area?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            event.provider?.let { Text("By $it", style = MaterialTheme.typography.bodySmall) }
+        }
+    }
+}
+
+@Composable
+private fun ProfileScreen(modifier: Modifier = Modifier) = EmptyState(modifier, "Profile", "Account, saved places, preferences and personalization will be connected here.")
+
+@Composable
 private fun EmptyState(modifier: Modifier, title: String, description: String) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+    Column(modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
         Text(description, style = MaterialTheme.typography.bodyLarge)
@@ -175,15 +268,13 @@ private fun EmptyState(modifier: Modifier, title: String, description: String) {
 
 @Composable
 private fun FeatureCard(feature: Feature) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = Modifier.size(44.dp), shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text(feature.title.take(1), fontWeight = FontWeight.Bold)
-                }
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Surface(Modifier.size(44.dp), shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(feature.title.take(1), fontWeight = FontWeight.Bold) }
             }
             Spacer(Modifier.size(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Column(Modifier.weight(1f)) {
                 Text(feature.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(3.dp))
                 Text(feature.description, style = MaterialTheme.typography.bodyMedium)
@@ -194,8 +285,8 @@ private fun FeatureCard(feature: Feature) {
 
 @Composable
 private fun BusinessCard(business: Business) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(business.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 if (business.verified) Text("✓ Verified", style = MaterialTheme.typography.labelMedium)
