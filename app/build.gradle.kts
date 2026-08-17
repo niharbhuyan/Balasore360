@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -12,12 +20,24 @@ android {
         applicationId = "com.balasore360"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
+
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"${localProperties.getProperty("SUPABASE_URL", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "SUPABASE_PUBLISHABLE_KEY",
+            "\"${localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY", "")}\""
+        )
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -35,6 +55,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
