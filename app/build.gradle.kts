@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "com.balasore360"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.balasore360"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 2
+        versionName = "1.1"
     }
 
     buildFeatures {
