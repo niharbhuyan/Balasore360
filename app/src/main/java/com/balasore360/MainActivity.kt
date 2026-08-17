@@ -1,8 +1,11 @@
 package com.balasore360
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +23,9 @@ import com.balasore360.data.FavoritesStore
 import com.balasore360.data.RemoteBusiness
 import com.balasore360.data.RemoteEvent
 import com.balasore360.data.RemoteNews
+import com.balasore360.location.LocationProvider
+import com.balasore360.nearby.NearbyItem
+import com.balasore360.nearby.NearbyScreen
 
 private data class Place(val id: String, val name: String, val category: String, val description: String)
 
@@ -52,6 +58,7 @@ class MainActivity : ComponentActivity() {
 private fun Balasore360App() {
     val context = LocalContext.current
     val favoritesStore = remember { FavoritesStore(context.applicationContext) }
+    val locationProvider = remember { LocationProvider(context.applicationContext) }
     var selectedTab by remember { mutableIntStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     var selectedPlace by remember { mutableStateOf<Place?>(null) }
@@ -60,7 +67,20 @@ private fun Balasore360App() {
     var news by remember { mutableStateOf<List<RemoteNews>>(emptyList()) }
     var savedIds by remember { mutableStateOf(favoritesStore.all()) }
     var loading by remember { mutableStateOf(true) }
+    var userLatitude by remember { mutableStateOf<Double?>(null) }
+    var userLongitude by remember { mutableStateOf<Double?>(null) }
+    var locationLoading by remember { mutableStateOf(false) }
     val repository = remember { BalasoreRepository() }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            locationLoading = true
+        }
+    }
 
     LaunchedEffect(Unit) {
         loading = true
@@ -70,29 +90,57 @@ private fun Balasore360App() {
         loading = false
     }
 
+    LaunchedEffect(locationLoading) {
+        if (!locationLoading) return@LaunchedEffect
+        val location = locationProvider.getLastKnownLocation()
+        userLatitude = location?.latitude
+        userLongitude = location?.longitude
+        locationLoading = false
+    }
+
+    fun requestLocation() {
+        if (locationProvider.hasLocationPermission()) {
+            locationLoading = true
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
     fun toggleSaved(id: String) {
         favoritesStore.toggle(id)
         savedIds = favoritesStore.all()
     }
 
     val savedItems = places.filter { it.id in savedIds }.map { it.id to it.name }
+    val nearbyItems = businesses.mapNotNull { business ->
+        val latitude = business.latitude
+        val longitude = business.longitude
+        if (latitude == null || longitude == null) null
+        else NearbyItem(business.id, business.name, business.category, latitude, longitude, business.rating)
+    }
 
     Scaffold(bottomBar = {
         NavigationBar {
-            listOf("Home", "Explore", "Events", "Saved").forEachIndexed { index, title ->
+            listOf("Home", "Nearby", "Explore", "Events", "Saved").forEachIndexed { index, title ->
                 NavigationBarItem(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
-                    icon = { Text(listOf("⌂", "⌕", "★", "♥")[index]) },
+                    icon = { Text(listOf("⌂", "⌖", "⌕", "★", "♥")[index]) },
                     label = { Text(title) }
                 )
             }
         }
     }) { padding ->
         when (selectedTab) {
-            0 -> HomeScreen(Modifier.padding(padding), businesses, events, news, loading, { selectedTab = 1 }, { selectedPlace = it }, ::toggleSaved, savedIds)
-            1 -> ExploreScreen(Modifier.padding(padding), searchQuery, { searchQuery = it }, businesses, loading, { selectedPlace = it }, ::toggleSaved, savedIds)
-            2 -> EventsScreen(Modifier.padding(padding), events, loading)
+            0 -> HomeScreen(Modifier.padding(padding), businesses, events, news, loading, { selectedTab = 2 }, { selectedPlace = it }, ::toggleSaved, savedIds)
+            1 -> NearbyScreen(userLatitude, userLongitude, nearbyItems, Modifier.padding(padding), onRequestLocation = ::requestLocation)
+            2 -> ExploreScreen(Modifier.padding(padding), searchQuery, { searchQuery = it }, businesses, loading, { selectedPlace = it }, ::toggleSaved, savedIds)
+            3 -> EventsScreen(Modifier.padding(padding), events, loading)
             else -> SavedScreen(Modifier.padding(padding), savedItems, ::toggleSaved)
         }
     }
