@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +25,8 @@ fun NearbyScreen(
     userLongitude: Double?,
     items: List<NearbyItem>,
     modifier: Modifier = Modifier,
-    maxDistanceMeters: Double = 25_000.0
+    maxDistanceMeters: Double = 25_000.0,
+    onRequestLocation: () -> Unit = {}
 ) {
     val categories = remember(items) { listOf("All") + items.map { it.category }.distinct().sorted() }
     val selectedCategory = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("All") }
@@ -44,6 +46,7 @@ fun NearbyScreen(
                 Text("Nearby", style = MaterialTheme.typography.headlineMedium)
                 if (userLatitude == null || userLongitude == null) {
                     Text("Allow location access to find places near you.")
+                    Button(onClick = onRequestLocation) { Text("Use my location") }
                 } else {
                     Text("Showing places within ${maxDistanceMeters.roundToInt() / 1000} km, nearest first.")
                 }
