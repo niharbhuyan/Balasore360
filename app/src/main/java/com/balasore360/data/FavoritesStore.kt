@@ -3,14 +3,22 @@ package com.balasore360.data
 import android.content.Context
 import androidx.core.content.edit
 
-/** Lightweight local saved-items store. Cloud sync can be added after authentication. */
+/** Local saved-items store. Uses one shared preference key for backward-compatible favorites. */
 class FavoritesStore(context: Context) {
-    private val prefs = context.getSharedPreferences("balasore360_favorites", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun isFavorite(id: String): Boolean = prefs.getStringSet(KEY_IDS, emptySet())?.contains(id) == true
+    init {
+        // Migrate the newer saved_ids key into the canonical favorite_ids key once.
+        val legacySaved = prefs.getStringSet(LEGACY_KEY, null)
+        if (legacySaved != null && prefs.getStringSet(KEY_IDS, null) == null) {
+            prefs.edit { putStringSet(KEY_IDS, legacySaved) }
+        }
+    }
+
+    fun isFavorite(id: String): Boolean = all().contains(id)
 
     fun toggle(id: String): Boolean {
-        val ids = prefs.getStringSet(KEY_IDS, emptySet())?.toMutableSet() ?: mutableSetOf()
+        val ids = all().toMutableSet()
         val nowFavorite = ids.add(id)
         if (!nowFavorite) ids.remove(id)
         prefs.edit { putStringSet(KEY_IDS, ids) }
@@ -19,5 +27,11 @@ class FavoritesStore(context: Context) {
 
     fun all(): Set<String> = prefs.getStringSet(KEY_IDS, emptySet())?.toSet() ?: emptySet()
 
-    private companion object { const val KEY_IDS = "saved_ids" }
+    fun clear() = prefs.edit { remove(KEY_IDS) }
+
+    private companion object {
+        const val PREFS_NAME = "balasore360_favorites"
+        const val KEY_IDS = "favorite_ids"
+        const val LEGACY_KEY = "saved_ids"
+    }
 }
