@@ -17,13 +17,13 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.niharsales.balasore360"
+        applicationId = "com.balasore360"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "https://rgoovmsbilvpzjgzvupp.supabase.co")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "https://rgoovmsbilvpjzgzvupp.supabase.co")}\"")
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"${localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_Dg-BkKAB6WCSHfKorj2ytw_r5P4ro1s")}\"")
     }
 
