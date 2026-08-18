@@ -23,7 +23,7 @@ android {
         versionCode = 3
         versionName = "1.2"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "https://rgoovmsbilvpjzgjvupp.supabase.co")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "https://rgoovmsbilvpzjgzvupp.supabase.co")}\"")
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"${localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_Dg-BkKAB6WCSHfKorj2ytw_r5P4ro1s")}\"")
     }
 
