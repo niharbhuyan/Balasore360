@@ -1,0 +1,25 @@
+# Android Studio / IntelliJ
+.idea/
+*.iml
+build/
+.gradle/
+local.properties
+
+# Android build outputs
+**/build/
+*.apk
+*.aab
+*.apks
+
+# Keystore / signing secrets
+*.jks
+*.keystore
+
+# Generated files
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS files
+.DS_Store
+Thumbs.db
