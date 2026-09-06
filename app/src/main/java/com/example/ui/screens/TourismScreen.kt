@@ -110,6 +110,7 @@ fun TourismScreen(
     onCategorySelect: (String) -> Unit,
     onHotspotSelect: (HotspotEntity?) -> Unit,
     onToggleFavorite: (HotspotEntity) -> Unit,
+    searchQuery: String = "",
     modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
@@ -188,25 +189,56 @@ fun TourismScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 90.dp)
             ) {
-                // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
-                item {
-                    BentoTopGrid(
-                        weather = weather,
-                        onAlertClick = {
-                            val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                            if (chandipur != null) onHotspotSelect(chandipur)
+                // If searching, show an active search status banner; otherwise show Bento Hero cluster
+                if (searchQuery.isNotBlank()) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = BentoBlueLight,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Filtering spots for \"$searchQuery\"",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoPrimaryBlue
+                                )
+                                Text(
+                                    text = "${hotspots.size} spots found",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate700
+                                )
+                            }
                         }
-                    )
-                }
+                    }
+                } else {
+                    // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
+                    item {
+                        BentoTopGrid(
+                            weather = weather,
+                            onAlertClick = {
+                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                if (chandipur != null) onHotspotSelect(chandipur)
+                            }
+                        )
+                    }
 
-                // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
-                item {
-                    BentoTourismHeroTile(
-                        onExplore = {
-                            val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                            if (chandipur != null) onHotspotSelect(chandipur)
-                        }
-                    )
+                    // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
+                    item {
+                        BentoTourismHeroTile(
+                            onExplore = {
+                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                if (chandipur != null) onHotspotSelect(chandipur)
+                            }
+                        )
+                    }
                 }
 
                 // Category Filter Chips
@@ -286,7 +318,13 @@ fun TourismScreen(
                 // Hotspots Bento Cards List
                 if (hotspots.isEmpty()) {
                     item {
-                        BentoEmptyStateCard(message = "No hotspots found in this category.")
+                        BentoEmptyStateCard(
+                            message = if (searchQuery.isNotBlank()) {
+                                "No tourism hotspots match \"$searchQuery\". Try checking your keyword or searching under another category."
+                            } else {
+                                "No hotspots found in this category."
+                            }
+                        )
                     }
                 } else {
                     items(hotspots, key = { it.id }) { hotspot ->
@@ -848,7 +886,7 @@ fun HotspotDetailSheet(
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_SUBJECT, "Visit ${hotspot.name} in Balasore")
-                            putExtra(Intent.EXTRA_TEXT, "Check out ${hotspot.name} in Balasore, Odisha!\n\n${hotspot.shortDescription}\n\nTip: ${hotspot.localTip}\n\n- Shared via Balasore Live App")
+                            putExtra(Intent.EXTRA_TEXT, "Check out ${hotspot.name} in Balasore, Odisha!\n\n${hotspot.shortDescription}\n\nTip: ${hotspot.localTip}\n\n- Shared via Balasore 360 (Nihar Sales)")
                         }
                         context.startActivity(Intent.createChooser(shareIntent, "Share Hotspot"))
                     },

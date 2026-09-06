@@ -911,12 +911,12 @@ private fun LoggedOutPrompt(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Welcome to Balasore Live",
+            text = "Welcome to Balasore 360",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = BentoSlate900
         )
         Text(
-            text = "Log in to manage your profile, write reviews on tourist spots, share weather ground reports, and save articles.",
+            text = "By Nihar Sales • Log in to manage your profile, write reviews on tourist spots, share weather ground reports, and save articles.",
             style = MaterialTheme.typography.bodyMedium,
             color = BentoSlate500,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)

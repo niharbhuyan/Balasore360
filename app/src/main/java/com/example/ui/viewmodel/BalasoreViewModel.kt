@@ -45,6 +45,7 @@ data class UiState(
     val selectedTab: AppTab = AppTab.HOTSPOTS,
     val newsCategory: String = "All",
     val hotspotCategory: String = "All",
+    val searchQuery: String = "",
     val newsSearchQuery: String = "",
     val selectedHotspot: HotspotEntity? = null,
     val selectedArticle: NewsArticleEntity? = null,
@@ -79,28 +80,43 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     val allReviews: StateFlow<List<ReviewEntity>> = repository.allReviews
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Filtered Hotspots based on category
+    // Filtered Hotspots based on category and search query
     val filteredHotspots: StateFlow<List<HotspotEntity>> = combine(rawHotspots, _uiState) { list, state ->
-        if (state.hotspotCategory == "All") {
-            list
-        } else if (state.hotspotCategory == "Favorites") {
-            list.filter { it.isFavorite }
-        } else {
-            list.filter { it.category.equals(state.hotspotCategory, ignoreCase = true) }
+        val query = state.searchQuery.trim()
+        list.filter { hotspot ->
+            val matchesCategory = when (state.hotspotCategory) {
+                "All" -> true
+                "Favorites" -> hotspot.isFavorite
+                else -> hotspot.category.equals(state.hotspotCategory, ignoreCase = true)
+            }
+            val matchesSearch = query.isBlank() ||
+                    hotspot.name.contains(query, ignoreCase = true) ||
+                    hotspot.odiaName.contains(query, ignoreCase = true) ||
+                    hotspot.shortDescription.contains(query, ignoreCase = true) ||
+                    hotspot.fullDescription.contains(query, ignoreCase = true) ||
+                    hotspot.highlights.contains(query, ignoreCase = true) ||
+                    hotspot.specialty.contains(query, ignoreCase = true) ||
+                    hotspot.category.contains(query, ignoreCase = true) ||
+                    hotspot.localTip.contains(query, ignoreCase = true)
+
+            matchesCategory && matchesSearch
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Filtered News based on category and search query
     val filteredNews: StateFlow<List<NewsArticleEntity>> = combine(rawNews, _uiState) { list, state ->
+        val query = if (state.searchQuery.isNotBlank()) state.searchQuery.trim() else state.newsSearchQuery.trim()
         list.filter { article ->
             val matchesCategory = state.newsCategory == "All" ||
                     (state.newsCategory == "Saved" && article.isBookmarked) ||
                     article.category.equals(state.newsCategory, ignoreCase = true)
 
-            val matchesSearch = state.newsSearchQuery.isBlank() ||
-                    article.title.contains(state.newsSearchQuery, ignoreCase = true) ||
-                    article.summary.contains(state.newsSearchQuery, ignoreCase = true) ||
-                    article.content.contains(state.newsSearchQuery, ignoreCase = true)
+            val matchesSearch = query.isBlank() ||
+                    article.title.contains(query, ignoreCase = true) ||
+                    article.summary.contains(query, ignoreCase = true) ||
+                    article.content.contains(query, ignoreCase = true) ||
+                    article.category.contains(query, ignoreCase = true) ||
+                    article.source.contains(query, ignoreCase = true)
 
             matchesCategory && matchesSearch
         }
@@ -165,8 +181,16 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         _uiState.value = _uiState.value.copy(newsCategory = category)
     }
 
+    fun setSearchQuery(query: String) {
+        _uiState.value = _uiState.value.copy(searchQuery = query, newsSearchQuery = query)
+    }
+
+    fun clearSearchQuery() {
+        _uiState.value = _uiState.value.copy(searchQuery = "", newsSearchQuery = "")
+    }
+
     fun setNewsSearchQuery(query: String) {
-        _uiState.value = _uiState.value.copy(newsSearchQuery = query)
+        setSearchQuery(query)
     }
 
     fun selectHotspot(hotspot: HotspotEntity?) {

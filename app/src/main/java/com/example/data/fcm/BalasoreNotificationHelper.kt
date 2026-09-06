@@ -103,7 +103,7 @@ object BalasoreNotificationHelper {
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText(message)
-                    .setSummaryText("Balasore Live Weather Warning • $alertLevel")
+                    .setSummaryText("Balasore 360 Weather Warning • $alertLevel")
             )
             .setColor(0xFFD9381E.toInt()) // Alert Crimson
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -163,7 +163,7 @@ object BalasoreNotificationHelper {
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText(message)
-                    .setSummaryText("Balasore Live Breaking Wire")
+                    .setSummaryText("Balasore 360 Breaking Wire • Nihar Sales")
             )
             .setColor(0xFF1A56DB.toInt()) // Bento Primary Blue
             .setPriority(NotificationCompat.PRIORITY_HIGH)

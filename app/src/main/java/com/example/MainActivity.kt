@@ -110,7 +110,13 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 isOnline = uiState.isOnline,
                 isSyncing = uiState.isSyncing,
                 lastSyncTime = uiState.lastSyncTime,
-                onOfflineStatusClick = { viewModel.openOfflineSheet() }
+                onOfflineStatusClick = { viewModel.openOfflineSheet() },
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                selectedTab = uiState.selectedTab,
+                hotspotsCount = hotspots.size,
+                newsCount = news.size,
+                onSelectTab = { viewModel.selectTab(it) }
             )
         },
         bottomBar = {
@@ -194,7 +200,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         },
                         onCategorySelect = { viewModel.setHotspotCategory(it) },
                         onHotspotSelect = { viewModel.selectHotspot(it) },
-                        onToggleFavorite = { viewModel.toggleFavorite(it) }
+                        onToggleFavorite = { viewModel.toggleFavorite(it) },
+                        searchQuery = uiState.searchQuery
                     )
                 }
                 AppTab.NEWS -> {

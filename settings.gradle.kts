@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Balasore Live"
+rootProject.name = "Balasore 360"
 
 include(":app")

@@ -102,35 +102,35 @@ fun NewsScreen(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 90.dp)
     ) {
-        // Bento Search Input
-        item {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = onSearchQueryChange,
-                placeholder = { Text("Search Balasore news & bulletins...", color = BentoSlate400) },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search", tint = BentoSlate400)
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { onSearchQueryChange("") }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search", tint = BentoSlate400)
-                        }
+        // Active Search Filter Status Banner
+        if (searchQuery.isNotBlank()) {
+            item {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = BentoBlueLight,
+                    border = BorderStroke(1.dp, BentoBorder),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Filtering news for \"$searchQuery\"",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = BentoPrimaryBlue
+                        )
+                        Text(
+                            text = "${articles.size} updates found",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = BentoSlate700
+                        )
                     }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(20.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = BentoCardWhite,
-                    unfocusedContainerColor = BentoCardWhite,
-                    focusedIndicatorColor = BentoPrimaryBlue,
-                    unfocusedIndicatorColor = BentoBorder
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .testTag("news_search_input")
-            )
+                }
+            }
         }
 
         // Breaking News Bento Tile
@@ -484,7 +484,7 @@ fun ArticleDetailSheet(
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_SUBJECT, article.title)
-                            putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.summary}\n\nRead more on Balasore Live App")
+                            putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.summary}\n\nRead more on Balasore 360 by Nihar Sales")
                         }
                         context.startActivity(Intent.createChooser(shareIntent, "Share News Article"))
                     },

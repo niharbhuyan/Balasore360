@@ -37,8 +37,8 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
         val notification = remoteMessage.notification
 
         val type = data["type"] ?: "GENERAL"
-        val title = data["title"] ?: notification?.title ?: "Balasore Live Alert"
-        val body = data["body"] ?: data["message"] ?: notification?.body ?: "New urgent update received for Balasore."
+        val title = data["title"] ?: notification?.title ?: "Balasore 360 Alert"
+        val body = data["body"] ?: data["message"] ?: notification?.body ?: "New urgent update received for Balasore 360."
         val alertLevel = data["alert_level"] ?: "URGENT"
         val articleId = data["article_id"]
 
@@ -117,7 +117,7 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
                     summary = body,
                     content = data["content"] ?: body,
                     category = data["category"] ?: "Civic",
-                    source = data["source"] ?: "Balasore Live Wire",
+                    source = data["source"] ?: "Balasore 360 Wire",
                     publishedAt = "Just now ($timeString)",
                     timestamp = System.currentTimeMillis(),
                     isBreaking = true,

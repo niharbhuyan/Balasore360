@@ -22,10 +22,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Card
@@ -33,10 +37,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.example.ui.viewmodel.AppTab
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,6 +89,12 @@ fun AppHeader(
     isSyncing: Boolean = false,
     lastSyncTime: Long = 0L,
     onOfflineStatusClick: () -> Unit = {},
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    selectedTab: AppTab = AppTab.HOTSPOTS,
+    hotspotsCount: Int = 0,
+    newsCount: Int = 0,
+    onSelectTab: (AppTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
@@ -109,7 +122,7 @@ fun AppHeader(
             ) {
                 Column {
                     Text(
-                        text = "LIVE FROM",
+                        text = "NIHAR SALES",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 2.sp,
@@ -118,7 +131,7 @@ fun AppHeader(
                         color = BentoPrimaryBlue
                     )
                     Text(
-                        text = "BALASORE",
+                        text = "BALASORE 360",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Black,
                             letterSpacing = (-0.5).sp
@@ -130,7 +143,7 @@ fun AppHeader(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = "ବାଲେଶ୍ୱର • Odisha",
+                            text = "ବାଲେଶ୍ୱର • Nihar Sales",
                             style = MaterialTheme.typography.bodySmall,
                             color = BentoSlate500
                         )
@@ -295,6 +308,138 @@ fun AppHeader(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                    }
+                }
+            }
+
+            // Main Screen Search Bar
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                placeholder = {
+                    Text(
+                        text = "Search Balasore news & tourism spots...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BentoSlate400,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = if (searchQuery.isNotEmpty()) BentoPrimaryBlue else BentoSlate400,
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { onSearchQueryChange("") },
+                            modifier = Modifier.testTag("main_search_clear_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear search",
+                                tint = BentoSlate400,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = BentoCardWhite,
+                    unfocusedContainerColor = BentoCardWhite,
+                    focusedIndicatorColor = BentoPrimaryBlue,
+                    unfocusedIndicatorColor = BentoBorder,
+                    focusedTextColor = BentoSlate900,
+                    unfocusedTextColor = BentoSlate900
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("main_search_bar_input")
+            )
+
+            // Results count badges when searching
+            if (searchQuery.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Matches:",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate500
+                    )
+
+                    // Hotspots result count pill
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoBorder),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onSelectTab(AppTab.HOTSPOTS) }
+                            .testTag("search_filter_hotspots_pill")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Explore,
+                                contentDescription = null,
+                                tint = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoPrimaryBlue,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "Hotspots ($hotspotsCount)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedTab == AppTab.HOTSPOTS) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoSlate700
+                            )
+                        }
+                    }
+
+                    // News result count pill
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (selectedTab == AppTab.NEWS) BentoPrimaryBlue else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (selectedTab == AppTab.NEWS) BentoPrimaryBlue else BentoBorder),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onSelectTab(AppTab.NEWS) }
+                            .testTag("search_filter_news_pill")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Article,
+                                contentDescription = null,
+                                tint = if (selectedTab == AppTab.NEWS) Color.White else BentoPrimaryBlue,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "News ($newsCount)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedTab == AppTab.NEWS) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (selectedTab == AppTab.NEWS) Color.White else BentoSlate700
+                            )
+                        }
                     }
                 }
             }
