@@ -9,8 +9,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -35,6 +38,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.components.AppHeader
+import com.example.ui.components.MainScrollableTabRow
 import com.example.ui.screens.AuthBottomSheet
 import com.example.ui.screens.EssentialsScreen
 import com.example.ui.screens.NewsScreen
@@ -72,18 +77,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            MyApplicationTheme(themeMode = uiState.themeMode) {
                 BalasoreApp(viewModel = viewModel)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BalasoreApp(viewModel: BalasoreViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val weather by viewModel.weatherState.collectAsStateWithLifecycle()
+    val dailyForecasts by viewModel.dailyForecasts.collectAsStateWithLifecycle()
     val hotspots by viewModel.filteredHotspots.collectAsStateWithLifecycle()
     val news by viewModel.filteredNews.collectAsStateWithLifecycle()
 
@@ -101,23 +109,35 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         containerColor = BentoCanvas,
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AppHeader(
-                weather = weather,
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.refreshData() },
-                currentUser = currentUser,
-                onProfileClick = { viewModel.openAuthSheet() },
-                isOnline = uiState.isOnline,
-                isSyncing = uiState.isSyncing,
-                lastSyncTime = uiState.lastSyncTime,
-                onOfflineStatusClick = { viewModel.openOfflineSheet() },
-                searchQuery = uiState.searchQuery,
-                onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                selectedTab = uiState.selectedTab,
-                hotspotsCount = hotspots.size,
-                newsCount = news.size,
-                onSelectTab = { viewModel.selectTab(it) }
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                AppHeader(
+                    weather = weather,
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.refreshData() },
+                    currentUser = currentUser,
+                    onProfileClick = { viewModel.openAuthSheet() },
+                    isOnline = uiState.isOnline,
+                    isSyncing = uiState.isSyncing,
+                    lastSyncTime = uiState.lastSyncTime,
+                    onOfflineStatusClick = { viewModel.openOfflineSheet() },
+                    searchQuery = uiState.searchQuery,
+                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                    selectedTab = uiState.selectedTab,
+                    hotspotsCount = hotspots.size,
+                    newsCount = news.size,
+                    onSelectTab = { viewModel.selectTab(it) },
+                    onToggleTheme = { viewModel.toggleTheme() }
+                )
+
+                // Horizontal scrollable tab row component to toggle between News, Weather, and Tourism feeds
+                MainScrollableTabRow(
+                    selectedTab = uiState.selectedTab,
+                    onSelectTab = { viewModel.selectTab(it) },
+                    hotspotsCount = hotspots.size,
+                    newsCount = news.size,
+                    weatherTemp = weather?.temperature?.toInt()?.let { "$it°C" }
+                )
+            }
         },
         bottomBar = {
             Surface(
@@ -183,58 +203,68 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (uiState.selectedTab) {
-                AppTab.HOTSPOTS -> {
-                    TourismScreen(
-                        hotspots = hotspots,
-                        weather = weather,
-                        selectedCategory = uiState.hotspotCategory,
-                        selectedHotspot = uiState.selectedHotspot,
-                        isMapMode = uiState.isMapMode,
-                        currentUser = currentUser,
-                        onToggleMapMode = { viewModel.toggleMapMode() },
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
-                        onSubmitHotspotReview = { id, name, rating, comment, guestName ->
-                            viewModel.submitReview("HOTSPOT", id, name, rating, comment, guestName)
-                        },
-                        onCategorySelect = { viewModel.setHotspotCategory(it) },
-                        onHotspotSelect = { viewModel.selectHotspot(it) },
-                        onToggleFavorite = { viewModel.toggleFavorite(it) },
-                        searchQuery = uiState.searchQuery
-                    )
-                }
-                AppTab.NEWS -> {
-                    NewsScreen(
-                        articles = news,
-                        selectedCategory = uiState.newsCategory,
-                        searchQuery = uiState.newsSearchQuery,
-                        selectedArticle = uiState.selectedArticle,
-                        currentUser = currentUser,
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
-                        onSubmitArticleReview = { id, title, rating, comment, guestName ->
-                            viewModel.submitReview("NEWS", id, title, rating, comment, guestName)
-                        },
-                        onCategorySelect = { viewModel.setNewsCategory(it) },
-                        onSearchQueryChange = { viewModel.setNewsSearchQuery(it) },
-                        onArticleSelect = { viewModel.selectArticle(it) },
-                        onToggleBookmark = { viewModel.toggleBookmark(it) }
-                    )
-                }
-                AppTab.WEATHER -> {
-                    WeatherScreen(
-                        weather = weather,
-                        currentUser = currentUser,
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
-                        onSubmitWeatherReview = { id, title, rating, comment, guestName ->
-                            viewModel.submitReview("WEATHER", id, title, rating, comment, guestName)
-                        }
-                    )
-                }
-                AppTab.ESSENTIALS -> {
-                    EssentialsScreen()
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.refreshData() },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("main_pull_to_refresh")
+            ) {
+                when (uiState.selectedTab) {
+                    AppTab.HOTSPOTS -> {
+                        TourismScreen(
+                            hotspots = hotspots,
+                            weather = weather,
+                            selectedCategory = uiState.hotspotCategory,
+                            selectedHotspot = uiState.selectedHotspot,
+                            isMapMode = uiState.isMapMode,
+                            currentUser = currentUser,
+                            onToggleMapMode = { viewModel.toggleMapMode() },
+                            onOpenAuth = { viewModel.openAuthSheet() },
+                            getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
+                            onSubmitHotspotReview = { id, name, rating, comment, guestName ->
+                                viewModel.submitReview("HOTSPOT", id, name, rating, comment, guestName)
+                            },
+                            onCategorySelect = { viewModel.setHotspotCategory(it) },
+                            onHotspotSelect = { viewModel.selectHotspot(it) },
+                            onToggleFavorite = { viewModel.toggleFavorite(it) },
+                            searchQuery = uiState.searchQuery,
+                            onSearchQueryChange = { viewModel.setSearchQuery(it) }
+                        )
+                    }
+                    AppTab.NEWS -> {
+                        NewsScreen(
+                            articles = news,
+                            selectedCategory = uiState.newsCategory,
+                            searchQuery = uiState.newsSearchQuery,
+                            selectedArticle = uiState.selectedArticle,
+                            currentUser = currentUser,
+                            onOpenAuth = { viewModel.openAuthSheet() },
+                            getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
+                            onSubmitArticleReview = { id, title, rating, comment, guestName ->
+                                viewModel.submitReview("NEWS", id, title, rating, comment, guestName)
+                            },
+                            onCategorySelect = { viewModel.setNewsCategory(it) },
+                            onSearchQueryChange = { viewModel.setNewsSearchQuery(it) },
+                            onArticleSelect = { viewModel.selectArticle(it) },
+                            onToggleBookmark = { viewModel.toggleBookmark(it) }
+                        )
+                    }
+                    AppTab.WEATHER -> {
+                        WeatherScreen(
+                            weather = weather,
+                            dailyForecasts = dailyForecasts,
+                            currentUser = currentUser,
+                            onOpenAuth = { viewModel.openAuthSheet() },
+                            getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
+                            onSubmitWeatherReview = { id, title, rating, comment, guestName ->
+                                viewModel.submitReview("WEATHER", id, title, rating, comment, guestName)
+                            }
+                        )
+                    }
+                    AppTab.ESSENTIALS -> {
+                        EssentialsScreen()
+                    }
                 }
             }
         }
@@ -274,6 +304,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         newsCount = news.size,
         hotspotsCount = hotspots.size,
         hasWeatherCache = weather != null,
+        forecastCount = dailyForecasts.size,
         onClose = { viewModel.closeOfflineSheet() },
         onSyncNow = { viewModel.triggerManualSync() }
     )

@@ -9,17 +9,20 @@ import androidx.room.RoomDatabase
     entities = [
         NewsArticleEntity::class,
         WeatherCacheEntity::class,
+        DailyForecastEntity::class,
         HotspotEntity::class,
+        CacheSyncMetadataEntity::class,
         UserEntity::class,
         ReviewEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun newsDao(): NewsDao
     abstract fun weatherDao(): WeatherDao
     abstract fun hotspotDao(): HotspotDao
+    abstract fun cacheMetadataDao(): CacheMetadataDao
     abstract fun userDao(): UserDao
     abstract fun reviewDao(): ReviewDao
 

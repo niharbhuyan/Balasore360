@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.DailyForecastEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
@@ -75,6 +78,7 @@ import java.util.Locale
 @Composable
 fun WeatherScreen(
     weather: WeatherCacheEntity?,
+    dailyForecasts: List<DailyForecastEntity> = emptyList(),
     currentUser: UserEntity? = null,
     onOpenAuth: () -> Unit = {},
     getReviewsForWeather: (String) -> Flow<List<ReviewEntity>> = { kotlinx.coroutines.flow.emptyFlow() },
@@ -114,6 +118,13 @@ fun WeatherScreen(
         // Atmospheric & Marine Parameters Grid
         item {
             BentoAtmosphericMetricsCard(weather = weather)
+        }
+
+        // 7-Day Weather Forecast cached in Room
+        if (dailyForecasts.isNotEmpty()) {
+            item {
+                BentoDailyForecastCard(forecasts = dailyForecasts)
+            }
         }
 
         // Tourism Weather Advisory Card
@@ -569,5 +580,134 @@ fun BentoTravelTip(spot: String, tip: String) {
     Column {
         Text(text = spot, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = BentoPrimaryBlue)
         Text(text = tip, style = MaterialTheme.typography.bodySmall, color = BentoSlate500)
+    }
+}
+
+@Composable
+fun BentoDailyForecastCard(
+    forecasts: List<DailyForecastEntity>,
+    modifier: Modifier = Modifier
+) {
+    if (forecasts.isEmpty()) return
+
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+        border = BorderStroke(1.dp, BentoBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("daily_forecast_card")
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = BentoBlueLight,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text("📅", fontSize = 16.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "7-Day Weather Forecast",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = BentoSlate900
+                        )
+                        Text(
+                            text = "Stored in Room SQLite for offline viewing",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 11.sp,
+                            color = BentoSlate500
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = BentoGreenBg
+                ) {
+                    Text(
+                        text = "ROOM CACHED",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp,
+                            fontSize = 9.sp
+                        ),
+                        color = BentoGreenText,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(forecasts) { item ->
+                    DailyForecastItem(item)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyForecastItem(item: DailyForecastEntity) {
+    val iconEmoji = when {
+        item.weatherCode in 0..1 -> "☀️"
+        item.weatherCode in 2..3 -> "⛅"
+        item.weatherCode in 45..48 -> "🌫️"
+        item.weatherCode in 51..67 -> "🌧️"
+        item.weatherCode in 80..82 -> "🌦️"
+        item.weatherCode >= 95 -> "⛈️"
+        else -> "🌤️"
+    }
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = BentoBlueLight.copy(alpha = 0.6f),
+        border = BorderStroke(1.dp, BentoBorder),
+        modifier = Modifier.width(96.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = item.dayOfWeek,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate900
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = iconEmoji,
+                fontSize = 24.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "${item.maxTemp.toInt()}° / ${item.minTemp.toInt()}°",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = BentoPrimaryBlue
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = item.weatherDescription,
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 9.sp,
+                color = BentoSlate500,
+                maxLines = 1
+            )
+        }
     }
 }

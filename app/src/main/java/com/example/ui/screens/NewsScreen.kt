@@ -39,6 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.example.ui.components.SearchEmptyStateCard
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -228,8 +229,14 @@ fun NewsScreen(
         // Articles List in Bento Grid Cards
         if (articles.isEmpty()) {
             item {
-                BentoEmptyStateCard(
-                    message = if (searchQuery.isNotEmpty()) "No articles matching '$searchQuery'" else "No news available in this category."
+                SearchEmptyStateCard(
+                    searchQuery = searchQuery,
+                    category = selectedCategory,
+                    feedType = "News Updates",
+                    onClearSearch = { onSearchQueryChange("") },
+                    onResetCategory = { onCategorySelect("All") },
+                    onSuggestionClick = { onSearchQueryChange(it) },
+                    suggestions = listOf("Station", "Chandipur", "Cyclone", "Port", "Heritage")
                 )
             }
         } else {

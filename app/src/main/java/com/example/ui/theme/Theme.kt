@@ -8,7 +8,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import com.example.ui.viewmodel.ThemeMode
 
 private val DarkColorScheme = darkColorScheme(
     primary = BalasorePrimaryDark,
@@ -21,7 +23,10 @@ private val DarkColorScheme = darkColorScheme(
     background = BalasoreBackgroundDark,
     onBackground = BalasoreOnBackgroundDark,
     surface = BalasoreSurfaceDark,
-    onSurface = BalasoreOnSurfaceDark
+    onSurface = BalasoreOnSurfaceDark,
+    surfaceVariant = BalasoreSurfaceVariantDark,
+    onSurfaceVariant = BalasoreOnSurfaceVariantDark,
+    outline = BalasoreOutlineDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -48,7 +53,12 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    darkTheme: Boolean = when (themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    },
     dynamicColor: Boolean = false, // Prefer tailored Balasore branding
     content: @Composable () -> Unit
 ) {
@@ -61,9 +71,14 @@ fun MyApplicationTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val bentoPalette = if (darkTheme) DarkBentoPalette else LightBentoPalette
+
+    CompositionLocalProvider(LocalBentoPalette provides bentoPalette) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
+

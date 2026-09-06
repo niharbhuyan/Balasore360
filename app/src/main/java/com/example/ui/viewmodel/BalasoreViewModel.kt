@@ -1,9 +1,12 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
+import com.example.data.local.CacheSyncMetadataEntity
+import com.example.data.local.DailyForecastEntity
 import com.example.data.local.HotspotEntity
 import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
@@ -36,6 +39,12 @@ enum class AuthMode {
     EDIT_PROFILE
 }
 
+enum class ThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK
+}
+
 data class UiState(
     val isRefreshing: Boolean = false,
     val isSyncing: Boolean = false,
@@ -55,7 +64,8 @@ data class UiState(
     val isAuthSheetOpen: Boolean = false,
     val authMode: AuthMode = AuthMode.PROFILE,
     val authError: String? = null,
-    val authSuccessMessage: String? = null
+    val authSuccessMessage: String? = null,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM
 )
 
 class BalasoreViewModel(application: Application) : AndroidViewModel(application) {
@@ -76,6 +86,12 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     val weatherState: StateFlow<WeatherCacheEntity?> = repository.weatherCache
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val dailyForecasts: StateFlow<List<DailyForecastEntity>> = repository.dailyForecasts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val cacheMetadata: StateFlow<List<CacheSyncMetadataEntity>> = repository.cacheMetadataList
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allReviews: StateFlow<List<ReviewEntity>> = repository.allReviews
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -123,6 +139,14 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        // Load saved theme preference
+        try {
+            val prefs = getApplication<Application>().getSharedPreferences("balasore_app_prefs", Context.MODE_PRIVATE)
+            val savedTheme = prefs.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
+            val initialTheme = try { ThemeMode.valueOf(savedTheme) } catch (_: Exception) { ThemeMode.SYSTEM }
+            _uiState.value = _uiState.value.copy(themeMode = initialTheme)
+        } catch (_: Exception) {}
+
         viewModelScope.launch {
             repository.initializeIfNeeded()
             val lastSync = repository.getLastSyncTimestamp()
@@ -211,6 +235,24 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun closeOfflineSheet() {
         _uiState.value = _uiState.value.copy(isOfflineSheetOpen = false)
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _uiState.value = _uiState.value.copy(themeMode = mode)
+        try {
+            val prefs = getApplication<Application>().getSharedPreferences("balasore_app_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("theme_mode", mode.name).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun toggleTheme() {
+        val current = _uiState.value.themeMode
+        val next = when (current) {
+            ThemeMode.LIGHT -> ThemeMode.DARK
+            ThemeMode.DARK -> ThemeMode.LIGHT
+            ThemeMode.SYSTEM -> ThemeMode.DARK
+        }
+        setThemeMode(next)
     }
 
     fun triggerManualSync() {

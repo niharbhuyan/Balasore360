@@ -3,6 +3,8 @@ package com.example.data.repository
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.data.local.AppDatabase
+import com.example.data.local.CacheSyncMetadataEntity
+import com.example.data.local.DailyForecastEntity
 import com.example.data.local.HotspotEntity
 import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
@@ -53,6 +55,8 @@ class BalasoreRepository(
     val breakingNews: Flow<List<NewsArticleEntity>> = database.newsDao().getBreakingNews()
     val allHotspots: Flow<List<HotspotEntity>> = database.hotspotDao().getAllHotspots()
     val weatherCache: Flow<WeatherCacheEntity?> = database.weatherDao().getWeatherCache()
+    val dailyForecasts: Flow<List<DailyForecastEntity>> = database.weatherDao().getDailyForecasts()
+    val cacheMetadataList: Flow<List<CacheSyncMetadataEntity>> = database.cacheMetadataDao().getAllMetadata()
     val allReviews: Flow<List<ReviewEntity>> = database.reviewDao().getAllReviews()
 
     suspend fun initializeIfNeeded() = withContext(Dispatchers.IO) {
@@ -93,6 +97,46 @@ class BalasoreRepository(
                     maxTemp = 32.0,
                     minTemp = 24.5,
                     lastUpdated = System.currentTimeMillis()
+                )
+            )
+        }
+        // If daily forecast is empty in Room, initialize 7-day forecast
+        if (database.weatherDao().getDailyForecastsSync().isEmpty()) {
+            database.weatherDao().insertDailyForecasts(createInitialDailyForecasts())
+        }
+        // If cache metadata is empty, seed Room metadata table
+        if (database.cacheMetadataDao().getCount() == 0) {
+            val now = System.currentTimeMillis()
+            val newsCount = database.newsDao().getCount()
+            val hotspotCount = database.hotspotDao().getCount()
+            database.cacheMetadataDao().insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "WEATHER",
+                    lastSyncedAt = now,
+                    itemCount = 8,
+                    status = "FRESH",
+                    cacheLabel = "Current + 7-Day Room Forecast",
+                    details = "Persisted locally in Room SQLite database."
+                )
+            )
+            database.cacheMetadataDao().insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "NEWS",
+                    lastSyncedAt = now,
+                    itemCount = newsCount,
+                    status = "FRESH",
+                    cacheLabel = "$newsCount News Articles Cached",
+                    details = "Full articles, bookmarks, and summaries saved in Room."
+                )
+            )
+            database.cacheMetadataDao().insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "TOURISM",
+                    lastSyncedAt = now,
+                    itemCount = hotspotCount,
+                    status = "FRESH",
+                    cacheLabel = "$hotspotCount Tourism Hotspots Cached",
+                    details = "Complete beach, temple, and heritage directory cached in Room."
                 )
             )
         }
@@ -284,11 +328,74 @@ class BalasoreRepository(
             )
 
             database.weatherDao().insertOrUpdateWeather(entity)
+
+            // Cache 7-Day daily forecast into Room
+            val dailyEntities = mutableListOf<DailyForecastEntity>()
+            val dailyTimes = daily?.time
+            if (!dailyTimes.isNullOrEmpty()) {
+                val inDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val dayOfWeekFormat = SimpleDateFormat("EEE", Locale.getDefault())
+                for (i in dailyTimes.indices) {
+                    val dateStr = dailyTimes[i]
+                    val dayName = try {
+                        val d = inDateFormat.parse(dateStr)
+                        if (d != null) dayOfWeekFormat.format(d) else "Day $i"
+                    } catch (_: Exception) { "Day $i" }
+
+                    val dayCode = daily.weatherCode?.getOrNull(i) ?: code
+                    val dayMax = daily.temperatureMax?.getOrNull(i) ?: maxT
+                    val dayMin = daily.temperatureMin?.getOrNull(i) ?: minT
+                    val daySunrise = daily.sunrise?.getOrNull(i)?.let { formatTimeIso(it) } ?: sunriseStr
+                    val daySunset = daily.sunset?.getOrNull(i)?.let { formatTimeIso(it) } ?: sunsetStr
+                    val dayUv = daily.uvIndexMax?.getOrNull(i) ?: uv
+
+                    dailyEntities.add(
+                        DailyForecastEntity(
+                            date = dateStr,
+                            dayOfWeek = dayName,
+                            weatherCode = dayCode,
+                            weatherDescription = parseWeatherCode(dayCode),
+                            maxTemp = dayMax,
+                            minTemp = dayMin,
+                            sunrise = daySunrise,
+                            sunset = daySunset,
+                            uvIndex = dayUv,
+                            cachedAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+            }
+            if (dailyEntities.isNotEmpty()) {
+                database.weatherDao().clearDailyForecasts()
+                database.weatherDao().insertDailyForecasts(dailyEntities)
+            }
+
+            database.cacheMetadataDao().insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "WEATHER",
+                    lastSyncedAt = System.currentTimeMillis(),
+                    itemCount = 1 + dailyEntities.size,
+                    status = "FRESH",
+                    cacheLabel = "Current + ${dailyEntities.size}-Day Room Forecast",
+                    details = "Updated live from meteorological satellite feed."
+                )
+            )
+
             Result.success(entity)
         } catch (e: Exception) {
             // In case of network failure, fallback to existing or fallback weather entity
             val cached = database.weatherDao().getWeatherCacheSync()
             if (cached != null) {
+                database.cacheMetadataDao().insertOrUpdate(
+                    CacheSyncMetadataEntity(
+                        cacheKey = "WEATHER",
+                        lastSyncedAt = cached.lastUpdated,
+                        itemCount = 1 + database.weatherDao().getDailyForecastsSync().size,
+                        status = "OFFLINE",
+                        cacheLabel = "Offline Room Cache Active",
+                        details = "Serving local cached marine & inland forecast."
+                    )
+                )
                 Result.success(cached)
             } else {
                 Result.failure(e)
@@ -334,6 +441,19 @@ class BalasoreRepository(
             )
 
             database.newsDao().insertArticles(freshArticles)
+            val count = database.newsDao().getCount()
+
+            database.cacheMetadataDao().insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "NEWS",
+                    lastSyncedAt = System.currentTimeMillis(),
+                    itemCount = count,
+                    status = "FRESH",
+                    cacheLabel = "$count Articles Cached in Room",
+                    details = "Persisted locally for offline reading & bookmarks."
+                )
+            )
+
             Result.success(freshArticles.size)
         } catch (e: Exception) {
             Result.failure(e)
@@ -378,6 +498,17 @@ class BalasoreRepository(
         prefs?.edit()?.putLong("last_sync_timestamp", now)?.apply()
         prefs?.edit()?.putString("last_sync_status", if (isOffline) "OFFLINE_CACHE" else "SYNCED")?.apply()
 
+        database.cacheMetadataDao().insertOrUpdate(
+            CacheSyncMetadataEntity(
+                cacheKey = "TOURISM",
+                lastSyncedAt = now,
+                itemCount = currentHotspotsCount,
+                status = if (isOffline) "OFFLINE" else "FRESH",
+                cacheLabel = "$currentHotspotsCount Hotspots in Room",
+                details = "Full tourism directory and navigation points available offline."
+            )
+        )
+
         SyncResult(
             isSuccess = true,
             weatherUpdated = weatherSuccess,
@@ -391,6 +522,58 @@ class BalasoreRepository(
                 "Background sync complete: Weather, $currentNewsCount news articles, & $currentHotspotsCount tourism hotspots cached in Room."
             }
         )
+    }
+
+    fun searchNewsOffline(query: String): Flow<List<NewsArticleEntity>> =
+        if (query.isBlank()) database.newsDao().getAllNews() else database.newsDao().searchNews(query.trim())
+
+    fun searchHotspotsOffline(query: String): Flow<List<HotspotEntity>> =
+        if (query.isBlank()) database.hotspotDao().getAllHotspots() else database.hotspotDao().searchHotspots(query.trim())
+
+    fun getArticleById(id: Long): Flow<NewsArticleEntity?> = database.newsDao().getArticleById(id)
+
+    fun getHotspotById(id: String): Flow<HotspotEntity?> = database.hotspotDao().getHotspotById(id)
+
+    fun getCacheMetadata(key: String): Flow<CacheSyncMetadataEntity?> = database.cacheMetadataDao().getMetadata(key)
+
+    private fun createInitialDailyForecasts(): List<DailyForecastEntity> {
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dayFormat = SimpleDateFormat("EEE", Locale.getDefault())
+        val list = mutableListOf<DailyForecastEntity>()
+
+        val sampleTemps = listOf(
+            Pair(32.0, 25.0) to Pair(1, "Mainly Clear Coastal Sky"),
+            Pair(33.5, 26.0) to Pair(2, "Partly Cloudy Sea Breeze"),
+            Pair(31.0, 24.5) to Pair(61, "Light Coastal Passing Shower"),
+            Pair(30.5, 24.0) to Pair(80, "Scattered Marine Rain Showers"),
+            Pair(32.5, 25.5) to Pair(0, "Clear Sunny Day"),
+            Pair(34.0, 26.5) to Pair(1, "Mainly Clear"),
+            Pair(33.0, 25.0) to Pair(2, "Partly Cloudy")
+        )
+
+        for (i in 0..6) {
+            val dateStr = dateFormat.format(calendar.time)
+            val dayName = if (i == 0) "Today" else dayFormat.format(calendar.time)
+            val (tempPair, weatherPair) = sampleTemps[i % sampleTemps.size]
+
+            list.add(
+                DailyForecastEntity(
+                    date = dateStr,
+                    dayOfWeek = dayName,
+                    weatherCode = weatherPair.first,
+                    weatherDescription = weatherPair.second,
+                    maxTemp = tempPair.first,
+                    minTemp = tempPair.second,
+                    sunrise = "05:33 AM",
+                    sunset = "06:13 PM",
+                    uvIndex = (7.2 - (i * 0.3)).coerceAtLeast(3.0),
+                    cachedAt = System.currentTimeMillis()
+                )
+            )
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+        return list
     }
 
     fun getLastSyncTimestamp(): Long {

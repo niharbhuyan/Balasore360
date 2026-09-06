@@ -1,9 +1,18 @@
 package com.example.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "news_articles")
+@Entity(
+    tableName = "news_articles",
+    indices = [
+        Index("category"),
+        Index("timestamp"),
+        Index("isBreaking"),
+        Index("isBookmarked")
+    ]
+)
 data class NewsArticleEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -43,7 +52,34 @@ data class WeatherCacheEntity(
     val lastUpdated: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "tourism_hotspots")
+@Entity(
+    tableName = "daily_forecasts",
+    indices = [
+        Index("date")
+    ]
+)
+data class DailyForecastEntity(
+    @PrimaryKey
+    val date: String, // e.g. "2026-09-06"
+    val dayOfWeek: String, // e.g. "Sunday"
+    val weatherCode: Int,
+    val weatherDescription: String,
+    val maxTemp: Double,
+    val minTemp: Double,
+    val sunrise: String,
+    val sunset: String,
+    val uvIndex: Double,
+    val cachedAt: Long = System.currentTimeMillis()
+)
+
+@Entity(
+    tableName = "tourism_hotspots",
+    indices = [
+        Index("category"),
+        Index("isFavorite"),
+        Index("distanceKmFromBls")
+    ]
+)
 data class HotspotEntity(
     @PrimaryKey
     val id: String,
@@ -62,6 +98,17 @@ data class HotspotEntity(
     val latitude: Double = 21.4934,
     val longitude: Double = 86.9325,
     val isFavorite: Boolean = false
+)
+
+@Entity(tableName = "cache_sync_metadata")
+data class CacheSyncMetadataEntity(
+    @PrimaryKey
+    val cacheKey: String, // "NEWS", "WEATHER", "TOURISM", "REVIEWS"
+    val lastSyncedAt: Long,
+    val itemCount: Int,
+    val status: String, // "CACHED", "FRESH", "OFFLINE"
+    val cacheLabel: String = "",
+    val details: String = ""
 )
 
 @Entity(tableName = "users")

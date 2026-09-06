@@ -58,6 +58,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.ui.components.SearchEmptyStateCard
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -111,6 +112,7 @@ fun TourismScreen(
     onHotspotSelect: (HotspotEntity?) -> Unit,
     onToggleFavorite: (HotspotEntity) -> Unit,
     searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
@@ -318,12 +320,14 @@ fun TourismScreen(
                 // Hotspots Bento Cards List
                 if (hotspots.isEmpty()) {
                     item {
-                        BentoEmptyStateCard(
-                            message = if (searchQuery.isNotBlank()) {
-                                "No tourism hotspots match \"$searchQuery\". Try checking your keyword or searching under another category."
-                            } else {
-                                "No hotspots found in this category."
-                            }
+                        SearchEmptyStateCard(
+                            searchQuery = searchQuery,
+                            category = selectedCategory,
+                            feedType = "Tourism Hotspots",
+                            onClearSearch = { onSearchQueryChange("") },
+                            onResetCategory = { onCategorySelect("All") },
+                            onSuggestionClick = { onSearchQueryChange(it) },
+                            suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
                         )
                     }
                 } else {
@@ -988,7 +992,7 @@ fun BentoInfoTag(
 @Composable
 fun BentoEmptyStateCard(message: String) {
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
         border = BorderStroke(1.dp, BentoBorder),
         modifier = Modifier
@@ -1001,17 +1005,35 @@ fun BentoEmptyStateCard(message: String) {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = BentoSlate400,
-                modifier = Modifier.size(32.dp)
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = BentoBlueLight,
+                border = BorderStroke(1.dp, BentoBorder),
+                modifier = Modifier.size(130.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.img_empty_search),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "No Results Found",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate900
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = BentoSlate500
+                color = BentoSlate500,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }

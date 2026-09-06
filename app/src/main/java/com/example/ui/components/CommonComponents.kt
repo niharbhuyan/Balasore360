@@ -6,6 +6,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,26 +25,36 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.ContactPhone
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import com.example.ui.viewmodel.AppTab
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,11 +62,14 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.R
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
 import com.example.ui.theme.BentoAmberBg
@@ -66,6 +80,7 @@ import com.example.ui.theme.BentoBlueText
 import com.example.ui.theme.BentoBorder
 import com.example.ui.theme.BentoCanvas
 import com.example.ui.theme.BentoCardWhite
+import com.example.ui.theme.BentoGold
 import com.example.ui.theme.BentoGreenBg
 import com.example.ui.theme.BentoGreenText
 import com.example.ui.theme.BentoPrimaryBlue
@@ -75,6 +90,8 @@ import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.theme.LocalBentoPalette
+import com.example.ui.viewmodel.AppTab
 import com.example.ui.theme.TideIncoming
 import com.example.ui.theme.TideReceding
 
@@ -95,6 +112,7 @@ fun AppHeader(
     hotspotsCount: Int = 0,
     newsCount: Int = 0,
     onSelectTab: (AppTab) -> Unit = {},
+    onToggleTheme: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
@@ -234,6 +252,29 @@ fun AppHeader(
                                 modifier = Modifier
                                     .size(20.dp)
                                     .rotate(if (isRefreshing || isSyncing) rotation else 0f)
+                            )
+                        }
+                    }
+
+                    // Theme Toggle Button (Light / Dark Mode Switcher)
+                    val isAppDark = LocalBentoPalette.current.isDark
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isAppDark) BentoBluePill else BentoCardWhite,
+                        border = BorderStroke(1.dp, BentoBorder),
+                        shadowElevation = 1.dp,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onToggleTheme)
+                            .testTag("theme_toggle_button")
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = if (isAppDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                contentDescription = if (isAppDark) "Switch to Light Mode" else "Switch to Dark Mode",
+                                tint = if (isAppDark) BentoGold else BentoSlate700,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -513,3 +554,287 @@ fun CategoryChip(
         )
     }
 }
+
+/**
+ * Horizontal scrollable tab row on the main screen to seamlessly toggle
+ * between 'News', 'Weather', and 'Tourism' feeds.
+ */
+@Composable
+fun MainScrollableTabRow(
+    selectedTab: AppTab,
+    onSelectTab: (AppTab) -> Unit,
+    hotspotsCount: Int,
+    newsCount: Int,
+    weatherTemp: String? = null,
+    modifier: Modifier = Modifier
+) {
+    val tabs = listOf(
+        Triple(AppTab.HOTSPOTS, "Tourism", Icons.Default.Explore),
+        Triple(AppTab.NEWS, "News", Icons.Default.Article),
+        Triple(AppTab.WEATHER, "Weather", Icons.Default.Cloud),
+        Triple(AppTab.ESSENTIALS, "Essentials", Icons.Default.ContactPhone)
+    )
+
+    val selectedIndex = tabs.indexOfFirst { it.first == selectedTab }.coerceAtLeast(0)
+
+    Surface(
+        color = BentoCanvas,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        ScrollableTabRow(
+            selectedTabIndex = selectedIndex,
+            edgePadding = 16.dp,
+            containerColor = Color.Transparent,
+            contentColor = BentoPrimaryBlue,
+            divider = {},
+            indicator = { tabPositions ->
+                if (selectedIndex < tabPositions.size) {
+                    Box(
+                        Modifier
+                            .tabIndicatorOffset(tabPositions[selectedIndex])
+                            .height(3.dp)
+                            .padding(horizontal = 14.dp)
+                            .background(
+                                color = BentoPrimaryBlue,
+                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                            )
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("horizontal_scrollable_tab_row")
+        ) {
+            tabs.forEach { (tab, title, icon) ->
+                val isSelected = selectedTab == tab
+                val badgeText = when (tab) {
+                    AppTab.HOTSPOTS -> if (hotspotsCount > 0) "$hotspotsCount" else null
+                    AppTab.NEWS -> if (newsCount > 0) "$newsCount" else null
+                    AppTab.WEATHER -> weatherTemp
+                    AppTab.ESSENTIALS -> "24x7"
+                }
+
+                Tab(
+                    selected = isSelected,
+                    onClick = { onSelectTab(tab) },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .testTag("feed_tab_${tab.name.lowercase()}"),
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = if (isSelected) BentoPrimaryBlue else BentoSlate400,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                ),
+                                color = if (isSelected) BentoPrimaryBlue else BentoSlate500
+                            )
+                            if (badgeText != null) {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = if (isSelected) BentoPrimaryBlue else BentoBlueLight
+                                ) {
+                                    Text(
+                                        text = badgeText,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 10.sp
+                                        ),
+                                        color = if (isSelected) Color.White else BentoBlueText,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Informative Empty State Card with Custom Vector Illustration
+ * Displayed when no news updates or tourism hotspots match the active search filter.
+ */
+@Composable
+fun SearchEmptyStateCard(
+    searchQuery: String,
+    category: String,
+    feedType: String,
+    onClearSearch: () -> Unit,
+    onResetCategory: () -> Unit,
+    onSuggestionClick: (String) -> Unit,
+    suggestions: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+        border = BorderStroke(1.dp, BentoBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .testTag("search_empty_state_card")
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Illustrated Hero Container with Vector Asset
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = BentoBlueLight,
+                border = BorderStroke(1.dp, BentoBorder),
+                modifier = Modifier.size(170.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(id = R.drawable.img_empty_search),
+                        contentDescription = "No results explorer illustration",
+                        modifier = Modifier
+                            .size(155.dp)
+                            .clip(RoundedCornerShape(20.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Informative Headline
+            Text(
+                text = if (searchQuery.isNotBlank()) "No Matches Found" else "No $feedType Found",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-0.3).sp
+                ),
+                color = BentoSlate900,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Informative Context & Description
+            Text(
+                text = if (searchQuery.isNotBlank()) {
+                    "We searched across Balasore for \"$searchQuery\" in \"$category\", but couldn't find matching records."
+                } else {
+                    "There are currently no active $feedType listed under the \"$category\" category."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = BentoSlate500,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            if (suggestions.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(18.dp))
+                Text(
+                    text = "💡 Try these Balasore searches:",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = BentoPrimaryBlue
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Suggestion chips
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    suggestions.take(3).forEach { suggestion ->
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = BentoBlueLight,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { onSuggestionClick(suggestion) }
+                                .testTag("empty_state_chip_$suggestion")
+                        ) {
+                            Text(
+                                text = suggestion,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = BentoPrimaryBlue,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            // Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                if (searchQuery.isNotBlank()) {
+                    Button(
+                        onClick = onClearSearch,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BentoPrimaryBlue,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("empty_state_clear_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Clear Filter",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+
+                if (category != "All") {
+                    OutlinedButton(
+                        onClick = onResetCategory,
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, BentoBorder),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = BentoSlate700
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("empty_state_reset_category_button")
+                    ) {
+                        Text(
+                            text = "Show All",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

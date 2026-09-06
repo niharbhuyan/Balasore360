@@ -82,6 +82,7 @@ fun OfflineStatusBottomSheet(
     newsCount: Int,
     hotspotsCount: Int,
     hasWeatherCache: Boolean,
+    forecastCount: Int = 0,
     onClose: () -> Unit,
     onSyncNow: () -> Unit,
     modifier: Modifier = Modifier
@@ -250,7 +251,9 @@ fun OfflineStatusBottomSheet(
                 CacheEntityCard(
                     icon = Icons.Default.WbSunny,
                     title = "Weather & Tides",
-                    badge = if (hasWeatherCache) "Cached" else "Pending",
+                    badge = if (hasWeatherCache) {
+                        if (forecastCount > 0) "Cached • ${forecastCount}d" else "Cached"
+                    } else "Pending",
                     description = "Chandipur tide tables & coastal alerts",
                     isReady = hasWeatherCache,
                     modifier = Modifier.weight(1f)
