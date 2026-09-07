@@ -97,6 +97,14 @@ object FcmManager {
         getPrefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
     }
 
+    fun isWeatherAlertsEnabled(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_WEATHER_ALERTS, true)
+    }
+
+    fun isBreakingNewsEnabled(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_BREAKING_NEWS, true)
+    }
+
     fun setWeatherAlertsEnabled(context: Context, enabled: Boolean) {
         _weatherAlertsEnabled.value = enabled
         getPrefs(context).edit().putBoolean(KEY_WEATHER_ALERTS, enabled).apply()

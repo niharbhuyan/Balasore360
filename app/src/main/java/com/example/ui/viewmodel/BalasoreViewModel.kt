@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
+import com.example.data.fcm.FcmManager
 import com.example.data.local.CacheSyncMetadataEntity
 import com.example.data.local.DailyForecastEntity
 import com.example.data.local.HotspotEntity
@@ -51,6 +52,7 @@ data class UiState(
     val isOnline: Boolean = true,
     val lastSyncTime: Long = 0L,
     val isOfflineSheetOpen: Boolean = false,
+    val isAlertsSheetOpen: Boolean = false,
     val selectedTab: AppTab = AppTab.HOTSPOTS,
     val newsCategory: String = "All",
     val hotspotCategory: String = "All",
@@ -95,6 +97,11 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     val allReviews: StateFlow<List<ReviewEntity>> = repository.allReviews
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Real-time Push & FCM Notification State
+    val weatherAlertsEnabled: StateFlow<Boolean> = FcmManager.weatherAlertsEnabled
+    val breakingNewsEnabled: StateFlow<Boolean> = FcmManager.breakingNewsEnabled
+    val fcmToken: StateFlow<String?> = FcmManager.fcmToken
 
     // Filtered Hotspots based on category and search query
     val filteredHotspots: StateFlow<List<HotspotEntity>> = combine(rawHotspots, _uiState) { list, state ->
@@ -235,6 +242,48 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun closeOfflineSheet() {
         _uiState.value = _uiState.value.copy(isOfflineSheetOpen = false)
+    }
+
+    fun openAlertsSheet() {
+        _uiState.value = _uiState.value.copy(isAlertsSheetOpen = true)
+    }
+
+    fun closeAlertsSheet() {
+        _uiState.value = _uiState.value.copy(isAlertsSheetOpen = false)
+    }
+
+    fun showUserNotice(notice: String) {
+        _uiState.value = _uiState.value.copy(userNotice = notice)
+    }
+
+    fun setWeatherAlertsOptIn(enabled: Boolean) {
+        FcmManager.setWeatherAlertsEnabled(getApplication(), enabled)
+        val msg = if (enabled) {
+            "Subscribed to Balasore Severe Weather & Tide Alerts"
+        } else {
+            "Unsubscribed from Weather Alerts"
+        }
+        showUserNotice(msg)
+    }
+
+    fun setBreakingNewsOptIn(enabled: Boolean) {
+        FcmManager.setBreakingNewsEnabled(getApplication(), enabled)
+        val msg = if (enabled) {
+            "Subscribed to Balasore Breaking News & Civic Wire"
+        } else {
+            "Unsubscribed from Breaking News Alerts"
+        }
+        showUserNotice(msg)
+    }
+
+    fun simulateWeatherAlertPush() {
+        FcmManager.simulateWeatherAlertPush(getApplication())
+        showUserNotice("Urgent coastal storm alert received & cached")
+    }
+
+    fun simulateBreakingNewsPush() {
+        FcmManager.simulateBreakingNewsPush(getApplication())
+        showUserNotice("Breaking news bulletin received & cached")
     }
 
     fun setThemeMode(mode: ThemeMode) {

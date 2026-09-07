@@ -51,13 +51,17 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
                 // Update local Room database with latest weather alert
                 updateRoomWeatherCache(title, body, alertLevel)
 
-                // Dispatch high-priority system notification
-                BalasoreNotificationHelper.showWeatherAlertNotification(
-                    context = applicationContext,
-                    title = title,
-                    message = body,
-                    alertLevel = alertLevel
-                )
+                // Dispatch high-priority system notification if user opted-in
+                if (FcmManager.isWeatherAlertsEnabled(applicationContext)) {
+                    BalasoreNotificationHelper.showWeatherAlertNotification(
+                        context = applicationContext,
+                        title = title,
+                        message = body,
+                        alertLevel = alertLevel
+                    )
+                } else {
+                    Log.d(TAG, "Weather alert notification skipped (opt-out active)")
+                }
             }
 
             type.contains("NEWS", ignoreCase = true) ||
@@ -66,24 +70,30 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
                 // Insert into Room database
                 insertBreakingNewsToRoom(title, body, data)
 
-                // Dispatch system notification
-                BalasoreNotificationHelper.showBreakingNewsNotification(
-                    context = applicationContext,
-                    title = title,
-                    message = body,
-                    articleId = articleId
-                )
+                // Dispatch system notification if user opted-in
+                if (FcmManager.isBreakingNewsEnabled(applicationContext)) {
+                    BalasoreNotificationHelper.showBreakingNewsNotification(
+                        context = applicationContext,
+                        title = title,
+                        message = body,
+                        articleId = articleId
+                    )
+                } else {
+                    Log.d(TAG, "Breaking news notification skipped (opt-out active)")
+                }
             }
 
             else -> {
                 // Default to breaking news notification
                 insertBreakingNewsToRoom(title, body, data)
-                BalasoreNotificationHelper.showBreakingNewsNotification(
-                    context = applicationContext,
-                    title = title,
-                    message = body,
-                    articleId = articleId
-                )
+                if (FcmManager.isBreakingNewsEnabled(applicationContext)) {
+                    BalasoreNotificationHelper.showBreakingNewsNotification(
+                        context = applicationContext,
+                        title = title,
+                        message = body,
+                        articleId = articleId
+                    )
+                }
             }
         }
     }

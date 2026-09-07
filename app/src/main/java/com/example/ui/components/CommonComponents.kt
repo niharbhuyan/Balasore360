@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -114,6 +116,8 @@ fun AppHeader(
     newsCount: Int = 0,
     onSelectTab: (AppTab) -> Unit = {},
     onToggleTheme: () -> Unit = {},
+    onAlertsClick: () -> Unit = {},
+    hasActiveAlerts: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
@@ -279,6 +283,37 @@ fun AppHeader(
                                     .size(20.dp)
                                     .rotate(if (isRefreshing || isSyncing) rotation else 0f)
                             )
+                        }
+                    }
+
+                    // Alerts & Local Warnings Bell Button
+                    Surface(
+                        shape = CircleShape,
+                        color = if (hasActiveAlerts) BentoRedBg else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (hasActiveAlerts) BentoRedText.copy(alpha = 0.4f) else BentoBorder),
+                        shadowElevation = 1.dp,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onAlertsClick)
+                            .testTag("alerts_bell_button")
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = if (hasActiveAlerts) Icons.Default.NotificationsActive else Icons.Default.Notifications,
+                                contentDescription = "Local Alerts & Push Notifications",
+                                tint = if (hasActiveAlerts) BentoRedText else BentoSlate700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            if (hasActiveAlerts) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(9.dp)
+                                        .align(Alignment.TopEnd)
+                                        .padding(top = 2.dp, end = 2.dp)
+                                        .background(BentoRedText, CircleShape)
+                                )
+                            }
                         }
                     }
 

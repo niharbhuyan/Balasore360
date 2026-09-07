@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocalPolice
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PhoneInTalk
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
@@ -42,12 +43,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -127,6 +132,13 @@ fun dialPhoneNumber(context: Context, phoneNumber: String) {
 
 @Composable
 fun EssentialsScreen(
+    weatherAlertsEnabled: Boolean = true,
+    breakingNewsEnabled: Boolean = true,
+    onToggleWeatherAlerts: (Boolean) -> Unit = {},
+    onToggleBreakingNews: (Boolean) -> Unit = {},
+    onOpenAlertCenter: () -> Unit = {},
+    onSimulateWeatherAlert: () -> Unit = {},
+    onSimulateBreakingNews: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -662,6 +674,178 @@ fun EssentialsScreen(
                     contact = contact,
                     onCallClick = { dialPhoneNumber(context, contact.phone) }
                 )
+            }
+        }
+
+        // ==========================================
+        // LOCAL ALERTS & FCM PUSH NOTIFICATIONS
+        // ==========================================
+        item {
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+                border = BorderStroke(1.dp, BentoBorder),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("fcm_alerts_card")
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = BentoRedBg,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.NotificationsActive,
+                                        contentDescription = null,
+                                        tint = BentoRedText,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    text = "Local Alerts & Push Opt-In",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate900
+                                )
+                                Text(
+                                    text = "ପୁଶ୍ ବିଜ୍ଞପ୍ତି ଓ ଜରୁରୀ ସତର୍କତା (FCM)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = BentoSlate500
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = BentoBlueLight,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable(onClick = onOpenAlertCenter)
+                                .testTag("open_alert_center_pill")
+                        ) {
+                            Text(
+                                text = "Alert Center →",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = BentoPrimaryBlue,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Severe Weather & Tide Alerts Opt-in Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Severe Weather & Marine Warnings",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = BentoSlate900
+                            )
+                            Text(
+                                text = "Bay of Bengal storms & Chandipur beach tidal surges",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BentoSlate500
+                            )
+                        }
+                        Switch(
+                            checked = weatherAlertsEnabled,
+                            onCheckedChange = onToggleWeatherAlerts,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = BentoPrimaryBlue,
+                                uncheckedThumbColor = BentoSlate400,
+                                uncheckedTrackColor = BentoBorder
+                            ),
+                            modifier = Modifier.testTag("essentials_switch_weather")
+                        )
+                    }
+
+                    HorizontalDivider(color = BentoBorder, modifier = Modifier.padding(vertical = 6.dp))
+
+                    // Breaking News & Civic Bulletins Opt-in Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Breaking News & Civic Wire",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = BentoSlate900
+                            )
+                            Text(
+                                text = "Collectorate orders, civic bulletins, local road & transit notices",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BentoSlate500
+                            )
+                        }
+                        Switch(
+                            checked = breakingNewsEnabled,
+                            onCheckedChange = onToggleBreakingNews,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = BentoPrimaryBlue,
+                                uncheckedThumbColor = BentoSlate400,
+                                uncheckedTrackColor = BentoBorder
+                            ),
+                            modifier = Modifier.testTag("essentials_switch_news")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Quick Simulator Buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onSimulateWeatherAlert,
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("essentials_test_weather_btn")
+                        ) {
+                            Text("⚡ Test Weather", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BentoPrimaryBlue)
+                        }
+
+                        OutlinedButton(
+                            onClick = onSimulateBreakingNews,
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("essentials_test_news_btn")
+                        ) {
+                            Text("📰 Test News", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BentoPrimaryBlue)
+                        }
+                    }
+                }
             }
         }
 

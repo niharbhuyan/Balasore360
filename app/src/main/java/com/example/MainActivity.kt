@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,10 +53,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.fcm.BalasoreNotificationHelper
 import com.example.ui.components.AppHeader
 import com.example.ui.components.MainScrollableTabRow
 import com.example.ui.screens.AuthBottomSheet
 import com.example.ui.screens.EssentialsScreen
+import com.example.ui.screens.LocalAlertsBottomSheet
 import com.example.ui.screens.NewsScreen
 import com.example.ui.screens.OfflineStatusBottomSheet
 import com.example.ui.screens.TourismScreen
@@ -76,11 +79,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        handleNotificationIntent(intent)
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             MyApplicationTheme(themeMode = uiState.themeMode) {
                 BalasoreApp(viewModel = viewModel)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        val targetTab = intent?.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
+        if (targetTab == "WEATHER") {
+            viewModel.selectTab(AppTab.WEATHER)
+        } else if (targetTab == "NEWS") {
+            viewModel.selectTab(AppTab.NEWS)
         }
     }
 }
@@ -94,6 +112,19 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
     val dailyForecasts by viewModel.dailyForecasts.collectAsStateWithLifecycle()
     val hotspots by viewModel.filteredHotspots.collectAsStateWithLifecycle()
     val news by viewModel.filteredNews.collectAsStateWithLifecycle()
+    val weatherAlertsEnabled by viewModel.weatherAlertsEnabled.collectAsStateWithLifecycle()
+    val breakingNewsEnabled by viewModel.breakingNewsEnabled.collectAsStateWithLifecycle()
+    val fcmToken by viewModel.fcmToken.collectAsStateWithLifecycle()
+
+    val breakingNewsList = remember(news) {
+        news.filter {
+            it.category.equals("Emergency", ignoreCase = true) ||
+                    it.title.contains("Breaking", ignoreCase = true) ||
+                    it.title.contains("Cyclone", ignoreCase = true)
+        }
+    }
+    val hasActiveWeatherAlert = weather != null && weather?.alertLevel != "SAFE" && weather?.alertLevel != "NORMAL"
+    val hasActiveAlerts = hasActiveWeatherAlert || breakingNewsList.isNotEmpty()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -126,7 +157,9 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                     hotspotsCount = hotspots.size,
                     newsCount = news.size,
                     onSelectTab = { viewModel.selectTab(it) },
-                    onToggleTheme = { viewModel.toggleTheme() }
+                    onToggleTheme = { viewModel.toggleTheme() },
+                    onAlertsClick = { viewModel.openAlertsSheet() },
+                    hasActiveAlerts = hasActiveAlerts
                 )
 
                 // Horizontal scrollable tab row component to toggle between News, Weather, and Tourism feeds
@@ -263,7 +296,15 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         )
                     }
                     AppTab.ESSENTIALS -> {
-                        EssentialsScreen()
+                        EssentialsScreen(
+                            weatherAlertsEnabled = weatherAlertsEnabled,
+                            breakingNewsEnabled = breakingNewsEnabled,
+                            onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
+                            onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
+                            onOpenAlertCenter = { viewModel.openAlertsSheet() },
+                            onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
+                            onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() }
+                        )
                     }
                 }
             }
@@ -307,5 +348,25 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         forecastCount = dailyForecasts.size,
         onClose = { viewModel.closeOfflineSheet() },
         onSyncNow = { viewModel.triggerManualSync() }
+    )
+
+    // Real-time Push & FCM Alert Center Bottom Sheet
+    LocalAlertsBottomSheet(
+        isOpen = uiState.isAlertsSheetOpen,
+        weather = weather,
+        breakingNews = breakingNewsList,
+        weatherAlertsEnabled = weatherAlertsEnabled,
+        breakingNewsEnabled = breakingNewsEnabled,
+        fcmToken = fcmToken,
+        onClose = { viewModel.closeAlertsSheet() },
+        onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
+        onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
+        onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
+        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() },
+        onViewWeatherDetails = { viewModel.selectTab(AppTab.WEATHER) },
+        onReadArticle = { article ->
+            viewModel.selectTab(AppTab.NEWS)
+            viewModel.selectArticle(article)
+        }
     )
 }

@@ -24,6 +24,9 @@ object BalasoreNotificationHelper {
     const val CHANNEL_ID_NEWS = "balasore_breaking_news"
     const val CHANNEL_NAME_NEWS = "Balasore Breaking News"
 
+    const val EXTRA_TARGET_TAB = "target_tab"
+    const val EXTRA_ARTICLE_ID = "article_id"
+
     private const val NOTIFICATION_ID_WEATHER_BASE = 2001
     private const val NOTIFICATION_ID_NEWS_BASE = 3001
 

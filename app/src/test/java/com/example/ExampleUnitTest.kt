@@ -151,5 +151,50 @@ class ExampleUnitTest {
     val cleanEmergencyNumber = "112".replace(Regex("[^0-9+]"), "")
     assertEquals("112", cleanEmergencyNumber)
   }
+
+  @Test
+  fun testNotificationTopicSubscriptionKeys() {
+    val topicWeather = "balasore_weather_alerts"
+    val topicNews = "balasore_breaking_news"
+
+    assertTrue(topicWeather.startsWith("balasore_"))
+    assertTrue(topicNews.startsWith("balasore_"))
+  }
+
+  @Test
+  fun testBreakingNewsAlertFiltering() {
+    val articles = listOf(
+      NewsArticleEntity(
+        id = 1,
+        title = "Severe Cyclone Warning for Chandipur Coastal Belt",
+        summary = "IMD warns of 85 kmph gale winds.",
+        content = "Detailed cyclone advisory.",
+        category = "Emergency",
+        source = "IMD Balasore",
+        publishedAt = "10 mins ago",
+        isBreaking = true
+      ),
+      NewsArticleEntity(
+        id = 2,
+        title = "Flower show opens at Gandhi Smruti Bhavan",
+        summary = "Horticulture exhibits open.",
+        content = "Flower show details.",
+        category = "Culture",
+        source = "Local Bureau",
+        publishedAt = "1 hour ago",
+        isBreaking = false
+      )
+    )
+
+    val breakingOnly = articles.filter {
+      it.category.equals("Emergency", ignoreCase = true) ||
+          it.title.contains("Cyclone", ignoreCase = true) ||
+          it.isBreaking
+    }
+
+    assertEquals(1, breakingOnly.size)
+    assertEquals(1, breakingOnly.first().id)
+    assertEquals("Emergency", breakingOnly.first().category)
+  }
 }
 
