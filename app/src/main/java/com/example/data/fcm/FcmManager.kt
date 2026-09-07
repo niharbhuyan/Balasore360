@@ -46,6 +46,7 @@ object FcmManager {
      * Initializes Firebase and FCM topic subscriptions safely, handling environments
      * where google-services.json might be pre-configured or running in dev mode.
      */
+    @Suppress("DEPRECATION")
     fun initialize(context: Context) {
         BalasoreNotificationHelper.createNotificationChannels(context)
 

@@ -222,6 +222,36 @@ object DefaultData {
             publishedAt = "2 days ago",
             isBreaking = false,
             isBookmarked = false
+        ),
+        NewsArticleEntity(
+            title = "Balasore Municipality Announces Modern Solar Lighting on OT Road & Gandhi Smruti",
+            summary = "Over 450 energy-saving smart LED poles to be energized across key town commercial corridors before festival season.",
+            content = "In a major urban renewal drive, Balasore Municipality has initiated the installation of smart solar street lamps across OT Road, Cinema Chhak, and Gandhi Smruti Bhawan. The initiative is intended to improve pedestrian safety and lower municipal energy expenditure.",
+            category = "Local News",
+            source = "Balasore Municipality",
+            publishedAt = "Today, 11:30 AM",
+            isBreaking = false,
+            isBookmarked = false
+        ),
+        NewsArticleEntity(
+            title = "All-Party Delegation Submits Memorandum on Subarnarekha Port Rail Connectivity",
+            summary = "District political leaders urge accelerated clearance for dedicated freight tracks linking Chaumukha port with South Eastern Railway.",
+            content = "Representatives from various political parties in Balasore district held a joint consultation and submitted a memorandum to the authorities regarding the Subarnarekha Port project. The delegation highlighted that dedicated rail freight connectivity is crucial for local industrial job creation and logistical development.",
+            category = "Politics",
+            source = "Balasore Press Club",
+            publishedAt = "Today, 01:15 PM",
+            isBreaking = false,
+            isBookmarked = false
+        ),
+        NewsArticleEntity(
+            title = "Grand Chandipur Beach Festival 2026 Dates Announced: Cultural Evenings & Maritime Expo",
+            summary = "Five-day annual coastal celebration scheduled featuring Odissi recitals, folk dance troupes, and local marine seafood pavilions.",
+            content = "The District Administration and Culture Department have officially unveiled the dates for the upcoming Chandipur Beach Carnival. The 5-day event will bring together celebrated Odissi performers, regional handicrafts stalls, sand art exhibitions by local masters, and sea sports displays on the receding tidal flat.",
+            category = "Events",
+            source = "District Culture Council",
+            publishedAt = "Yesterday, 06:00 PM",
+            isBreaking = false,
+            isBookmarked = false
         )
     )
 

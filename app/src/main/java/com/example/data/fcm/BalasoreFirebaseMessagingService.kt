@@ -19,6 +19,7 @@ import java.util.Locale
  */
 class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
 
+    @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "New Firebase Cloud Messaging registration token: $token")

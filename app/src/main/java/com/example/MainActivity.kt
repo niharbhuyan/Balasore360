@@ -19,11 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.Explore
@@ -159,7 +159,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         val isSelected = uiState.selectedTab == tab
                         val (iconFilled, iconOutlined) = when (tab) {
                             AppTab.HOTSPOTS -> Pair(Icons.Default.Explore, Icons.Outlined.Explore)
-                            AppTab.NEWS -> Pair(Icons.Default.Article, Icons.Outlined.Article)
+                            AppTab.NEWS -> Pair(Icons.AutoMirrored.Filled.Article, Icons.AutoMirrored.Outlined.Article)
                             AppTab.WEATHER -> Pair(Icons.Default.Cloud, Icons.Outlined.Cloud)
                             AppTab.ESSENTIALS -> Pair(Icons.Default.ContactPhone, Icons.Outlined.ContactPhone)
                         }

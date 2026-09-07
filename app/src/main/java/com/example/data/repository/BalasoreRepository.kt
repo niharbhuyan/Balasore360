@@ -437,6 +437,26 @@ class BalasoreRepository(
                     publishedAt = "Updated $timeString",
                     isBreaking = true,
                     isBookmarked = false
+                ),
+                NewsArticleEntity(
+                    title = "District Council Passes Resolution on Industrial Park Expansion Near Kuruda",
+                    summary = "Political consensus reached on expanding infrastructure and agro-processing clusters in Balasore district.",
+                    content = "In the latest district council meeting, elected representatives unanimously passed a resolution approving industrial park modernization near Kuruda. The project aims to attract food processing units and boost rural employment.",
+                    category = "Politics",
+                    source = "District Press Bureau",
+                    publishedAt = "Updated $timeString",
+                    isBreaking = false,
+                    isBookmarked = false
+                ),
+                NewsArticleEntity(
+                    title = "Annual Balasore Heritage Walk & Cultural Conclave Commences This Weekend",
+                    summary = "Heritage enthusiasts, artists, and students gather to explore 10th-century temples and maritime relics.",
+                    content = "The annual Balasore Heritage Walk series kicks off this weekend from Fakir Mohan College square. Guided walking tours of historical monuments and evening folk art exhibitions are scheduled across the town.",
+                    category = "Events",
+                    source = "Balasore Cultural Foundation",
+                    publishedAt = "Updated $timeString",
+                    isBreaking = false,
+                    isBookmarked = false
                 )
             )
 

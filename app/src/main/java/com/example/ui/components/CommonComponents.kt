@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,8 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudDone
@@ -138,36 +139,60 @@ fun AppHeader(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "NIHAR SALES",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
-                            fontSize = 11.sp
-                        ),
-                        color = BentoPrimaryBlue
-                    )
-                    Text(
-                        text = "BALASORE 360",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = (-0.5).sp
-                        ),
-                        color = BentoSlate900
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Balasore 360 App Logo Emblem
+                    Surface(
+                        shape = CircleShape,
+                        color = BentoCardWhite,
+                        shadowElevation = 2.dp,
+                        border = BorderStroke(1.5.dp, BentoPrimaryBlue.copy(alpha = 0.25f)),
+                        modifier = Modifier
+                            .size(52.dp)
+                            .testTag("app_logo_header")
                     ) {
-                        Text(
-                            text = "ବାଲେଶ୍ୱର • Nihar Sales",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = BentoSlate500
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_app_icon_circle),
+                            contentDescription = "Balasore 360 Logo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
                         )
+                    }
 
-                        // Room Sync / Offline Pill Button
-                        Surface(
+                    Column {
+                        Text(
+                            text = "NIHAR SALES",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 2.sp,
+                                fontSize = 10.sp
+                            ),
+                            color = BentoPrimaryBlue
+                        )
+                        Text(
+                            text = "BALASORE 360",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = BentoSlate900
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "ବାଲେଶ୍ୱର • Nihar Sales",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BentoSlate500
+                            )
+
+                            // Room Sync / Offline Pill Button
+                            Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = if (!isOnline) BentoAmberBg else if (isSyncing) BentoBlueLight else BentoCardWhite,
                             border = BorderStroke(1.dp, if (!isOnline) BentoAmberText.copy(alpha = 0.3f) else BentoBorder),
@@ -202,6 +227,7 @@ fun AppHeader(
                         }
                     }
                 }
+            }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -467,7 +493,7 @@ fun AppHeader(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Article,
+                                imageVector = Icons.AutoMirrored.Filled.Article,
                                 contentDescription = null,
                                 tint = if (selectedTab == AppTab.NEWS) Color.White else BentoPrimaryBlue,
                                 modifier = Modifier.size(12.dp)
@@ -542,6 +568,7 @@ fun CategoryChip(
         border = if (isSelected) null else BorderStroke(1.dp, BentoBorder),
         shadowElevation = if (isSelected) 2.dp else 0.dp,
         modifier = modifier
+            .testTag("category_chip_${name.lowercase().replace(" ", "_").replace("&", "and")}")
             .clip(RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
     ) {
@@ -570,7 +597,7 @@ fun MainScrollableTabRow(
 ) {
     val tabs = listOf(
         Triple(AppTab.HOTSPOTS, "Tourism", Icons.Default.Explore),
-        Triple(AppTab.NEWS, "News", Icons.Default.Article),
+        Triple(AppTab.NEWS, "News", Icons.AutoMirrored.Filled.Article),
         Triple(AppTab.WEATHER, "Weather", Icons.Default.Cloud),
         Triple(AppTab.ESSENTIALS, "Essentials", Icons.Default.ContactPhone)
     )

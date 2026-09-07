@@ -92,4 +92,64 @@ class ExampleUnitTest {
     assertEquals(1, filtered.size)
     assertEquals(1L, filtered.first().id)
   }
+
+  @Test
+  fun testCategoryFilteringNewCategories() {
+    val news = listOf(
+      NewsArticleEntity(
+        id = 1,
+        title = "Balasore Municipality Announces Modern Solar Lighting",
+        summary = "Smart LED poles installed across OT Road.",
+        content = "Detailed content.",
+        category = "Local News",
+        source = "Balasore Municipality",
+        publishedAt = "Today",
+        isBreaking = false
+      ),
+      NewsArticleEntity(
+        id = 2,
+        title = "All-Party Delegation Submits Memorandum on Port",
+        summary = "Rail connectivity urged.",
+        content = "Detailed content.",
+        category = "Politics",
+        source = "Press Club",
+        publishedAt = "Today",
+        isBreaking = false
+      ),
+      NewsArticleEntity(
+        id = 3,
+        title = "Grand Chandipur Beach Festival Announced",
+        summary = "Five-day coastal celebration.",
+        content = "Detailed content.",
+        category = "Events",
+        source = "District Culture Council",
+        publishedAt = "Today",
+        isBreaking = false
+      )
+    )
+
+    val localNews = news.filter { it.category.equals("Local News", ignoreCase = true) }
+    assertEquals(1, localNews.size)
+    assertEquals("Local News", localNews.first().category)
+
+    val politics = news.filter { it.category.equals("Politics", ignoreCase = true) }
+    assertEquals(1, politics.size)
+    assertEquals("Politics", politics.first().category)
+
+    val events = news.filter { it.category.equals("Events", ignoreCase = true) }
+    assertEquals(1, events.size)
+    assertEquals("Events", events.first().category)
+  }
+
+  @Test
+  fun testEmergencyContactDialSanitization() {
+    val rawLandline = "06782-255010"
+    val sanitizedLandline = rawLandline.replace(Regex("[^0-9+]"), "")
+    assertEquals("06782255010", sanitizedLandline)
+
+    val rawTollFree = "112 / 101"
+    val cleanEmergencyNumber = "112".replace(Regex("[^0-9+]"), "")
+    assertEquals("112", cleanEmergencyNumber)
+  }
 }
+

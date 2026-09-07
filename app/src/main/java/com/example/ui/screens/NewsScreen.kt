@@ -89,6 +89,9 @@ fun NewsScreen(
 ) {
     val categories = listOf(
         "All",
+        "Local News",
+        "Politics",
+        "Events",
         "Civic & Transport",
         "Coastal & Tourism",
         "Weather Alert",

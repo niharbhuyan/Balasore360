@@ -1,7 +1,9 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,10 +22,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Water
@@ -37,10 +40,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -86,11 +100,18 @@ fun WeatherScreen(
     modifier: Modifier = Modifier
 ) {
     if (weather == null) {
-        Box(
+        LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentPadding = PaddingValues(16.dp, 80.dp, 16.dp, 90.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Loading Balasore meteorological data...", style = MaterialTheme.typography.bodyMedium, color = BentoSlate500)
+            item {
+                Text(
+                    text = "Loading Balasore meteorological data...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = BentoSlate500
+                )
+            }
         }
         return
     }
@@ -393,7 +414,7 @@ fun BentoChandipurTideCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.DirectionsWalk,
+                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
                         contentDescription = null,
                         tint = BentoPrimaryBlue,
                         modifier = Modifier.size(20.dp)
@@ -590,6 +611,10 @@ fun BentoDailyForecastCard(
 ) {
     if (forecasts.isEmpty()) return
 
+    val fiveDayForecasts = remember(forecasts) { forecasts.take(5) }
+    var selectedDayIndex by remember { mutableStateOf(0) }
+    val activeItem = fiveDayForecasts.getOrNull(selectedDayIndex) ?: fiveDayForecasts.firstOrNull()
+
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
@@ -612,18 +637,23 @@ fun BentoDailyForecastCard(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("📅", fontSize = 16.sp)
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ShowChart,
+                                contentDescription = null,
+                                tint = BentoPrimaryBlue,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "7-Day Weather Forecast",
+                            text = "5-Day Weather Forecast",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = BentoSlate900
                         )
                         Text(
-                            text = "Stored in Room SQLite for offline viewing",
+                            text = "Interactive temperature curve & activity planner",
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 11.sp,
                             color = BentoSlate500
@@ -636,7 +666,7 @@ fun BentoDailyForecastCard(
                     color = BentoGreenBg
                 ) {
                     Text(
-                        text = "ROOM CACHED",
+                        text = "5-DAY TREND",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp,
@@ -650,20 +680,297 @@ fun BentoDailyForecastCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // Chart Visualization
+            WeatherForecastChart(
+                forecasts = fiveDayForecasts,
+                selectedIndex = selectedDayIndex,
+                onSelectDay = { selectedDayIndex = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(170.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(BentoBlueLight.copy(alpha = 0.4f))
+                    .padding(horizontal = 8.dp, vertical = 10.dp)
+            )
+
+            // Selected Day Planner Detail Pill
+            if (activeItem != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = BentoCardWhite,
+                    border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.25f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "${activeItem.dayOfWeek} Activity Planning:",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate900
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = activeItem.weatherDescription,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = BentoPrimaryBlue,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            val recommendation = when {
+                                activeItem.weatherCode in 51..67 || activeItem.weatherCode in 80..82 || activeItem.weatherCode >= 95 ->
+                                    "🌧️ Rain expected. Indoor day recommended: Visit Remuna Khirachora Gopinath or Emami Jagannath temple."
+                                activeItem.maxTemp >= 34.0 ->
+                                    "☀️ Hot afternoon (${activeItem.maxTemp.toInt()}°C). Best visiting Chandipur / Talasari beach early morning or after 4 PM."
+                                else ->
+                                    "🌤️ Pleasant coastal weather (${activeItem.maxTemp.toInt()}°C)! Ideal for Panchalingeswar hill trek or beach strolls."
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = recommendation,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                color = BentoSlate700
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 5-Day Horizontal Selection Cards
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(forecasts) { item ->
-                    DailyForecastItem(item)
+                items(fiveDayForecasts.size) { index ->
+                    val item = fiveDayForecasts[index]
+                    DailyForecastItem(
+                        item = item,
+                        isSelected = index == selectedDayIndex,
+                        onClick = { selectedDayIndex = index }
+                    )
                 }
             }
         }
     }
 }
 
+/**
+ * Clean visual line and area chart showing 5-day Max and Min temperatures
+ * with smooth bezier curves, gradient fills, and data points.
+ */
 @Composable
-private fun DailyForecastItem(item: DailyForecastEntity) {
+fun WeatherForecastChart(
+    forecasts: List<DailyForecastEntity>,
+    selectedIndex: Int,
+    onSelectDay: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (forecasts.isEmpty()) return
+
+    val maxTemps = remember(forecasts) { forecasts.map { it.maxTemp.toFloat() } }
+    val minTemps = remember(forecasts) { forecasts.map { it.minTemp.toFloat() } }
+
+    val highest = remember(maxTemps) { (maxTemps.maxOrNull() ?: 35f) + 2f }
+    val lowest = remember(minTemps) { (minTemps.minOrNull() ?: 20f) - 2f }
+    val tempRange = (highest - lowest).coerceAtLeast(1f)
+
+    Box(
+        modifier = modifier.testTag("forecast_temperature_chart")
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+            val n = forecasts.size
+            if (n < 2) return@Canvas
+
+            val stepX = width / (n - 1)
+            val paddingY = 24.dp.toPx()
+            val availableHeight = height - (paddingY * 2)
+
+            fun getY(temp: Float): Float {
+                val ratio = (temp - lowest) / tempRange
+                return height - paddingY - (ratio * availableHeight)
+            }
+
+            // Draw horizontal subtle grid guidelines
+            val gridLines = 3
+            for (i in 0..gridLines) {
+                val lineY = paddingY + (i * availableHeight / gridLines)
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.05f),
+                    start = Offset(0f, lineY),
+                    end = Offset(width, lineY),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Generate Path for Max Temps Area and Line
+            val maxPath = Path()
+            val maxAreaPath = Path()
+            val maxPoints = mutableListOf<Offset>()
+
+            for (i in 0 until n) {
+                val x = i * stepX
+                val y = getY(maxTemps[i])
+                val pt = Offset(x, y)
+                maxPoints.add(pt)
+
+                if (i == 0) {
+                    maxPath.moveTo(pt.x, pt.y)
+                    maxAreaPath.moveTo(pt.x, height)
+                    maxAreaPath.lineTo(pt.x, pt.y)
+                } else {
+                    val prev = maxPoints[i - 1]
+                    val cx = (prev.x + pt.x) / 2f
+                    maxPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
+                    maxAreaPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
+                }
+            }
+            maxAreaPath.lineTo(maxPoints.last().x, height)
+            maxAreaPath.close()
+
+            // Draw Max Temp subtle gradient fill
+            drawPath(
+                path = maxAreaPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        BentoPrimaryBlue.copy(alpha = 0.28f),
+                        BentoPrimaryBlue.copy(alpha = 0.02f)
+                    )
+                ),
+                style = Fill
+            )
+
+            // Draw Max Temp Line
+            drawPath(
+                path = maxPath,
+                color = BentoPrimaryBlue,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // Generate Path for Min Temps Line
+            val minPath = Path()
+            val minPoints = mutableListOf<Offset>()
+
+            for (i in 0 until n) {
+                val x = i * stepX
+                val y = getY(minTemps[i])
+                val pt = Offset(x, y)
+                minPoints.add(pt)
+
+                if (i == 0) {
+                    minPath.moveTo(pt.x, pt.y)
+                } else {
+                    val prev = minPoints[i - 1]
+                    val cx = (prev.x + pt.x) / 2f
+                    minPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
+                }
+            }
+
+            // Draw Min Temp Line (Cool Cyan)
+            drawPath(
+                path = minPath,
+                color = Color(0xFF0284C7),
+                style = Stroke(
+                    width = 2.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+            )
+
+            // Draw points and labels
+            for (i in 0 until n) {
+                val maxPt = maxPoints[i]
+                val minPt = minPoints[i]
+                val isSelected = i == selectedIndex
+
+                // Highlight selected column indicator
+                if (isSelected) {
+                    drawLine(
+                        color = BentoPrimaryBlue.copy(alpha = 0.35f),
+                        start = Offset(maxPt.x, 0f),
+                        end = Offset(maxPt.x, height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+
+                // Max Temp Point
+                drawCircle(
+                    color = if (isSelected) Color(0xFFEA580C) else BentoPrimaryBlue,
+                    radius = if (isSelected) 6.dp.toPx() else 4.dp.toPx(),
+                    center = maxPt
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = if (isSelected) 3.dp.toPx() else 2.dp.toPx(),
+                    center = maxPt
+                )
+
+                // Min Temp Point
+                drawCircle(
+                    color = Color(0xFF0284C7),
+                    radius = if (isSelected) 5.dp.toPx() else 3.5.dp.toPx(),
+                    center = minPt
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = if (isSelected) 2.5.dp.toPx() else 1.8.dp.toPx(),
+                    center = minPt
+                )
+
+                // Draw Text labels via nativeCanvas
+                drawContext.canvas.nativeCanvas.apply {
+                    val textPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.DKGRAY
+                        textSize = 28f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        isAntiAlias = true
+                        typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+                    }
+
+                    // Max temp text above point
+                    textPaint.color = if (isSelected) android.graphics.Color.parseColor("#EA580C") else android.graphics.Color.parseColor("#1D4ED8")
+                    drawText("${maxTemps[i].toInt()}°", maxPt.x, maxPt.y - 12f, textPaint)
+
+                    // Min temp text below point
+                    textPaint.textSize = 24f
+                    textPaint.color = android.graphics.Color.parseColor("#0284C7")
+                    drawText("${minTemps[i].toInt()}°", minPt.x, minPt.y + 30f, textPaint)
+                }
+            }
+        }
+
+        // Invisible touch targets for selecting days on the chart
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            for (i in 0 until forecasts.size) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable { onSelectDay(i) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyForecastItem(
+    item: DailyForecastEntity,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
     val iconEmoji = when {
         item.weatherCode in 0..1 -> "☀️"
         item.weatherCode in 2..3 -> "⛅"
@@ -676,9 +983,15 @@ private fun DailyForecastItem(item: DailyForecastEntity) {
 
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = BentoBlueLight.copy(alpha = 0.6f),
-        border = BorderStroke(1.dp, BentoBorder),
-        modifier = Modifier.width(96.dp)
+        color = if (isSelected) BentoPrimaryBlue.copy(alpha = 0.12f) else BentoBlueLight.copy(alpha = 0.6f),
+        border = BorderStroke(
+            if (isSelected) 1.5.dp else 1.dp,
+            if (isSelected) BentoPrimaryBlue else BentoBorder
+        ),
+        modifier = Modifier
+            .width(96.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -687,7 +1000,7 @@ private fun DailyForecastItem(item: DailyForecastEntity) {
             Text(
                 text = item.dayOfWeek,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900
+                color = if (isSelected) BentoPrimaryBlue else BentoSlate900
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
