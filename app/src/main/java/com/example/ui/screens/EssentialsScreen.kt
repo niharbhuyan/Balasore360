@@ -85,6 +85,7 @@ import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
+import com.example.ui.components.BalasoreSocialHubCard
 import com.example.ui.theme.BentoSlate900
 
 enum class EmergencyCategory(val label: String, val odiaLabel: String) {
@@ -889,6 +890,13 @@ fun EssentialsScreen(
                     )
                 }
             }
+        }
+
+        // ==========================================
+        // OFFICIAL SOCIAL MEDIA PLATFORMS
+        // ==========================================
+        item {
+            BalasoreSocialHubCard()
         }
 
         // ==========================================

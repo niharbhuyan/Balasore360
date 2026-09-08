@@ -85,10 +85,30 @@ object FcmManager {
             val options = FirebaseOptions.Builder()
                 .setApplicationId("1:613265325843:android:balasoreliveapp")
                 .setProjectId("balasore-live")
+                .setGcmSenderId("613265325843")
                 .setApiKey("AIzaSyFallbackKeyForBalasoreLiveApp2026")
                 .build()
             FirebaseApp.initializeApp(context, options)
-            Log.i(TAG, "Firebase initialized with fallback configuration")
+            Log.i(TAG, "Firebase initialized with fallback configuration (Sender ID: 613265325843)")
+        }
+    }
+
+    /**
+     * Manually requests a fresh Firebase Cloud Messaging registration token.
+     */
+    fun refreshToken(context: Context) {
+        try {
+            ensureFirebaseInitialized(context)
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token ->
+                    Log.d(TAG, "FCM registration token refreshed: $token")
+                    saveToken(context, token)
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Failed to refresh FCM registration token", e)
+                }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error during FCM token refresh: ${e.message}")
         }
     }
 

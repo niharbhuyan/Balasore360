@@ -18,6 +18,9 @@ interface NewsDao {
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1 ORDER BY timestamp DESC")
     fun getBookmarkedNews(): Flow<List<NewsArticleEntity>>
 
+    @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
+    suspend fun getBookmarkedNewsSync(): List<NewsArticleEntity>
+
     @Query("SELECT * FROM news_articles WHERE isBreaking = 1 ORDER BY timestamp DESC LIMIT 3")
     fun getBreakingNews(): Flow<List<NewsArticleEntity>>
 

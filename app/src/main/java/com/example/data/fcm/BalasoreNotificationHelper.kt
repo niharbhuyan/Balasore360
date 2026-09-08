@@ -27,8 +27,8 @@ object BalasoreNotificationHelper {
     const val EXTRA_TARGET_TAB = "target_tab"
     const val EXTRA_ARTICLE_ID = "article_id"
 
-    private const val NOTIFICATION_ID_WEATHER_BASE = 2001
-    private const val NOTIFICATION_ID_NEWS_BASE = 3001
+    const val NOTIFICATION_ID_WEATHER_BASE = 2001
+    const val NOTIFICATION_ID_NEWS_BASE = 3001
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

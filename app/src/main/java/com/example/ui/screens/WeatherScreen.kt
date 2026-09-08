@@ -27,6 +27,8 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Water
@@ -35,10 +37,14 @@ import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,10 +70,16 @@ import com.example.data.local.DailyForecastEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
+import com.example.data.model.BalasoreWeatherAlert
+import com.example.ui.components.FriendlyEmptyStateCard
+import com.example.ui.components.FriendlyEmptyStateType
 import com.example.ui.components.ReviewsSection
+import com.example.ui.components.SearchEmptyStateCard
+import com.example.ui.components.TimeSensitiveWeatherAlertCard
 import com.example.ui.theme.AlertCyclone
 import com.example.ui.theme.AlertNormal
 import com.example.ui.theme.AlertWarning
+import com.example.ui.theme.BentoBlueLight
 import com.example.ui.theme.BentoBlueLight
 import com.example.ui.theme.BentoBluePill
 import com.example.ui.theme.BentoBlueText
@@ -89,83 +101,308 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherScreen(
     weather: WeatherCacheEntity?,
     dailyForecasts: List<DailyForecastEntity> = emptyList(),
+    timeSensitiveAlerts: List<BalasoreWeatherAlert> = emptyList(),
     currentUser: UserEntity? = null,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     onOpenAuth: () -> Unit = {},
     getReviewsForWeather: (String) -> Flow<List<ReviewEntity>> = { kotlinx.coroutines.flow.emptyFlow() },
     onSubmitWeatherReview: (weatherId: String, alertTitle: String, rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _, _, _ -> },
+    searchQuery: String = "",
+    onClearSearch: () -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onEmergencyCallClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    if (weather == null) {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp, 80.dp, 16.dp, 90.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Text(
-                    text = "Loading Balasore meteorological data...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = BentoSlate500
-                )
-            }
+    val pullToRefreshState = rememberPullToRefreshState()
+    val query = searchQuery.trim()
+    val isSearching = query.isNotBlank()
+
+    // Determine whether current atmospheric and marine conditions match the search keyword
+    val weatherMatchesCurrent = remember(weather, query) {
+        if (!isSearching || weather == null) true
+        else {
+            weather.weatherDescription.contains(query, ignoreCase = true) ||
+            weather.alertTitle.contains(query, ignoreCase = true) ||
+            weather.alertMessage.contains(query, ignoreCase = true) ||
+            weather.tideState.contains(query, ignoreCase = true) ||
+            weather.tideDescription.contains(query, ignoreCase = true) ||
+            "${weather.temperature.toInt()}".contains(query) ||
+            "${weather.windSpeed.toInt()}".contains(query) ||
+            "${weather.humidity}".contains(query) ||
+            weather.sunrise.contains(query, ignoreCase = true) ||
+            weather.sunset.contains(query, ignoreCase = true)
         }
-        return
     }
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 90.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        // Bento Weather Primary Tile
-        item {
-            BentoWeatherHeroCard(weather = weather)
-        }
-
-        // Coastal Alert Bento Card
-        item {
-            BentoCoastalAlertCard(weather = weather)
-        }
-
-        // Chandipur Vanishing Sea Tide Bento Card
-        item {
-            BentoChandipurTideCard(weather = weather)
-        }
-
-        // Atmospheric & Marine Parameters Grid
-        item {
-            BentoAtmosphericMetricsCard(weather = weather)
-        }
-
-        // 7-Day Weather Forecast cached in Room
-        if (dailyForecasts.isNotEmpty()) {
-            item {
-                BentoDailyForecastCard(forecasts = dailyForecasts)
+    // Filter 7-day daily forecasts matching day of week, conditions, or temperature
+    val matchingDailyForecasts = remember(dailyForecasts, query) {
+        if (!isSearching) dailyForecasts
+        else {
+            dailyForecasts.filter { forecast ->
+                forecast.dayOfWeek.contains(query, ignoreCase = true) ||
+                forecast.weatherDescription.contains(query, ignoreCase = true) ||
+                forecast.date.contains(query, ignoreCase = true) ||
+                "${forecast.maxTemp.toInt()}".contains(query) ||
+                "${forecast.minTemp.toInt()}".contains(query) ||
+                "${forecast.uvIndex.toInt()}".contains(query)
             }
         }
+    }
 
-        // Tourism Weather Advisory Card
-        item {
-            BentoTourismAdvisoryCard(weather = weather)
+    // Filter time-sensitive weather alerts matching search query
+    val matchingAlerts = remember(timeSensitiveAlerts, query) {
+        if (!isSearching) timeSensitiveAlerts
+        else {
+            timeSensitiveAlerts.filter { alert ->
+                alert.title.contains(query, ignoreCase = true) ||
+                alert.odiaTitle.contains(query, ignoreCase = true) ||
+                alert.summary.contains(query, ignoreCase = true) ||
+                alert.detailedDescription.contains(query, ignoreCase = true) ||
+                alert.category.name.contains(query, ignoreCase = true) ||
+                alert.severity.name.contains(query, ignoreCase = true) ||
+                alert.affectedZones.any { it.zoneName.contains(query, ignoreCase = true) || it.odiaName.contains(query, ignoreCase = true) }
+            }
         }
+    }
 
-        // Community Weather Reports & Alert Feedback
-        item {
-            ReviewsSection(
-                targetType = "WEATHER",
-                targetId = "balasore_weather_today",
-                targetTitle = "Live Weather Alerts & Ground Reports",
-                reviewsFlow = getReviewsForWeather("balasore_weather_today"),
-                currentUser = currentUser,
-                onOpenAuth = onOpenAuth,
-                onSubmitReview = { rating, comment, guestName ->
-                    onSubmitWeatherReview("balasore_weather_today", "Balasore Weather Alerts", rating, comment, guestName)
-                }
+    val hasAnyWeatherMatch = weatherMatchesCurrent || matchingDailyForecasts.isNotEmpty() || matchingAlerts.isNotEmpty()
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                containerColor = BentoCardWhite,
+                color = BentoPrimaryBlue
             )
+        },
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("weather_pull_to_refresh")
+    ) {
+        if (weather == null) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp, 80.dp, 16.dp, 90.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Text(
+                        text = "Loading Balasore meteorological data...\nPull down to refresh.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BentoSlate500
+                    )
+                }
+            }
+        } else if (isSearching && !hasAnyWeatherMatch) {
+            // Search Empty State for Weather tab
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 90.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item {
+                    SearchEmptyStateCard(
+                        searchQuery = searchQuery,
+                        category = "Balasore Weather & Marine",
+                        feedType = "weather conditions or forecasts",
+                        onClearSearch = onClearSearch,
+                        onResetCategory = onClearSearch,
+                        onSuggestionClick = onSearchQueryChange,
+                        suggestions = listOf("Rain", "Thunderstorm", "Cyclone", "Tide", "Chandipur", "Sunny", "Wind")
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 90.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Header row with pull-to-refresh prompt
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (isSearching) "Weather Search Results" else "Meteorological Radar & Marine Alert",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color = BentoSlate700
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Pull to refresh weather",
+                                tint = BentoSlate400,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = if (isRefreshing) "Refreshing satellite data..." else "Pull down to refresh",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                                color = BentoSlate400
+                            )
+                        }
+                    }
+                }
+
+                // Active search banner when filtering weather feed
+                if (isSearching) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = BentoBlueLight,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("weather_search_filter_banner")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null,
+                                        tint = BentoPrimaryBlue,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = "Filtering weather for \"$searchQuery\"",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
+                                Text(
+                                    text = "${if (weatherMatchesCurrent) 1 else 0} live • ${matchingDailyForecasts.size} forecasts",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate700
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Bento Weather Primary Tile (when matches or when not filtering)
+                if (weatherMatchesCurrent) {
+                    item {
+                        BentoWeatherHeroCard(weather = weather)
+                    }
+
+                    // Time-Sensitive Weather Alerts for Balasore Region
+                    if (matchingAlerts.isNotEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "TIME-SENSITIVE WEATHER ALERTS",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.ExtraBold,
+                                                letterSpacing = 1.sp
+                                            ),
+                                            color = BentoSlate700
+                                        )
+                                    }
+                                    Text(
+                                        text = "${matchingAlerts.size} Active Bulletin${if (matchingAlerts.size > 1) "s" else ""}",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
+
+                                matchingAlerts.forEach { alertItem ->
+                                    TimeSensitiveWeatherAlertCard(
+                                        alert = alertItem,
+                                        initialExpanded = alertItem.severity.isUrgent,
+                                        onEmergencyCallClick = onEmergencyCallClick
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Coastal Alert Bento Card
+                    item {
+                        BentoCoastalAlertCard(weather = weather)
+                    }
+
+                    // Chandipur Vanishing Sea Tide Bento Card
+                    item {
+                        BentoChandipurTideCard(weather = weather)
+                    }
+
+                    // Atmospheric & Marine Parameters Grid
+                    item {
+                        BentoAtmosphericMetricsCard(weather = weather)
+                    }
+                }
+
+                // 7-Day Weather Forecast cached in Room (filtered according to keyword)
+                if (matchingDailyForecasts.isNotEmpty()) {
+                    item {
+                        BentoDailyForecastCard(forecasts = matchingDailyForecasts)
+                    }
+                }
+
+                // Tourism Weather Advisory Card (show when not searching or when current matches)
+                if (!isSearching) {
+                    item {
+                        BentoTourismAdvisoryCard(weather = weather)
+                    }
+
+                    // Community Weather Reports & Alert Feedback
+                    item {
+                        ReviewsSection(
+                            targetType = "WEATHER",
+                            targetId = "balasore_weather_today",
+                            targetTitle = "Live Weather Alerts & Ground Reports",
+                            reviewsFlow = getReviewsForWeather("balasore_weather_today"),
+                            currentUser = currentUser,
+                            onOpenAuth = onOpenAuth,
+                            onSubmitReview = { rating, comment, guestName ->
+                                onSubmitWeatherReview("balasore_weather_today", "Balasore Weather Alerts", rating, comment, guestName)
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

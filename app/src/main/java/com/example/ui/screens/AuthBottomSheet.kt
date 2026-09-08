@@ -78,6 +78,8 @@ import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.components.SocialMediaQuickRow
+import com.example.ui.components.openSocialMediaLink
 import com.example.ui.viewmodel.AuthMode
 import java.io.File
 import java.io.FileOutputStream
@@ -312,6 +314,8 @@ private fun ProfileView(
     onEdit: () -> Unit,
     onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -435,6 +439,18 @@ private fun ProfileView(
                 Text(text = "Log Out")
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Official Balasore 360 Channels",
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+            color = BentoSlate900
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        SocialMediaQuickRow(
+            onPlatformClick = { openSocialMediaLink(context, it.webUrl) },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -951,5 +967,19 @@ private fun LoggedOutPrompt(
         ) {
             Text("Create Account", color = BentoPrimaryBlue, fontWeight = FontWeight.Bold)
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Connect with Balasore 360",
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = BentoSlate700
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        val context = LocalContext.current
+        SocialMediaQuickRow(
+            onPlatformClick = { openSocialMediaLink(context, it.webUrl) },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

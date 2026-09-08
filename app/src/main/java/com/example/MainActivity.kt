@@ -1,10 +1,15 @@
 package com.example
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,12 +53,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.fcm.BalasoreNotificationHelper
+import com.example.data.fcm.FcmManager
 import com.example.ui.components.AppHeader
 import com.example.ui.components.MainScrollableTabRow
 import com.example.ui.screens.AuthBottomSheet
@@ -79,6 +87,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        BalasoreNotificationHelper.createNotificationChannels(this)
+        FcmManager.initialize(this.applicationContext)
         handleNotificationIntent(intent)
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,11 +104,30 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleNotificationIntent(intent: Intent?) {
-        val targetTab = intent?.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
-        if (targetTab == "WEATHER") {
-            viewModel.selectTab(AppTab.WEATHER)
-        } else if (targetTab == "NEWS") {
-            viewModel.selectTab(AppTab.NEWS)
+        if (intent == null) return
+        val targetTab = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
+            ?: intent.getStringExtra("target_tab")
+            ?: intent.getStringExtra("type")
+
+        when {
+            targetTab?.contains("WEATHER", ignoreCase = true) == true -> {
+                viewModel.selectTab(AppTab.WEATHER)
+                if (intent.hasExtra("alert_title")) {
+                    viewModel.openAlertsSheet()
+                }
+            }
+            targetTab?.contains("NEWS", ignoreCase = true) == true ||
+            targetTab?.contains("BREAKING", ignoreCase = true) == true -> {
+                viewModel.selectTab(AppTab.NEWS)
+                val articleId = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_ARTICLE_ID)
+                    ?: intent.getStringExtra("article_id")
+                if (!articleId.isNullOrBlank()) {
+                    val idLong = articleId.toLongOrNull()
+                    if (idLong != null) {
+                        viewModel.selectArticleById(idLong)
+                    }
+                }
+            }
         }
     }
 }
@@ -110,11 +139,14 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val weather by viewModel.weatherState.collectAsStateWithLifecycle()
     val dailyForecasts by viewModel.dailyForecasts.collectAsStateWithLifecycle()
+    val filteredDailyForecasts by viewModel.filteredDailyForecasts.collectAsStateWithLifecycle()
     val hotspots by viewModel.filteredHotspots.collectAsStateWithLifecycle()
     val news by viewModel.filteredNews.collectAsStateWithLifecycle()
+    val weatherMatchesCount by viewModel.weatherMatchesCount.collectAsStateWithLifecycle()
     val weatherAlertsEnabled by viewModel.weatherAlertsEnabled.collectAsStateWithLifecycle()
     val breakingNewsEnabled by viewModel.breakingNewsEnabled.collectAsStateWithLifecycle()
     val fcmToken by viewModel.fcmToken.collectAsStateWithLifecycle()
+    val timeSensitiveAlerts by viewModel.timeSensitiveAlerts.collectAsStateWithLifecycle()
 
     val breakingNewsList = remember(news) {
         news.filter {
@@ -127,6 +159,23 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
     val hasActiveAlerts = hasActiveWeatherAlert || breakingNewsList.isNotEmpty()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.showUserNotice("Notifications enabled for Balasore alerts")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     LaunchedEffect(uiState.userNotice) {
         val notice = uiState.userNotice
@@ -156,6 +205,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                     selectedTab = uiState.selectedTab,
                     hotspotsCount = hotspots.size,
                     newsCount = news.size,
+                    weatherMatchesCount = weatherMatchesCount,
                     onSelectTab = { viewModel.selectTab(it) },
                     onToggleTheme = { viewModel.toggleTheme() },
                     onAlertsClick = { viewModel.openAlertsSheet() },
@@ -236,15 +286,15 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.refreshData() },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag("main_pull_to_refresh")
-            ) {
-                when (uiState.selectedTab) {
-                    AppTab.HOTSPOTS -> {
+            when (uiState.selectedTab) {
+                AppTab.HOTSPOTS -> {
+                    PullToRefreshBox(
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = { viewModel.refreshData() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("main_pull_to_refresh")
+                    ) {
                         TourismScreen(
                             hotspots = hotspots,
                             weather = weather,
@@ -265,47 +315,55 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                             onSearchQueryChange = { viewModel.setSearchQuery(it) }
                         )
                     }
-                    AppTab.NEWS -> {
-                        NewsScreen(
-                            articles = news,
-                            selectedCategory = uiState.newsCategory,
-                            searchQuery = uiState.newsSearchQuery,
-                            selectedArticle = uiState.selectedArticle,
-                            currentUser = currentUser,
-                            onOpenAuth = { viewModel.openAuthSheet() },
-                            getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
-                            onSubmitArticleReview = { id, title, rating, comment, guestName ->
-                                viewModel.submitReview("NEWS", id, title, rating, comment, guestName)
-                            },
-                            onCategorySelect = { viewModel.setNewsCategory(it) },
-                            onSearchQueryChange = { viewModel.setNewsSearchQuery(it) },
-                            onArticleSelect = { viewModel.selectArticle(it) },
-                            onToggleBookmark = { viewModel.toggleBookmark(it) }
-                        )
-                    }
-                    AppTab.WEATHER -> {
-                        WeatherScreen(
-                            weather = weather,
-                            dailyForecasts = dailyForecasts,
-                            currentUser = currentUser,
-                            onOpenAuth = { viewModel.openAuthSheet() },
-                            getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
-                            onSubmitWeatherReview = { id, title, rating, comment, guestName ->
-                                viewModel.submitReview("WEATHER", id, title, rating, comment, guestName)
-                            }
-                        )
-                    }
-                    AppTab.ESSENTIALS -> {
-                        EssentialsScreen(
-                            weatherAlertsEnabled = weatherAlertsEnabled,
-                            breakingNewsEnabled = breakingNewsEnabled,
-                            onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
-                            onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
-                            onOpenAlertCenter = { viewModel.openAlertsSheet() },
-                            onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
-                            onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() }
-                        )
-                    }
+                }
+                AppTab.NEWS -> {
+                    NewsScreen(
+                        articles = news,
+                        selectedCategory = uiState.newsCategory,
+                        searchQuery = uiState.searchQuery,
+                        selectedArticle = uiState.selectedArticle,
+                        currentUser = currentUser,
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = { viewModel.refreshNewsFeed() },
+                        onOpenAuth = { viewModel.openAuthSheet() },
+                        getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
+                        onSubmitArticleReview = { id, title, rating, comment, guestName ->
+                            viewModel.submitReview("NEWS", id, title, rating, comment, guestName)
+                        },
+                        onCategorySelect = { viewModel.setNewsCategory(it) },
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                        onArticleSelect = { viewModel.selectArticle(it) },
+                        onToggleBookmark = { viewModel.toggleBookmark(it) }
+                    )
+                }
+                AppTab.WEATHER -> {
+                    WeatherScreen(
+                        weather = weather,
+                        dailyForecasts = filteredDailyForecasts,
+                        timeSensitiveAlerts = timeSensitiveAlerts,
+                        currentUser = currentUser,
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = { viewModel.refreshWeatherFeed() },
+                        onOpenAuth = { viewModel.openAuthSheet() },
+                        getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
+                        onSubmitWeatherReview = { id, title, rating, comment, guestName ->
+                            viewModel.submitReview("WEATHER", id, title, rating, comment, guestName)
+                        },
+                        searchQuery = uiState.searchQuery,
+                        onClearSearch = { viewModel.clearSearchQuery() },
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) }
+                    )
+                }
+                AppTab.ESSENTIALS -> {
+                    EssentialsScreen(
+                        weatherAlertsEnabled = weatherAlertsEnabled,
+                        breakingNewsEnabled = breakingNewsEnabled,
+                        onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
+                        onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
+                        onOpenAlertCenter = { viewModel.openAlertsSheet() },
+                        onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
+                        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() }
+                    )
                 }
             }
         }

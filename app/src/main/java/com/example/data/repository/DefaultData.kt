@@ -394,4 +394,60 @@ object DefaultData {
             timestamp = System.currentTimeMillis() - 86400000L * 1
         )
     )
+
+    fun getInitialWeatherAlerts(): List<com.example.data.model.BalasoreWeatherAlert> {
+        val now = System.currentTimeMillis()
+        val hourMs = 3600_000L
+        return listOf(
+            com.example.data.model.BalasoreWeatherAlert(
+                id = "alert_cyclone_surge_2026",
+                title = "North Bay Deep Depression & Gale Wind Warning",
+                odiaTitle = "ଉତ୍ତର ବଙ୍ଗୋପସାଗରରେ ଗଭୀର ଅବପାତ: ବଳରାମଗଡ଼ି ଓ ଚାନ୍ଦିପୁରରେ ସତର୍କତା",
+                summary = "Squally winds reaching 45–65 kmph likely along Balasore coastline. High tidal swells expected near Chandipur and Balaramgadi estuary.",
+                detailedDescription = "A well-marked low-pressure area over Northwest Bay of Bengal off Odisha-West Bengal coast has concentrated into a Deep Depression. Sea conditions will be rough to very rough with wave heights up to 3.5 meters.",
+                category = com.example.data.model.WeatherAlertCategory.CYCLONE,
+                severity = com.example.data.model.AlertSeverity.WARNING,
+                affectedZones = listOf(
+                    com.example.data.model.BalasoreZone.COASTAL_CHANDIPUR,
+                    com.example.data.model.BalasoreZone.TALASARI_SUBARNAREKHA,
+                    com.example.data.model.BalasoreZone.KASAFAL_BAHANAGA
+                ),
+                issuingAuthority = "IMD Meteorological Centre, Bhubaneswar",
+                validFromMillis = now - (2 * hourMs),
+                validUntilMillis = now + (6 * hourMs),
+                issuedAtMillis = now - (2 * hourMs),
+                actionableInstructions = listOf(
+                    "Total ban on fishermen venturing into deep sea along Balasore coast.",
+                    "Tourists are strictly advised not to walk onto the muddy seabed during receding tide.",
+                    "Secure small country fishing boats and trawlers at Balaramgadi harbor.",
+                    "Keep emergency flashlights and storm kits accessible in coastal villages."
+                ),
+                emergencyContact = "Balasore Coastal Control Room: 06782-262244"
+            ),
+            com.example.data.model.BalasoreWeatherAlert(
+                id = "alert_kalbaisakhi_remuna",
+                title = "Nor'wester (କାଳବୈଶାଖୀ) & Lightning Nowcast Alert",
+                odiaTitle = "କାଳବୈଶାଖୀ ଓ ବଜ୍ରପାତ ଚେତାବନୀ (ରେମୁଣା, ବାଲେଶ୍ୱର ସହର, ନୀଳଗିରି)",
+                summary = "Moderate thunderstorm accompanied by frequent cloud-to-ground lightning and intense gusty wind (40–50 kmph) predicted in next 3 hours.",
+                detailedDescription = "Doppler radar observations indicate convective cloud clusters developing over Mayurbhanj moving east-southeast towards Balasore municipality and Nilagiri forest foothills.",
+                category = com.example.data.model.WeatherAlertCategory.THUNDERSTORM,
+                severity = com.example.data.model.AlertSeverity.ADVISORY,
+                affectedZones = listOf(
+                    com.example.data.model.BalasoreZone.BALASORE_TOWN,
+                    com.example.data.model.BalasoreZone.NILAGIRI_HILLS
+                ),
+                issuingAuthority = "RMC Kolkata & IMD Nowcast Radar",
+                validFromMillis = now - (30 * 60_000L),
+                validUntilMillis = now + (3 * hourMs),
+                issuedAtMillis = now - (30 * 60_000L),
+                actionableInstructions = listOf(
+                    "Stay indoors and away from open agricultural fields and metal poles.",
+                    "Do not take shelter under tall trees, especially in Nilagiri and Remuna areas.",
+                    "Unplug sensitive electrical devices and television antennas."
+                ),
+                emergencyContact = "District Disaster Management: 1077 / 06782-262244"
+            )
+        )
+    }
 }
+

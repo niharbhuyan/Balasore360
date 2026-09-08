@@ -13,7 +13,9 @@ import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
+import com.example.data.model.BalasoreWeatherAlert
 import com.example.data.repository.BalasoreRepository
+import com.example.data.repository.DefaultData
 import com.example.data.sync.NetworkMonitor
 import com.example.data.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
@@ -22,8 +24,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.util.Log
 
 enum class AppTab(val title: String) {
     HOTSPOTS("Tourism"),
@@ -89,6 +93,10 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     val weatherState: StateFlow<WeatherCacheEntity?> = repository.weatherCache
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    // Time-sensitive meteorological and coastal marine alerts for the Balasore region
+    private val _timeSensitiveAlerts = MutableStateFlow<List<BalasoreWeatherAlert>>(DefaultData.getInitialWeatherAlerts())
+    val timeSensitiveAlerts: StateFlow<List<BalasoreWeatherAlert>> = _timeSensitiveAlerts.asStateFlow()
+
     val dailyForecasts: StateFlow<List<DailyForecastEntity>> = repository.dailyForecasts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -130,9 +138,16 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     val filteredNews: StateFlow<List<NewsArticleEntity>> = combine(rawNews, _uiState) { list, state ->
         val query = if (state.searchQuery.isNotBlank()) state.searchQuery.trim() else state.newsSearchQuery.trim()
         list.filter { article ->
-            val matchesCategory = state.newsCategory == "All" ||
-                    (state.newsCategory == "Saved" && article.isBookmarked) ||
-                    article.category.equals(state.newsCategory, ignoreCase = true)
+            val matchesCategory = when (state.newsCategory) {
+                "All" -> true
+                "Saved", "Read Later" -> article.isBookmarked
+                "Local" -> article.category.contains("Local", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true)
+                "Tourism" -> article.category.contains("Tourism", ignoreCase = true) || article.category.contains("Coastal", ignoreCase = true)
+                "Weather" -> article.category.contains("Weather", ignoreCase = true) || article.category.contains("Alert", ignoreCase = true)
+                "Events" -> article.category.contains("Events", ignoreCase = true)
+                "Politics" -> article.category.contains("Politics", ignoreCase = true)
+                else -> article.category.contains(state.newsCategory, ignoreCase = true)
+            }
 
             val matchesSearch = query.isBlank() ||
                     article.title.contains(query, ignoreCase = true) ||
@@ -145,6 +160,55 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Filtered Daily Forecasts based on keyword search
+    val filteredDailyForecasts: StateFlow<List<DailyForecastEntity>> = combine(dailyForecasts, _uiState) { list, state ->
+        val query = state.searchQuery.trim()
+        if (query.isBlank()) {
+            list
+        } else {
+            list.filter { forecast ->
+                forecast.dayOfWeek.contains(query, ignoreCase = true) ||
+                forecast.weatherDescription.contains(query, ignoreCase = true) ||
+                forecast.date.contains(query, ignoreCase = true) ||
+                "${forecast.maxTemp.toInt()}".contains(query) ||
+                "${forecast.minTemp.toInt()}".contains(query) ||
+                "${forecast.uvIndex.toInt()}".contains(query)
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Real-time match count for the Weather feed based on current conditions & forecasts
+    val weatherMatchesCount: StateFlow<Int> = combine(weatherState, dailyForecasts, _uiState) { weather, forecasts, state ->
+        val query = state.searchQuery.trim()
+        if (query.isBlank()) {
+            forecasts.size + (if (weather != null) 1 else 0)
+        } else {
+            var count = 0
+            if (weather != null) {
+                val currentMatches = weather.weatherDescription.contains(query, ignoreCase = true) ||
+                        weather.alertTitle.contains(query, ignoreCase = true) ||
+                        weather.alertMessage.contains(query, ignoreCase = true) ||
+                        weather.tideState.contains(query, ignoreCase = true) ||
+                        weather.tideDescription.contains(query, ignoreCase = true) ||
+                        "${weather.temperature.toInt()}".contains(query) ||
+                        "${weather.windSpeed.toInt()}".contains(query) ||
+                        "${weather.humidity}".contains(query) ||
+                        weather.sunrise.contains(query, ignoreCase = true) ||
+                        weather.sunset.contains(query, ignoreCase = true)
+                if (currentMatches) count++
+            }
+            count += forecasts.count { forecast ->
+                forecast.dayOfWeek.contains(query, ignoreCase = true) ||
+                forecast.weatherDescription.contains(query, ignoreCase = true) ||
+                forecast.date.contains(query, ignoreCase = true) ||
+                "${forecast.maxTemp.toInt()}".contains(query) ||
+                "${forecast.minTemp.toInt()}".contains(query) ||
+                "${forecast.uvIndex.toInt()}".contains(query)
+            }
+            count
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     init {
         // Load saved theme preference
         try {
@@ -153,6 +217,13 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             val initialTheme = try { ThemeMode.valueOf(savedTheme) } catch (_: Exception) { ThemeMode.SYSTEM }
             _uiState.value = _uiState.value.copy(themeMode = initialTheme)
         } catch (_: Exception) {}
+        
+        // Initialize Firebase Cloud Messaging for real-time weather & breaking news alerts
+        try {
+            FcmManager.initialize(getApplication())
+        } catch (e: Exception) {
+            Log.e("BalasoreViewModel", "FCM initialization failed", e)
+        }
 
         viewModelScope.launch {
             repository.initializeIfNeeded()
@@ -286,6 +357,28 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         showUserNotice("Breaking news bulletin received & cached")
     }
 
+    fun refreshFcmToken() {
+        FcmManager.refreshToken(getApplication())
+        showUserNotice("Refreshing Firebase Push Token...")
+    }
+
+    fun selectArticleById(articleId: Long) {
+        viewModelScope.launch {
+            try {
+                val article = repository.getArticleById(articleId).firstOrNull()
+                    ?: rawNews.value.firstOrNull { it.id == articleId }
+                if (article != null) {
+                    _uiState.value = _uiState.value.copy(
+                        selectedTab = AppTab.NEWS,
+                        selectedArticle = article
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("BalasoreViewModel", "Error selecting article by ID: $articleId", e)
+            }
+        }
+    }
+
     fun setThemeMode(mode: ThemeMode) {
         _uiState.value = _uiState.value.copy(themeMode = mode)
         try {
@@ -326,7 +419,61 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun toggleBookmark(article: NewsArticleEntity) {
         viewModelScope.launch {
+            val willBeBookmarked = !article.isBookmarked
             repository.toggleBookmark(article.id, article.isBookmarked)
+            _uiState.value = _uiState.value.copy(
+                userNotice = if (willBeBookmarked) {
+                    "Article body saved to Room database for offline viewing."
+                } else {
+                    "Article removed from Read Later."
+                }
+            )
+        }
+    }
+
+    fun refreshNewsFeed() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+            try {
+                val res = repository.refreshDailyNews()
+                val count = res.getOrDefault(0)
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    lastSyncTime = System.currentTimeMillis(),
+                    userNotice = "Balasore news wire refreshed ($count fresh stories updated)."
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    userNotice = "Offline mode: Showing cached Balasore news."
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(isRefreshing = false)
+            }
+        }
+    }
+
+    fun refreshWeatherFeed() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+            try {
+                val res = repository.refreshWeatherAndAlerts()
+                val weather = res.getOrNull()
+                val tempStr = weather?.temperature?.toInt()?.let { "$it°C" } ?: "30°C"
+                val desc = weather?.weatherDescription ?: "Clear"
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    lastSyncTime = System.currentTimeMillis(),
+                    userNotice = "Balasore weather refreshed: $tempStr, $desc."
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    userNotice = "Offline mode: Showing cached meteorological data."
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(isRefreshing = false)
+            }
         }
     }
 

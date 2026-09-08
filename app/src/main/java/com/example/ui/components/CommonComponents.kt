@@ -9,6 +9,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -114,6 +116,7 @@ fun AppHeader(
     selectedTab: AppTab = AppTab.HOTSPOTS,
     hotspotsCount: Int = 0,
     newsCount: Int = 0,
+    weatherMatchesCount: Int = 0,
     onSelectTab: (AppTab) -> Unit = {},
     onToggleTheme: () -> Unit = {},
     onAlertsClick: () -> Unit = {},
@@ -421,7 +424,12 @@ fun AppHeader(
                 onValueChange = onSearchQueryChange,
                 placeholder = {
                     Text(
-                        text = "Search Balasore news & tourism spots...",
+                        text = when (selectedTab) {
+                            AppTab.NEWS -> "Filter Balasore news by keyword..."
+                            AppTab.WEATHER -> "Filter weather, tides & forecasts..."
+                            AppTab.HOTSPOTS -> "Filter tourism spots & heritage..."
+                            AppTab.ESSENTIALS -> "Filter emergency contacts & services..."
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = BentoSlate400,
                         maxLines = 1,
@@ -466,11 +474,63 @@ fun AppHeader(
                     .testTag("main_search_bar_input")
             )
 
+            // Quick Filter Keyword Suggestions Row (Instant 1-tap filtering for current feed)
+            if (searchQuery.isBlank()) {
+                val suggestions = when (selectedTab) {
+                    AppTab.NEWS -> listOf("Cyclone", "Chandipur", "Station", "Port", "Remuna", "Hospital")
+                    AppTab.WEATHER -> listOf("Rain", "Cyclone", "Tide", "Chandipur", "Sunny", "Wind")
+                    AppTab.HOTSPOTS -> listOf("Beach", "Temple", "Remuna", "Hills", "Kuldiha")
+                    AppTab.ESSENTIALS -> listOf("Police", "Hospital", "Ambulance", "Fire", "Disaster")
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Quick filter:",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 10.5.sp
+                        ),
+                        color = BentoSlate500,
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
+                    suggestions.forEach { keyword ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = BentoCardWhite,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            shadowElevation = 0.5.dp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onSearchQueryChange(keyword) }
+                                .testTag("header_quick_filter_${keyword.lowercase()}")
+                        ) {
+                            Text(
+                                text = keyword,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = BentoSlate700,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             // Results count badges when searching
             if (searchQuery.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -479,38 +539,6 @@ fun AppHeader(
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = BentoSlate500
                     )
-
-                    // Hotspots result count pill
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoCardWhite,
-                        border = BorderStroke(1.dp, if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoBorder),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { onSelectTab(AppTab.HOTSPOTS) }
-                            .testTag("search_filter_hotspots_pill")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Explore,
-                                contentDescription = null,
-                                tint = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoPrimaryBlue,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = "Hotspots ($hotspotsCount)",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = if (selectedTab == AppTab.HOTSPOTS) FontWeight.Bold else FontWeight.Medium,
-                                    fontSize = 11.sp
-                                ),
-                                color = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoSlate700
-                            )
-                        }
-                    }
 
                     // News result count pill
                     Surface(
@@ -540,6 +568,70 @@ fun AppHeader(
                                     fontSize = 11.sp
                                 ),
                                 color = if (selectedTab == AppTab.NEWS) Color.White else BentoSlate700
+                            )
+                        }
+                    }
+
+                    // Weather result count pill
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (selectedTab == AppTab.WEATHER) BentoPrimaryBlue else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (selectedTab == AppTab.WEATHER) BentoPrimaryBlue else BentoBorder),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onSelectTab(AppTab.WEATHER) }
+                            .testTag("search_filter_weather_pill")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cloud,
+                                contentDescription = null,
+                                tint = if (selectedTab == AppTab.WEATHER) Color.White else BentoPrimaryBlue,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "Weather ($weatherMatchesCount)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedTab == AppTab.WEATHER) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (selectedTab == AppTab.WEATHER) Color.White else BentoSlate700
+                            )
+                        }
+                    }
+
+                    // Hotspots result count pill
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (selectedTab == AppTab.HOTSPOTS) BentoPrimaryBlue else BentoBorder),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onSelectTab(AppTab.HOTSPOTS) }
+                            .testTag("search_filter_hotspots_pill")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Explore,
+                                contentDescription = null,
+                                tint = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoPrimaryBlue,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "Tourism ($hotspotsCount)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedTab == AppTab.HOTSPOTS) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (selectedTab == AppTab.HOTSPOTS) Color.White else BentoSlate700
                             )
                         }
                     }

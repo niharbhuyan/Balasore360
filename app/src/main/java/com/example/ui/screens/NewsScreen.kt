@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
@@ -39,7 +40,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import com.example.ui.components.SearchEmptyStateCard
+import com.example.ui.components.FriendlyEmptyStateCard
+import com.example.ui.components.FriendlyEmptyStateType
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -69,6 +75,9 @@ import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.components.BalasoreSocialHubCard
+import com.example.ui.components.SocialMediaQuickRow
+import com.example.ui.components.openSocialMediaLink
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,170 +94,250 @@ fun NewsScreen(
     onSearchQueryChange: (String) -> Unit,
     onArticleSelect: (NewsArticleEntity?) -> Unit,
     onToggleBookmark: (NewsArticleEntity) -> Unit,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
+    isOnline: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val categories = listOf(
         "All",
-        "Local News",
-        "Politics",
+        "Local",
+        "Tourism",
+        "Weather",
         "Events",
-        "Civic & Transport",
-        "Coastal & Tourism",
-        "Weather Alert",
-        "Culture & Heritage",
-        "Education & Tech",
-        "Saved"
+        "Politics",
+        "Read Later"
     )
 
     val breakingNews = articles.firstOrNull { it.isBreaking }
+    val pullToRefreshState = rememberPullToRefreshState()
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 90.dp)
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                containerColor = BentoCardWhite,
+                color = BentoPrimaryBlue
+            )
+        },
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("news_pull_to_refresh")
     ) {
-        // Active Search Filter Status Banner
-        if (searchQuery.isNotBlank()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 90.dp)
+        ) {
+            // Horizontal Scrolling Category Chip Bar at the TOP of the news feed
             item {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = BentoBlueLight,
-                    border = BorderStroke(1.dp, BentoBorder),
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .testTag("news_category_chips"),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Filtering news for \"$searchQuery\"",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = BentoPrimaryBlue
-                        )
-                        Text(
-                            text = "${articles.size} updates found",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoSlate700
+                    categories.forEach { cat ->
+                        val isSelected = cat == selectedCategory ||
+                                (cat == "Read Later" && (selectedCategory == "Saved" || selectedCategory == "Read Later"))
+                        CategoryChip(
+                            name = cat,
+                            isSelected = isSelected,
+                            onClick = { onCategorySelect(cat) }
                         )
                     }
                 }
             }
-        }
 
-        // Breaking News Bento Tile
-        if (breakingNews != null && searchQuery.isEmpty() && selectedCategory == "All") {
-            item {
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-                    border = BorderStroke(1.dp, BentoRedBg),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                        .clickable { onArticleSelect(breakingNews) }
-                        .testTag("breaking_news_banner")
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+            // Active Search Filter Status Banner
+            if (searchQuery.isNotBlank()) {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = BentoBlueLight,
+                        border = BorderStroke(1.dp, BentoBorder),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = BentoRedBg,
-                            modifier = Modifier.size(36.dp)
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text("📢", fontSize = 16.sp)
+                            Text(
+                                text = "Filtering news for \"$searchQuery\"",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = BentoPrimaryBlue
+                            )
+                            Text(
+                                text = "${articles.size} updates found",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = BentoSlate700
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Breaking News Bento Tile
+            if (breakingNews != null && searchQuery.isEmpty() && selectedCategory == "All") {
+                item {
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+                        border = BorderStroke(1.dp, BentoRedBg),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .clickable { onArticleSelect(breakingNews) }
+                            .testTag("breaking_news_banner")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = BentoRedBg,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("📢", fontSize = 16.sp)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "BREAKING ALERT",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp,
+                                        fontSize = 10.sp
+                                    ),
+                                    color = BentoRedText
+                                )
+                                Text(
+                                    text = breakingNews.title,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = BentoSlate900,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
                         }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "BREAKING ALERT",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 1.sp,
-                                    fontSize = 10.sp
-                                ),
-                                color = BentoRedText
-                            )
-                            Text(
-                                text = breakingNews.title,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = BentoSlate900,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
                     }
                 }
             }
-        }
 
-        // Category Filter Chips
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                categories.forEach { cat ->
-                    CategoryChip(
-                        name = cat,
-                        isSelected = cat == selectedCategory,
-                        onClick = { onCategorySelect(cat) }
+            // Section Heading with Pull-to-refresh prompt
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (searchQuery.isNotEmpty()) "Search Results" else "$selectedCategory Updates",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate900
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Pull to refresh",
+                            tint = BentoSlate400,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = if (isRefreshing) "Refreshing..." else "${articles.size} updates • Pull to refresh",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                            color = BentoSlate400
+                        )
+                    }
                 }
             }
-        }
 
-        // Section Heading
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (searchQuery.isNotEmpty()) "Search Results" else "$selectedCategory Updates",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = BentoSlate900
-                )
-                Text(
-                    text = "${articles.size} updates",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = BentoSlate500
-                )
-            }
-        }
+            // Articles List in Bento Grid Cards
+            if (articles.isEmpty()) {
+                item {
+                    if (!isOnline) {
+                        FriendlyEmptyStateCard(
+                            type = FriendlyEmptyStateType.OFFLINE_NO_INTERNET,
+                            title = "You're Browsing Offline",
+                            odiaTitle = "ଆପଣ ଅଫଲାଇନ ଅଛନ୍ତି (ଇଣ୍ଟରନେଟ ସଂଯୋଗ ନାହିଁ)",
+                            subtitle = "Local news has not yet downloaded to your device. Connect to Wi-Fi or mobile data to fetch the latest Balasore updates.",
+                            actionButtonText = "Retry Connection",
+                            isActionLoading = isRefreshing,
+                            onActionClick = onRefresh,
+                            secondaryButtonText = if (searchQuery.isNotBlank()) "Clear Filter" else null,
+                            onSecondaryClick = if (searchQuery.isNotBlank()) { { onSearchQueryChange("") } } else null,
+                            tipsList = listOf(
+                                "Once online, Balasore 360 automatically caches news for offline reading.",
+                                "Tide and emergency phone numbers in the Essentials tab are always saved locally."
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    } else if (searchQuery.isNotBlank()) {
+                        SearchEmptyStateCard(
+                            searchQuery = searchQuery,
+                            category = selectedCategory,
+                            feedType = "News Updates",
+                            onClearSearch = { onSearchQueryChange("") },
+                            onResetCategory = { onCategorySelect("All") },
+                            onSuggestionClick = { onSearchQueryChange(it) },
+                            suggestions = listOf("Station", "Chandipur", "Cyclone", "Port", "Heritage")
+                        )
+                    } else {
+                        FriendlyEmptyStateCard(
+                            type = FriendlyEmptyStateType.NEWS_NOT_LOADED,
+                            title = if (selectedCategory == "Read Later") "No Saved Bookmarks Yet" else "No News Updates Yet",
+                            odiaTitle = if (selectedCategory == "Read Later") "କୌଣସି ସାଇତା ଖବର ନାହିଁ" else "ଏ ପର୍ଯ୍ୟନ୍ତ କୌଣସି ନୂତନ ଖବର ଆସିନାହିଁ",
+                            subtitle = if (selectedCategory == "Read Later") {
+                                "Tap the bookmark ribbon on any Balasore article to save it for quick offline reading here."
+                            } else {
+                                "There are no new bulletins in \"$selectedCategory\" right now. Pull down to refresh or check back shortly."
+                            },
+                            actionButtonText = "Check for Updates",
+                            isActionLoading = isRefreshing,
+                            onActionClick = onRefresh,
+                            secondaryButtonText = if (selectedCategory != "All") "Show All News" else null,
+                            onSecondaryClick = if (selectedCategory != "All") { { onCategorySelect("All") } } else null,
+                            tipsList = listOf(
+                                "Pull down on the screen anytime to trigger a live sync.",
+                                "You can customize alert categories in Notification Settings."
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            } else {
+                items(articles, key = { it.id }) { article ->
+                    BentoNewsCard(
+                        article = article,
+                        onClick = { onArticleSelect(article) },
+                        onToggleBookmark = { onToggleBookmark(article) }
+                    )
+                }
 
-        // Articles List in Bento Grid Cards
-        if (articles.isEmpty()) {
-            item {
-                SearchEmptyStateCard(
-                    searchQuery = searchQuery,
-                    category = selectedCategory,
-                    feedType = "News Updates",
-                    onClearSearch = { onSearchQueryChange("") },
-                    onResetCategory = { onCategorySelect("All") },
-                    onSuggestionClick = { onSearchQueryChange(it) },
-                    suggestions = listOf("Station", "Chandipur", "Cyclone", "Port", "Heritage")
-                )
-            }
-        } else {
-            items(articles, key = { it.id }) { article ->
-                BentoNewsCard(
-                    article = article,
-                    onClick = { onArticleSelect(article) },
-                    onToggleBookmark = { onToggleBookmark(article) }
-                )
+                // Official Balasore 360 Social Media Hub
+                item {
+                    BalasoreSocialHubCard(
+                        modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
+                    )
+                }
             }
         }
     }
@@ -349,28 +438,71 @@ fun BentoNewsCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bottom row: Source + Bookmark
+            // Bottom row: Source + 'Read Later' Bookmark Button (Room DB Offline Saving)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Source: ${article.source}",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontSize = 11.sp,
-                    color = BentoPrimaryBlue
-                )
-
-                IconButton(
-                    onClick = onToggleBookmark,
-                    modifier = Modifier.size(32.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.weight(1f, fill = false)
                 ) {
-                    Icon(
-                        imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                        contentDescription = "Bookmark",
-                        tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate400
+                    Text(
+                        text = "Source: ${article.source}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = BentoPrimaryBlue,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
+                    if (article.isBookmarked) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = BentoBlueLight
+                        ) {
+                            Text(
+                                text = "OFFLINE SAVED",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = BentoPrimaryBlue,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (article.isBookmarked) BentoBlueLight else BentoCardWhite,
+                    border = BorderStroke(1.dp, if (article.isBookmarked) BentoPrimaryBlue else BentoBorder),
+                    modifier = Modifier
+                        .clickable(onClick = onToggleBookmark)
+                        .testTag("read_later_button_${article.id}")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                            contentDescription = if (article.isBookmarked) "Saved to Read Later (Offline in Room DB)" else "Save to Read Later (Offline in Room DB)",
+                            tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = if (article.isBookmarked) "Saved Offline" else "Read Later",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            ),
+                            color = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700
+                        )
+                    }
                 }
             }
         }
@@ -510,17 +642,88 @@ fun ArticleDetailSheet(
                 TextButton(
                     onClick = onToggleBookmark,
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, BentoBorder),
-                    modifier = Modifier.weight(1f)
+                    border = BorderStroke(1.dp, if (article.isBookmarked) BentoPrimaryBlue else BentoBorder),
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        containerColor = if (article.isBookmarked) BentoBlueLight else Color.Transparent
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("article_detail_read_later_button")
                 ) {
                     Icon(
                         imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                        contentDescription = "Bookmark",
+                        contentDescription = "Read Later Bookmark",
                         tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (article.isBookmarked) "Saved" else "Save", color = BentoSlate700)
+                    Text(
+                        text = if (article.isBookmarked) "Saved (Offline)" else "Read Later",
+                        color = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Offline Room Database Status Banner
+            if (article.isBookmarked) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = BentoBlueLight,
+                    border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Bookmark,
+                            contentDescription = null,
+                            tint = BentoPrimaryBlue,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Full article body saved to Room database for offline viewing anytime.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            color = BentoPrimaryBlue
+                        )
+                    }
+                }
+            }
+
+            // Official Social Channels Bar
+            Spacer(modifier = Modifier.height(16.dp))
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = BentoCardWhite,
+                border = BorderStroke(1.dp, BentoBorder),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Connect with Balasore 360",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = BentoSlate900
+                        )
+                        Text(
+                            text = "@balasore360",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = BentoPrimaryBlue
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SocialMediaQuickRow(
+                        onPlatformClick = { openSocialMediaLink(context, it.webUrl) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
 

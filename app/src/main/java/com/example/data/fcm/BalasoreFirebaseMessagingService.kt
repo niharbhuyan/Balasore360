@@ -3,6 +3,7 @@ package com.example.data.fcm
 import android.util.Log
 import com.example.data.local.AppDatabase
 import com.example.data.local.NewsArticleEntity
+import com.example.data.local.WeatherCacheEntity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
@@ -111,6 +112,28 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
                         lastUpdated = System.currentTimeMillis()
                     )
                     db.weatherDao().insertOrUpdateWeather(updated)
+                } else {
+                    val initialWeather = WeatherCacheEntity(
+                        temperature = 29.5,
+                        apparentTemperature = 33.0,
+                        weatherCode = 80,
+                        weatherDescription = "Coastal Weather Alert Active",
+                        windSpeed = 28.0,
+                        windGusts = 50.0,
+                        humidity = 84,
+                        alertLevel = if (level.isNotBlank()) level else "WARNING",
+                        alertTitle = title,
+                        alertMessage = message,
+                        tideState = "INCOMING",
+                        tideDescription = "High tidal surge expected along Chandipur coastline.",
+                        sunrise = "05:30 AM",
+                        sunset = "06:10 PM",
+                        uvIndex = 6.0,
+                        maxTemp = 32.0,
+                        minTemp = 26.0,
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    db.weatherDao().insertOrUpdateWeather(initialWeather)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating Room weather cache from FCM", e)

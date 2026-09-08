@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -202,7 +203,7 @@ fun LocalAlertsBottomSheet(
                 }
             }
 
-            // Connection Status Pill
+            // Connection Status & Token Card
             item {
                 Surface(
                     shape = RoundedCornerShape(14.dp),
@@ -210,32 +211,67 @@ fun LocalAlertsBottomSheet(
                     border = BorderStroke(1.dp, BentoBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(BentoGreenText, CircleShape)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(if (fcmToken != null) BentoGreenText else BentoAmberText, CircleShape)
+                                )
+                                Text(
+                                    text = "Firebase Cloud Messaging (FCM)",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate900
+                                )
+                            }
+
                             Text(
-                                text = "Firebase Cloud Messaging",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BentoSlate900
+                                text = if (fcmToken != null) "Connected & Subscribed" else "Active Listener",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = if (fcmToken != null) BentoGreenText else BentoAmberText
                             )
                         }
 
-                        Text(
-                            text = if (fcmToken != null) "Connected" else "Online Wire",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoGreenText
-                        )
+                        if (fcmToken != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(BentoCardWhite, RoundedCornerShape(8.dp))
+                                    .border(1.dp, BentoBorder, RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Token: ${fcmToken.take(14)}...${fcmToken.takeLast(6)}",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = BentoSlate500,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "Copy Token",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoPrimaryBlue,
+                                    modifier = Modifier
+                                        .clickable {
+                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                                            val clip = android.content.ClipData.newPlainText("FCM Registration Token", fcmToken)
+                                            clipboard?.setPrimaryClip(clip)
+                                            android.widget.Toast.makeText(context, "FCM Token copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                        .padding(4.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }

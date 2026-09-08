@@ -10,6 +10,7 @@ import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
+import com.example.data.remote.BalasoreApiService
 import com.example.data.remote.WeatherApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,8 @@ data class SyncResult(
 class BalasoreRepository(
     private val database: AppDatabase,
     private val context: Context? = null,
-    private val weatherApi: WeatherApiService = WeatherApiService.create()
+    private val weatherApi: WeatherApiService = WeatherApiService.create(),
+    private val balasoreApi: BalasoreApiService = BalasoreApiService.create()
 ) {
     private val prefs: SharedPreferences? =
         context?.getSharedPreferences("balasore_user_prefs", Context.MODE_PRIVATE)
@@ -295,8 +297,25 @@ class BalasoreRepository(
             val humidity = current?.relativeHumidity ?: 70
 
             val desc = parseWeatherCode(code)
-            val (alertLevel, alertTitle, alertMsg) = evaluateCoastalAlert(code, wind, gusts, temp)
-            val (tideState, tideDesc) = calculateTideState()
+            val (baseAlertLevel, baseAlertTitle, baseAlertMsg) = evaluateCoastalAlert(code, wind, gusts, temp)
+            val (baseTideState, baseTideDesc) = calculateTideState()
+
+            // Fetch live local Chandipur marine observatory & coastal advisory via Balasore API
+            val marineData = try {
+                balasoreApi.getMarineObservatoryData()
+            } catch (_: Exception) {
+                null
+            }
+
+            val finalTideState = marineData?.tideState ?: baseTideState
+            val finalTideDesc = marineData?.tideDescription ?: baseTideDesc
+            val finalAlertLevel = if (!marineData?.alertLevel.isNullOrBlank() && marineData?.alertLevel != "NORMAL") {
+                marineData!!.alertLevel!!
+            } else {
+                baseAlertLevel
+            }
+            val finalAlertTitle = marineData?.alertTitle ?: baseAlertTitle
+            val finalAlertMsg = marineData?.alertMessage ?: baseAlertMsg
 
             val maxT = daily?.temperatureMax?.firstOrNull() ?: (temp + 2.0)
             val minT = daily?.temperatureMin?.firstOrNull() ?: (temp - 4.0)
@@ -314,11 +333,11 @@ class BalasoreRepository(
                 windSpeed = wind,
                 windGusts = gusts,
                 humidity = humidity,
-                alertLevel = alertLevel,
-                alertTitle = alertTitle,
-                alertMessage = alertMsg,
-                tideState = tideState,
-                tideDescription = tideDesc,
+                alertLevel = finalAlertLevel,
+                alertTitle = finalAlertTitle,
+                alertMessage = finalAlertMsg,
+                tideState = finalTideState,
+                tideDescription = finalTideDesc,
                 sunrise = sunriseStr,
                 sunset = sunsetStr,
                 uvIndex = uv,
@@ -413,54 +432,25 @@ class BalasoreRepository(
 
     suspend fun refreshDailyNews(): Result<Int> = withContext(Dispatchers.IO) {
         try {
-            // Auto update simulation / latest district wire sync
-            val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
-            val timeString = sdf.format(Date())
+            // Fetch fresh Balasore district articles via Retrofit network layer
+            val newsResponse = balasoreApi.getBalasoreNews()
+            val articleDtos = newsResponse.articles.orEmpty()
 
-            val freshArticles = listOf(
-                NewsArticleEntity(
-                    title = "Balasore Municipal Corporation Rolls Out Eco-Electric City Shuttles",
-                    summary = "New fleet connecting Balasore Railway Station, Station Square, and Remuna Gopinath Temple for commuters.",
-                    content = "To facilitate clean transportation for residents and pilgrims, the Balasore Municipality has launched an eco-friendly electric feeder service. The buses run at 15-minute intervals connecting major transit hubs.",
-                    category = "Civic & Transport",
-                    source = "Balasore Municipal Corporation",
-                    publishedAt = "Updated $timeString",
-                    isBreaking = false,
-                    isBookmarked = false
-                ),
-                NewsArticleEntity(
-                    title = "Bay of Bengal High-Tide Cautionary Siren Installed at Chandipur Promenade",
-                    summary = "Automated sensor-based alert sounds 30 minutes before sea returns to safeguard tourists walking the receding sea bed.",
-                    content = "In an effort to maximize safety on Chandipur Beach, district coastal security has installed solar sirens synchronized with real-time oceanographic tide gauges. Visitors will hear warning chimes 30 minutes prior to high tide onset.",
-                    category = "Coastal & Tourism",
-                    source = "Coastal Police & Tourism Desk",
-                    publishedAt = "Updated $timeString",
-                    isBreaking = true,
-                    isBookmarked = false
-                ),
-                NewsArticleEntity(
-                    title = "District Council Passes Resolution on Industrial Park Expansion Near Kuruda",
-                    summary = "Political consensus reached on expanding infrastructure and agro-processing clusters in Balasore district.",
-                    content = "In the latest district council meeting, elected representatives unanimously passed a resolution approving industrial park modernization near Kuruda. The project aims to attract food processing units and boost rural employment.",
-                    category = "Politics",
-                    source = "District Press Bureau",
-                    publishedAt = "Updated $timeString",
-                    isBreaking = false,
-                    isBookmarked = false
-                ),
-                NewsArticleEntity(
-                    title = "Annual Balasore Heritage Walk & Cultural Conclave Commences This Weekend",
-                    summary = "Heritage enthusiasts, artists, and students gather to explore 10th-century temples and maritime relics.",
-                    content = "The annual Balasore Heritage Walk series kicks off this weekend from Fakir Mohan College square. Guided walking tours of historical monuments and evening folk art exhibitions are scheduled across the town.",
-                    category = "Events",
-                    source = "Balasore Cultural Foundation",
-                    publishedAt = "Updated $timeString",
-                    isBreaking = false,
-                    isBookmarked = false
-                )
-            )
+            // Preserve existing offline bookmarks
+            val bookmarkedArticles = database.newsDao().getBookmarkedNewsSync()
+            val bookmarkedIds = bookmarkedArticles.map { it.id }.toSet()
+            val bookmarkedTitles = bookmarkedArticles.map { it.title.trim().lowercase() }.toSet()
 
-            database.newsDao().insertArticles(freshArticles)
+            val freshArticles = articleDtos.map { dto ->
+                val isBookmarked = (dto.id != null && bookmarkedIds.contains(dto.id)) ||
+                        (dto.title != null && bookmarkedTitles.contains(dto.title.trim().lowercase()))
+                dto.toEntity(isBookmarked = isBookmarked)
+            }
+
+            if (freshArticles.isNotEmpty()) {
+                database.newsDao().insertArticles(freshArticles)
+            }
+
             val count = database.newsDao().getCount()
 
             database.cacheMetadataDao().insertOrUpdate(
@@ -469,14 +459,19 @@ class BalasoreRepository(
                     lastSyncedAt = System.currentTimeMillis(),
                     itemCount = count,
                     status = "FRESH",
-                    cacheLabel = "$count Articles Cached in Room",
-                    details = "Persisted locally for offline reading & bookmarks."
+                    cacheLabel = "$count Articles from Balasore API",
+                    details = "Fetched via Retrofit news endpoint and persisted to Room cache."
                 )
             )
 
             Result.success(freshArticles.size)
         } catch (e: Exception) {
-            Result.failure(e)
+            val count = database.newsDao().getCount()
+            if (count > 0) {
+                Result.success(count)
+            } else {
+                Result.failure(e)
+            }
         }
     }
 

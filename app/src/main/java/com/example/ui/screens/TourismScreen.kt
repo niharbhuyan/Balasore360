@@ -28,16 +28,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ViewAgenda
@@ -56,6 +59,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.ui.components.SearchEmptyStateCard
@@ -94,6 +101,7 @@ import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.components.BalasoreSocialHubCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,6 +124,7 @@ fun TourismScreen(
     modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
+    var isGridView by remember { mutableStateOf(true) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (isMapMode) {
@@ -262,7 +271,7 @@ fun TourismScreen(
                     }
                 }
 
-                // Section Title with Map Mode Switcher
+                // Section Title with View Switcher (Grid / List / Map)
                 item {
                     Row(
                         modifier = Modifier
@@ -286,38 +295,72 @@ fun TourismScreen(
                             )
                         }
 
-                        // Map View Switcher Button
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = BentoBlueLight,
-                            border = BorderStroke(1.dp, BentoBorder),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable(onClick = onToggleMapMode)
-                                .testTag("hotspot_map_view_toggle")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            // Grid / List Toggle Button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (isGridView) BentoBlueLight else BentoCardWhite,
+                                border = BorderStroke(1.dp, BentoBorder),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { isGridView = !isGridView }
+                                    .testTag("hotspot_view_mode_toggle")
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Map,
-                                    contentDescription = "Interactive Map",
-                                    tint = BentoPrimaryBlue,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Map View",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoPrimaryBlue
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isGridView) Icons.Default.ViewAgenda else Icons.Default.GridView,
+                                        contentDescription = if (isGridView) "List View" else "Grid View",
+                                        tint = BentoPrimaryBlue,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = if (isGridView) "List" else "Grid",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
+                            }
+
+                            // Map View Switcher Button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = BentoBlueLight,
+                                border = BorderStroke(1.dp, BentoBorder),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable(onClick = onToggleMapMode)
+                                    .testTag("hotspot_map_view_toggle")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Map,
+                                        contentDescription = "Interactive Map",
+                                        tint = BentoPrimaryBlue,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Map",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                // Hotspots Bento Cards List
+                // Hotspots Bento Cards List or Grid
                 if (hotspots.isEmpty()) {
                     item {
                         SearchEmptyStateCard(
@@ -330,12 +373,51 @@ fun TourismScreen(
                             suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
                         )
                     }
+                } else if (isGridView) {
+                    // 2-Column Grid of Hotspots with Images and Descriptions
+                    val chunkedHotspots = hotspots.chunked(2)
+                    items(chunkedHotspots, key = { row -> row.joinToString("-") { it.id } }) { rowItems ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 5.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            for (hotspot in rowItems) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    HotspotBentoGridCard(
+                                        hotspot = hotspot,
+                                        onClick = { onHotspotSelect(hotspot) },
+                                        onToggleFavorite = { onToggleFavorite(hotspot) }
+                                    )
+                                }
+                            }
+                            // Fill empty cell if odd number in the row
+                            if (rowItems.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+
+                    // Official Balasore 360 Social Media Hub
+                    item {
+                        BalasoreSocialHubCard(
+                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
+                        )
+                    }
                 } else {
                     items(hotspots, key = { it.id }) { hotspot ->
                         HotspotBentoCard(
                             hotspot = hotspot,
                             onClick = { onHotspotSelect(hotspot) },
                             onToggleFavorite = { onToggleFavorite(hotspot) }
+                        )
+                    }
+
+                    // Official Balasore 360 Social Media Hub
+                    item {
+                        BalasoreSocialHubCard(
+                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
                         )
                     }
                 }
@@ -733,6 +815,223 @@ fun HotspotBentoCard(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Returns a themed drawable resource ID for hotspots with custom photography, or null
+ */
+fun getHotspotImageRes(hotspotId: String): Int? {
+    return when (hotspotId) {
+        "chandipur_beach", "drdo_missile_heritage" -> R.drawable.img_chandipur_beach
+        "khirachora_gopinatha", "emami_jagannath", "panchalingeswar", "chandaneswar_temple" -> R.drawable.img_temple_balasore
+        else -> null
+    }
+}
+
+/**
+ * Returns an appropriate icon for hotspots
+ */
+fun getHotspotCategoryIcon(category: String): ImageVector {
+    return when (category.lowercase()) {
+        "beach" -> Icons.Default.WbSunny
+        "temple" -> Icons.Default.Place
+        "wildlife" -> Icons.Default.Star
+        "heritage" -> Icons.Default.LocationOn
+        "port" -> Icons.Default.NearMe
+        else -> Icons.Default.Place
+    }
+}
+
+/**
+ * Grid View card for Hotspots: displays attractions in a 2-column bento grid layout
+ * with images, odia/english names, category badges, and descriptions.
+ */
+@Composable
+fun HotspotBentoGridCard(
+    hotspot: HotspotEntity,
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val imageRes = getHotspotImageRes(hotspot.id)
+
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+        border = BorderStroke(1.dp, BentoBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .testTag("hotspot_grid_card_${hotspot.id}")
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Visual Image / Header Banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(118.dp)
+            ) {
+                if (imageRes != null) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = hotspot.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    // Gradient scrim
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = 0.15f),
+                                        Color.Black.copy(alpha = 0.65f)
+                                    )
+                                )
+                            )
+                    )
+                } else {
+                    // Modern abstract stylized gradient placeholder
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    colors = when (hotspot.category.lowercase()) {
+                                        "beach" -> listOf(Color(0xFF0284C7), Color(0xFF0369A1))
+                                        "wildlife" -> listOf(Color(0xFF059669), Color(0xFF047857))
+                                        "port" -> listOf(Color(0xFF0D9488), Color(0xFF0F766E))
+                                        "heritage" -> listOf(Color(0xFF7C3AED), Color(0xFF6D28D9))
+                                        else -> listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                                    }
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = getHotspotCategoryIcon(hotspot.category),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.35f),
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
+
+                // Category pill on top start
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.Black.copy(alpha = 0.55f),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = hotspot.category.uppercase(),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                    )
+                }
+
+                // Favorite button on top end
+                Surface(
+                    shape = CircleShape,
+                    color = Color.Black.copy(alpha = 0.45f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onToggleFavorite)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (hotspot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (hotspot.isFavorite) Color(0xFFEF4444) else Color.White,
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
+                }
+
+                // Distance badge on bottom start
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White.copy(alpha = 0.9f),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = BentoPrimaryBlue,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = "${hotspot.distanceKmFromBls} km",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.5.sp
+                            ),
+                            color = BentoSlate900
+                        )
+                    }
+                }
+            }
+
+            // Text Content Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = hotspot.name,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        lineHeight = 17.sp
+                    ),
+                    color = BentoSlate900,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Text(
+                    text = hotspot.odiaName,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.5.sp),
+                    color = BentoPrimaryBlue,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = hotspot.shortDescription,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        lineHeight = 14.5.sp
+                    ),
+                    color = BentoSlate500,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
