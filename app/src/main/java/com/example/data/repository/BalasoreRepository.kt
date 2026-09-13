@@ -101,6 +101,12 @@ class BalasoreRepository(
         }
         if (database.newsDao().getCount() == 0) {
             database.newsDao().insertArticles(DefaultData.getInitialNews())
+        } else {
+            val existingTitles = database.newsDao().getAllArticlesSync().map { it.title }.toSet()
+            val missing = DefaultData.getInitialNews().filter { it.title !in existingTitles }
+            if (missing.isNotEmpty()) {
+                database.newsDao().insertArticles(missing)
+            }
         }
         if (database.userDao().getCount() == 0) {
             for (user in DefaultData.getInitialUsers()) {

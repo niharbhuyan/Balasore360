@@ -42,6 +42,9 @@ interface NewsDao {
     @Query("SELECT * FROM news_articles WHERE title LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY timestamp DESC")
     fun searchNews(query: String): Flow<List<NewsArticleEntity>>
 
+    @Query("SELECT * FROM news_articles")
+    suspend fun getAllArticlesSync(): List<NewsArticleEntity>
+
     @Query("SELECT COUNT(*) FROM news_articles")
     suspend fun getCount(): Int
 

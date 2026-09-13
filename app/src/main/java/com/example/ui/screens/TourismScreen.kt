@@ -36,20 +36,27 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DirectionsBoat
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Museum
 import androidx.compose.material.icons.filled.NearMe
+import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.WbSunny
+import com.example.ui.components.FilterChipGroup
+import com.example.ui.components.FilterChipItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -110,6 +117,11 @@ import com.example.ui.components.BalasoreSocialHubCard
 import com.example.ui.components.FriendlyEmptyStateCard
 import com.example.ui.components.FriendlyEmptyStateType
 import com.example.ui.components.SearchEmptyStateCard
+import com.example.ui.components.HotspotGridCardSkeleton
+import com.example.ui.components.HotspotListCardSkeleton
+import com.example.ui.components.BentoTopGridSkeleton
+import com.example.ui.components.BentoHeroSkeleton
+import com.example.ui.components.ShimmerSyncBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,6 +132,8 @@ fun TourismScreen(
     selectedHotspot: HotspotEntity?,
     isMapMode: Boolean = false,
     currentUser: UserEntity? = null,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     onToggleMapMode: () -> Unit = {},
     onOpenAuth: () -> Unit = {},
     getReviewsForHotspot: (String) -> Flow<List<ReviewEntity>> = { kotlinx.coroutines.flow.emptyFlow() },
@@ -133,7 +147,19 @@ fun TourismScreen(
     modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
+    val tourismFilterChips = remember(hotspots) {
+        listOf(
+            FilterChipItem(id = "All", label = "All", icon = Icons.Default.Explore),
+            FilterChipItem(id = "Beach", label = "Beach", icon = Icons.Default.BeachAccess),
+            FilterChipItem(id = "Temple", label = "Temple", icon = Icons.Default.Place),
+            FilterChipItem(id = "Wildlife", label = "Wildlife", icon = Icons.Default.Park),
+            FilterChipItem(id = "Heritage", label = "Heritage", icon = Icons.Default.Museum),
+            FilterChipItem(id = "Port", label = "Port", icon = Icons.Default.DirectionsBoat),
+            FilterChipItem(id = "Favorites", label = "Favorites", icon = Icons.Default.Favorite)
+        )
+    }
     var isGridView by remember { mutableStateOf(true) }
+    var mapPreviewHotspot by remember { mutableStateOf<HotspotEntity?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (isMapMode) {
@@ -194,10 +220,21 @@ fun TourismScreen(
                     }
                 }
 
+                // Interactive Filter Chip Group for Map Mode
+                FilterChipGroup(
+                    chips = tourismFilterChips,
+                    selectedId = selectedCategory,
+                    onSelect = onCategorySelect,
+                    testTagPrefix = "map_tourism_filter_chip",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("tourism_category_chips_map")
+                )
+
                 HotspotsMapView(
                     hotspots = hotspots,
-                    selectedHotspot = selectedHotspot,
-                    onSelectHotspot = onHotspotSelect,
+                    selectedHotspot = mapPreviewHotspot,
+                    onSelectHotspot = { mapPreviewHotspot = it },
                     onViewHotspotDetails = { onHotspotSelect(it) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -245,43 +282,45 @@ fun TourismScreen(
                 } else {
                     // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        BentoTopGrid(
-                            weather = weather,
-                            onAlertClick = {
-                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                if (chandipur != null) onHotspotSelect(chandipur)
-                            }
-                        )
+                        if (weather == null && isRefreshing) {
+                            BentoTopGridSkeleton()
+                        } else {
+                            BentoTopGrid(
+                                weather = weather,
+                                onAlertClick = {
+                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                    if (chandipur != null) onHotspotSelect(chandipur)
+                                }
+                            )
+                        }
                     }
 
                     // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        BentoTourismHeroTile(
-                            onExplore = {
-                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                if (chandipur != null) onHotspotSelect(chandipur)
-                            }
-                        )
+                        if (isRefreshing && hotspots.isEmpty()) {
+                            BentoHeroSkeleton()
+                        } else {
+                            BentoTourismHeroTile(
+                                onExplore = {
+                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                    if (chandipur != null) onHotspotSelect(chandipur)
+                                }
+                            )
+                        }
                     }
                 }
 
                 // Category Filter Chips
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(
+                    FilterChipGroup(
+                        chips = tourismFilterChips,
+                        selectedId = selectedCategory,
+                        onSelect = onCategorySelect,
+                        testTagPrefix = "tourism_filter_chip",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        categories.forEach { cat ->
-                            CategoryChip(
-                                name = cat,
-                                isSelected = cat == selectedCategory,
-                                onClick = { onCategorySelect(cat) }
-                            )
-                        }
-                    }
+                            .testTag("tourism_category_chips")
+                    )
                 }
 
                 // Section Title with View Switcher (Grid / List / Map)
@@ -374,7 +413,19 @@ fun TourismScreen(
                 }
 
                 // Hotspots in LazyVerticalGrid
-                if (hotspots.isEmpty()) {
+                if (isRefreshing && hotspots.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        ShimmerSyncBanner(
+                            message = "Fetching Balasore coastal destinations & tides...",
+                            odiaMessage = "ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
+                        )
+                    }
+                    items(6) {
+                        Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
+                            HotspotGridCardSkeleton()
+                        }
+                    }
+                } else if (hotspots.isEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         if (searchQuery.isNotBlank()) {
                             SearchEmptyStateCard(
@@ -407,6 +458,14 @@ fun TourismScreen(
                         }
                     }
                 } else {
+                    if (isRefreshing) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            ShimmerSyncBanner(
+                                message = "Syncing latest Balasore destinations & marine data...",
+                                odiaMessage = "ସର୍ବଶେଷ ପର୍ଯ୍ୟଟନ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
+                            )
+                        }
+                    }
                     items(hotspots, key = { it.id }) { hotspot ->
                         Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
                             HotspotBentoGridCard(
@@ -463,43 +522,45 @@ fun TourismScreen(
                 } else {
                     // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
                     item {
-                        BentoTopGrid(
-                            weather = weather,
-                            onAlertClick = {
-                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                if (chandipur != null) onHotspotSelect(chandipur)
-                            }
-                        )
+                        if (weather == null && isRefreshing) {
+                            BentoTopGridSkeleton()
+                        } else {
+                            BentoTopGrid(
+                                weather = weather,
+                                onAlertClick = {
+                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                    if (chandipur != null) onHotspotSelect(chandipur)
+                                }
+                            )
+                        }
                     }
 
                     // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
                     item {
-                        BentoTourismHeroTile(
-                            onExplore = {
-                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                if (chandipur != null) onHotspotSelect(chandipur)
-                            }
-                        )
+                        if (isRefreshing && hotspots.isEmpty()) {
+                            BentoHeroSkeleton()
+                        } else {
+                            BentoTourismHeroTile(
+                                onExplore = {
+                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                    if (chandipur != null) onHotspotSelect(chandipur)
+                                }
+                            )
+                        }
                     }
                 }
 
                 // Category Filter Chips
                 item {
-                    Row(
+                    FilterChipGroup(
+                        chips = tourismFilterChips,
+                        selectedId = selectedCategory,
+                        onSelect = onCategorySelect,
+                        testTagPrefix = "tourism_filter_chip",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        categories.forEach { cat ->
-                            CategoryChip(
-                                name = cat,
-                                isSelected = cat == selectedCategory,
-                                onClick = { onCategorySelect(cat) }
-                            )
-                        }
-                    }
+                            .testTag("tourism_category_chips")
+                    )
                 }
 
                 // Section Title with View Switcher (Grid / List / Map)
@@ -592,7 +653,17 @@ fun TourismScreen(
                 }
 
                 // Hotspots Bento Cards List
-                if (hotspots.isEmpty()) {
+                if (isRefreshing && hotspots.isEmpty()) {
+                    item {
+                        ShimmerSyncBanner(
+                            message = "Fetching Balasore coastal destinations & tides...",
+                            odiaMessage = "ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
+                        )
+                    }
+                    items(5) {
+                        HotspotListCardSkeleton()
+                    }
+                } else if (hotspots.isEmpty()) {
                     item {
                         if (searchQuery.isNotBlank()) {
                             SearchEmptyStateCard(
@@ -625,6 +696,14 @@ fun TourismScreen(
                         }
                     }
                 } else {
+                    if (isRefreshing) {
+                        item {
+                            ShimmerSyncBanner(
+                                message = "Syncing latest Balasore destinations & marine data...",
+                                odiaMessage = "ସର୍ବଶେଷ ପର୍ଯ୍ୟଟନ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
+                            )
+                        }
+                    }
                     items(hotspots, key = { it.id }) { hotspot ->
                         HotspotBentoCard(
                             hotspot = hotspot,

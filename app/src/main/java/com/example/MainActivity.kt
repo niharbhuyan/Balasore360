@@ -73,7 +73,9 @@ import com.example.ui.components.BalasoreGroundingSheet
 import com.example.ui.components.MainScrollableTabRow
 import com.example.ui.screens.AuthBottomSheet
 import com.example.ui.screens.EssentialsScreen
+import com.example.ui.screens.HotspotDetailScreen
 import com.example.ui.screens.LocalAlertsBottomSheet
+import com.example.ui.screens.NewsDetailScreen
 import com.example.ui.screens.NewsScreen
 import com.example.ui.screens.OfflineStatusBottomSheet
 import com.example.ui.screens.TourismScreen
@@ -195,7 +197,36 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         }
     }
 
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (uiState.selectedHotspot != null) {
+            HotspotDetailScreen(
+                hotspot = uiState.selectedHotspot!!,
+                weather = weather,
+                currentUser = currentUser,
+                reviewsFlow = viewModel.getReviewsForTarget("HOTSPOT", uiState.selectedHotspot!!.id),
+                onOpenAuth = { viewModel.openAuthSheet() },
+                onSubmitReview = { rating, comment, guestName ->
+                    viewModel.submitReview("HOTSPOT", uiState.selectedHotspot!!.id, uiState.selectedHotspot!!.name, rating, comment, guestName)
+                },
+                onNavigateBack = { viewModel.selectHotspot(null) },
+                onToggleFavorite = { viewModel.toggleFavorite(uiState.selectedHotspot!!) },
+                onExploreWithMaps = { viewModel.exploreHotspotWithMaps(uiState.selectedHotspot!!) }
+            )
+        } else if (uiState.selectedArticle != null) {
+            NewsDetailScreen(
+                article = uiState.selectedArticle!!,
+                currentUser = currentUser,
+                reviewsFlow = viewModel.getReviewsForTarget("NEWS", uiState.selectedArticle!!.id.toString()),
+                onOpenAuth = { viewModel.openAuthSheet() },
+                onSubmitReview = { rating, comment, guestName ->
+                    viewModel.submitReview("NEWS", uiState.selectedArticle!!.id.toString(), uiState.selectedArticle!!.title, rating, comment, guestName)
+                },
+                onNavigateBack = { viewModel.selectArticle(null) },
+                onToggleBookmark = { viewModel.toggleBookmark(uiState.selectedArticle!!) },
+                onVerifyWithSearch = { viewModel.verifyNewsWithSearch(uiState.selectedArticle!!) }
+            )
+        } else {
+            Scaffold(
         containerColor = BentoCanvas,
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -340,6 +371,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         selectedHotspot = uiState.selectedHotspot,
                         isMapMode = uiState.isMapMode,
                         currentUser = currentUser,
+                        isRefreshing = uiState.isRefreshing || uiState.isTourismLoading,
+                        onRefresh = { viewModel.refreshData() },
                         onToggleMapMode = { viewModel.toggleMapMode() },
                         onOpenAuth = { viewModel.openAuthSheet() },
                         getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
@@ -361,8 +394,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         searchQuery = uiState.searchQuery,
                         selectedArticle = uiState.selectedArticle,
                         currentUser = currentUser,
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshData() },
+                        isRefreshing = uiState.isRefreshing || uiState.isNewsLoading,
+                        onRefresh = { viewModel.refreshNewsFeed() },
                         onOpenAuth = { viewModel.openAuthSheet() },
                         getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
                         onSubmitArticleReview = { id, title, rating, comment, guestName ->
@@ -411,6 +444,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 }
             }
         }
+    }
     }
 
     // Full User Authentication, Profile Management & Avatar Upload Bottom Sheet
@@ -481,4 +515,5 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         onExecuteQuery = { query, mode -> viewModel.executeGrounding(query, mode) },
         onModeChange = { mode -> viewModel.setGroundingToolMode(mode) }
     )
+    }
 }

@@ -64,6 +64,8 @@ data class GroundingState(
 data class UiState(
     val isRefreshing: Boolean = false,
     val isSyncing: Boolean = false,
+    val isNewsLoading: Boolean = false,
+    val isTourismLoading: Boolean = false,
     val isOnline: Boolean = true,
     val lastSyncTime: Long = 0L,
     val isOfflineSheetOpen: Boolean = false,
@@ -159,10 +161,11 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             val matchesCategory = when (state.newsCategory) {
                 "All" -> true
                 "Saved", "Read Later" -> article.isBookmarked
-                "Local", "Local News" -> article.category.contains("Local", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true)
-                "Tourism" -> article.category.contains("Tourism", ignoreCase = true) || article.category.contains("Coastal", ignoreCase = true)
+                "Local", "Local News" -> article.category.contains("Local", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true) || article.category.contains("Heritage", ignoreCase = true) || article.category.contains("Education", ignoreCase = true)
+                "Sports" -> article.category.contains("Sports", ignoreCase = true) || article.category.contains("Cricket", ignoreCase = true) || article.category.contains("Athletic", ignoreCase = true)
                 "Weather", "Weather Alerts" -> article.category.contains("Weather", ignoreCase = true) || article.category.contains("Alert", ignoreCase = true)
-                "Events" -> article.category.contains("Events", ignoreCase = true)
+                "Tourism" -> article.category.contains("Tourism", ignoreCase = true) || article.category.contains("Coastal", ignoreCase = true)
+                "Events" -> article.category.contains("Events", ignoreCase = true) || article.category.contains("Festival", ignoreCase = true)
                 "Politics" -> article.category.contains("Politics", ignoreCase = true)
                 else -> article.category.contains(state.newsCategory, ignoreCase = true)
             }
@@ -428,12 +431,20 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun triggerManualSync() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isRefreshing = true, isSyncing = true)
+            _uiState.value = _uiState.value.copy(
+                isRefreshing = true,
+                isSyncing = true,
+                isNewsLoading = true,
+                isTourismLoading = true
+            )
+            kotlinx.coroutines.delay(650L)
             SyncManager.triggerImmediateSync(getApplication())
             val result = repository.syncAllData(forceNetwork = true)
             _uiState.value = _uiState.value.copy(
                 isRefreshing = false,
                 isSyncing = false,
+                isNewsLoading = false,
+                isTourismLoading = false,
                 lastSyncTime = result.timestamp,
                 userNotice = result.message
             )
@@ -485,22 +496,26 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshNewsFeed() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isRefreshing = true)
+            _uiState.value = _uiState.value.copy(isRefreshing = true, isNewsLoading = true)
             try {
+                // Minimum presentation window to let shimmer animation smoothly complete sweep
+                kotlinx.coroutines.delay(600L)
                 val res = repository.refreshDailyNews()
                 val count = res.getOrDefault(0)
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
+                    isNewsLoading = false,
                     lastSyncTime = System.currentTimeMillis(),
                     userNotice = "Balasore news wire refreshed ($count fresh stories updated)."
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
+                    isNewsLoading = false,
                     userNotice = "Offline mode: Showing cached Balasore news."
                 )
             } finally {
-                _uiState.value = _uiState.value.copy(isRefreshing = false)
+                _uiState.value = _uiState.value.copy(isRefreshing = false, isNewsLoading = false)
             }
         }
     }
@@ -532,14 +547,23 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     fun refreshData(silent: Boolean = false) {
         viewModelScope.launch {
             if (!silent) {
-                _uiState.value = _uiState.value.copy(isRefreshing = true)
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = true,
+                    isNewsLoading = true,
+                    isTourismLoading = true
+                )
             }
             try {
+                if (!silent) {
+                    kotlinx.coroutines.delay(600L)
+                }
                 // Trigger background worker sync
                 SyncManager.triggerImmediateSync(getApplication())
                 val syncResult = repository.syncAllData(forceNetwork = true)
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
+                    isNewsLoading = false,
+                    isTourismLoading = false,
                     lastSyncTime = syncResult.timestamp,
                     isCacheOlderThan24Hours = false,
                     userNotice = if (!silent) syncResult.message else null
@@ -548,12 +572,18 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
                 if (!silent) {
                     _uiState.value = _uiState.value.copy(
                         isRefreshing = false,
+                        isNewsLoading = false,
+                        isTourismLoading = false,
                         userNotice = "Offline mode: Showing cached Balasore data from Room."
                     )
                 }
             } finally {
                 if (!silent) {
-                    _uiState.value = _uiState.value.copy(isRefreshing = false)
+                    _uiState.value = _uiState.value.copy(
+                        isRefreshing = false,
+                        isNewsLoading = false,
+                        isTourismLoading = false
+                    )
                 }
             }
         }

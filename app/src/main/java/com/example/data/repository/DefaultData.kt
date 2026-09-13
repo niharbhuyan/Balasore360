@@ -252,6 +252,26 @@ object DefaultData {
             publishedAt = "Yesterday, 06:00 PM",
             isBreaking = false,
             isBookmarked = false
+        ),
+        NewsArticleEntity(
+            title = "Balasore District Inter-Club Cricket Championship: Permit Ground Hosts Thrilling Finals",
+            summary = "City Cricket Club edges past Remuna Strikers in last-over thriller witnessed by passionate local sports enthusiasts.",
+            content = "The annual Balasore District Inter-Club Cricket tournament concluded in spectacular fashion at the historic Permit Field Ground. Chasing 178, City Cricket Club clinched the championship trophy with two balls to spare thanks to an unbeaten half-century by local talent Ankit Mishra. District Sports Authority officials presented the awards and announced upgraded turf wickets for the upcoming season.",
+            category = "Sports",
+            source = "Balasore District Athletic Association",
+            publishedAt = "Today, 04:30 PM",
+            isBreaking = false,
+            isBookmarked = false
+        ),
+        NewsArticleEntity(
+            title = "State Youth Athletics Championship: Balasore Sprinters Clinch 6 Gold Medals",
+            summary = "District runners shine in 100m, 400m relay, and long jump events held at the Nilagiri Sports Complex.",
+            content = "Young athletes representing Balasore district dominated track and field events at the Odisha State Youth Championship. The 4x100m relay team set a personal best time, earning special commendation from the state sports council. Facilities at Balasore Stadium will receive advanced training gear to prepare local athletes for national trials.",
+            category = "Sports",
+            source = "District Sports Officer, Balasore",
+            publishedAt = "Yesterday, 05:15 PM",
+            isBreaking = false,
+            isBookmarked = false
         )
     )
 

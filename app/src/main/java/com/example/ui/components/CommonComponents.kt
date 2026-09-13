@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -14,8 +15,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudDone
@@ -42,6 +46,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -681,31 +686,215 @@ fun TideStatusBadge(
     }
 }
 
+/**
+ * Data model representing an individual filter chip with an identifier, user-facing label,
+ * optional iconography, count badge, and test identifier.
+ */
+data class FilterChipItem(
+    val id: String,
+    val label: String,
+    val icon: ImageVector? = null,
+    val count: Int? = null,
+    val testTag: String? = null
+)
+
+/**
+ * Modern Material 3 Filter Chip Group with horizontal scrolling, smooth animated pill indicators,
+ * category iconography, dynamic count badges, and accessibility-compliant touch targets (>= 48dp).
+ */
+@Composable
+fun FilterChipGroup(
+    chips: List<FilterChipItem>,
+    selectedId: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    testTagPrefix: String = "filter_chip",
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(contentPadding),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        chips.forEach { chip ->
+            val isSelected = chip.id.equals(selectedId, ignoreCase = true) ||
+                    (chip.id == "Read Later" && (selectedId == "Saved" || selectedId == "Read Later")) ||
+                    (chip.id == "Local" && (selectedId == "Local News" || selectedId == "Local")) ||
+                    (chip.id == "Weather" && (selectedId == "Weather Alerts" || selectedId == "Weather"))
+
+            val animatedBgColor by animateColorAsState(
+                targetValue = if (isSelected) BentoPrimaryBlue else BentoCardWhite,
+                animationSpec = tween(durationMillis = 200),
+                label = "filter_chip_bg"
+            )
+            val animatedContentColor by animateColorAsState(
+                targetValue = if (isSelected) Color.White else BentoSlate700,
+                animationSpec = tween(durationMillis = 200),
+                label = "filter_chip_content"
+            )
+            val animatedBorderColor by animateColorAsState(
+                targetValue = if (isSelected) BentoPrimaryBlue else BentoBorder,
+                animationSpec = tween(durationMillis = 200),
+                label = "filter_chip_border"
+            )
+
+            val tag = chip.testTag ?: "${testTagPrefix}_${chip.id.lowercase().replace(" ", "_").replace("&", "and")}"
+
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = animatedBgColor,
+                contentColor = animatedContentColor,
+                border = BorderStroke(1.dp, animatedBorderColor),
+                shadowElevation = if (isSelected) 2.dp else 0.dp,
+                modifier = Modifier
+                    .testTag(tag)
+                    .defaultMinSize(minHeight = 44.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .clickable(onClick = { onSelect(chip.id) })
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    if (chip.icon != null) {
+                        Icon(
+                            imageVector = chip.icon,
+                            contentDescription = null,
+                            tint = if (isSelected) Color.White else BentoPrimaryBlue,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    } else if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
+                    Text(
+                        text = chip.label,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (chip.count != null && chip.count >= 0) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected) Color.White.copy(alpha = 0.25f) else BentoBlueLight,
+                            modifier = Modifier.padding(start = 2.dp)
+                        ) {
+                            Text(
+                                text = "${chip.count}",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (isSelected) Color.White else BentoPrimaryBlue,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun CategoryChip(
     name: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    count: Int? = null
 ) {
+    val animatedBgColor by animateColorAsState(
+        targetValue = if (isSelected) BentoPrimaryBlue else BentoCardWhite,
+        animationSpec = tween(durationMillis = 200),
+        label = "category_chip_bg"
+    )
+    val animatedContentColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White else BentoSlate700,
+        animationSpec = tween(durationMillis = 200),
+        label = "category_chip_content"
+    )
+    val animatedBorderColor by animateColorAsState(
+        targetValue = if (isSelected) BentoPrimaryBlue else BentoBorder,
+        animationSpec = tween(durationMillis = 200),
+        label = "category_chip_border"
+    )
+
     Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) BentoPrimaryBlue else BentoCardWhite,
-        contentColor = if (isSelected) Color.White else BentoSlate700,
-        border = if (isSelected) null else BorderStroke(1.dp, BentoBorder),
+        shape = RoundedCornerShape(22.dp),
+        color = animatedBgColor,
+        contentColor = animatedContentColor,
+        border = BorderStroke(1.dp, animatedBorderColor),
         shadowElevation = if (isSelected) 2.dp else 0.dp,
         modifier = modifier
             .testTag("category_chip_${name.lowercase().replace(" ", "_").replace("&", "and")}")
-            .clip(RoundedCornerShape(20.dp))
+            .defaultMinSize(minHeight = 44.dp)
+            .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick)
     ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-            ),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-        )
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) Color.White else BentoPrimaryBlue,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            } else if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+
+            Text(
+                text = name,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                )
+            )
+
+            if (count != null && count >= 0) {
+                Spacer(modifier = Modifier.width(6.dp))
+                Surface(
+                    shape = CircleShape,
+                    color = if (isSelected) Color.White.copy(alpha = 0.25f) else BentoBlueLight
+                ) {
+                    Text(
+                        text = "$count",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
+                        ),
+                        color = if (isSelected) Color.White else BentoPrimaryBlue,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                    )
+                }
+            }
+        }
     }
 }
 

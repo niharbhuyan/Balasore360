@@ -22,15 +22,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SportsCricket
+import com.example.ui.components.FilterChipGroup
+import com.example.ui.components.FilterChipItem
 import kotlin.math.roundToInt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +61,7 @@ import com.example.ui.components.FriendlyEmptyStateType
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -81,6 +91,9 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.components.BalasoreSocialHubCard
 import com.example.ui.components.SocialMediaQuickRow
 import com.example.ui.components.openSocialMediaLink
+import com.example.ui.components.NewsCardSkeleton
+import com.example.ui.components.NewsBreakingBannerSkeleton
+import com.example.ui.components.ShimmerSyncBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,13 +118,27 @@ fun NewsScreen(
 ) {
     val categories = listOf(
         "All",
-        "Local News",
-        "Events",
-        "Weather Alerts",
+        "Local",
+        "Sports",
+        "Weather",
         "Tourism",
+        "Events",
         "Politics",
         "Read Later"
     )
+
+    val newsFilterChips = remember(articles) {
+        listOf(
+            FilterChipItem(id = "All", label = "All", icon = Icons.AutoMirrored.Filled.Article),
+            FilterChipItem(id = "Local", label = "Local", icon = Icons.Default.LocationCity),
+            FilterChipItem(id = "Sports", label = "Sports", icon = Icons.Default.SportsCricket),
+            FilterChipItem(id = "Weather", label = "Weather", icon = Icons.Default.Cloud),
+            FilterChipItem(id = "Tourism", label = "Tourism", icon = Icons.Default.BeachAccess),
+            FilterChipItem(id = "Events", label = "Events", icon = Icons.Default.Celebration),
+            FilterChipItem(id = "Politics", label = "Politics", icon = Icons.Default.AccountBalance),
+            FilterChipItem(id = "Read Later", label = "Read Later", icon = Icons.Default.Bookmark)
+        )
+    }
 
     val breakingNews = articles.firstOrNull { it.isBreaking }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -139,24 +166,15 @@ fun NewsScreen(
         ) {
             // Horizontal Scrolling Category Chip Bar at the TOP of the news feed
             item {
-                Row(
+                FilterChipGroup(
+                    chips = newsFilterChips,
+                    selectedId = selectedCategory,
+                    onSelect = onCategorySelect,
+                    testTagPrefix = "news_filter_chip",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .testTag("news_category_chips"),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    categories.forEach { cat ->
-                        val isSelected = cat == selectedCategory ||
-                                (cat == "Read Later" && (selectedCategory == "Saved" || selectedCategory == "Read Later"))
-                        CategoryChip(
-                            name = cat,
-                            isSelected = isSelected,
-                            onClick = { onCategorySelect(cat) }
-                        )
-                    }
-                }
+                        .testTag("news_category_chips")
+                )
             }
 
             // Active Search Filter Status Banner
@@ -191,7 +209,11 @@ fun NewsScreen(
             }
 
             // Breaking News Bento Tile
-            if (breakingNews != null && searchQuery.isEmpty() && selectedCategory == "All") {
+            if (isRefreshing && articles.isEmpty() && searchQuery.isEmpty() && selectedCategory == "All") {
+                item {
+                    NewsBreakingBannerSkeleton()
+                }
+            } else if (breakingNews != null && searchQuery.isEmpty() && selectedCategory == "All") {
                 item {
                     Card(
                         shape = RoundedCornerShape(24.dp),
@@ -275,7 +297,12 @@ fun NewsScreen(
             }
 
             // Articles List in Bento Grid Cards
-            if (articles.isEmpty()) {
+            if (isRefreshing && articles.isEmpty()) {
+                // Shimmer Skeleton Loading while data is being fetched from the network
+                items(5) {
+                    NewsCardSkeleton()
+                }
+            } else if (articles.isEmpty()) {
                 item {
                     if (!isOnline) {
                         FriendlyEmptyStateCard(
@@ -328,6 +355,14 @@ fun NewsScreen(
                     }
                 }
             } else {
+                if (isRefreshing) {
+                    item {
+                        ShimmerSyncBanner(
+                            message = "Fetching latest Balasore news updates...",
+                            odiaMessage = "ନୂତନ ଖବର ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
+                        )
+                    }
+                }
                 items(articles, key = { it.id }) { article ->
                     BentoNewsCard(
                         article = article,
