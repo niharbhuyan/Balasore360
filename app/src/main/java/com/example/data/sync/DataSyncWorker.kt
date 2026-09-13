@@ -22,7 +22,9 @@ class DataSyncWorker(
         Log.d(TAG, "DataSyncWorker: Starting background Room caching for Balasore...")
         try {
             val repository = BalasoreRepository.getInstance(applicationContext)
-            val syncResult = repository.syncAllData()
+            // Check if local cache is older than 24 hours to force network refresh
+            val isCacheStale = repository.isCacheOlderThan24Hours()
+            val syncResult = repository.syncAllData(forceNetwork = isCacheStale)
 
             val outputData = workDataOf(
                 KEY_SYNC_SUCCESS to syncResult.isSuccess,

@@ -49,6 +49,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import com.example.ui.components.FriendlyEmptyStateCard
+import com.example.ui.components.FriendlyEmptyStateType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -342,9 +344,9 @@ fun LocalAlertsBottomSheet(
 
             // Weather Warning Alert Banner
             val isWeatherAlertActive = weather != null && weather.alertLevel != "SAFE" && weather.alertLevel != "NORMAL"
-            if (isWeatherAlertActive && weather != null) {
+            if (isWeatherAlertActive) {
                 item {
-                    val isUrgent = weather.alertLevel == "URGENT" || weather.alertLevel == "CRITICAL"
+                    val isUrgent = weather?.alertLevel == "URGENT" || weather?.alertLevel == "CRITICAL"
                     Card(
                         shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(containerColor = if (isUrgent) BentoRedBg else BentoAmberBg),
@@ -472,37 +474,18 @@ fun LocalAlertsBottomSheet(
             // All Clear message if no alerts
             if (!isWeatherAlertActive && breakingNews.isEmpty()) {
                 item {
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = BentoGreenBg,
-                        border = BorderStroke(1.dp, BentoGreenText.copy(alpha = 0.25f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "All Clear",
-                                tint = BentoGreenText,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Column {
-                                Text(
-                                    text = "All Clear in Balasore",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoSlate900
-                                )
-                                Text(
-                                    text = "No severe weather storm warnings or emergency district advisories at this moment.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = BentoSlate700
-                                )
-                            }
-                        }
-                    }
+                    FriendlyEmptyStateCard(
+                        type = FriendlyEmptyStateType.ALERTS_ALL_CLEAR,
+                        title = "All Clear in Balasore",
+                        odiaTitle = "ବାଲେଶ୍ୱରରେ ପାଣିପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସୁରକ୍ଷିତ",
+                        subtitle = "No active cyclone depressions, severe thunderstorms, or emergency district advisories at this moment.",
+                        actionButtonText = null,
+                        tipsList = listOf(
+                            "Instant FCM push notifications will alert you if weather warnings are issued.",
+                            "Tidal conditions at Chandipur Beach can be checked anytime in the Weather tab."
+                        ),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
                 }
             }
 

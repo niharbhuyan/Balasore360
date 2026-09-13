@@ -78,7 +78,8 @@ enum class FriendlyEmptyStateType {
     ALERTS_ALL_CLEAR,
     OFFLINE_NO_INTERNET,
     OFFLINE_ROOM_CACHED,
-    WEATHER_LOADING
+    WEATHER_LOADING,
+    TOURISM_EMPTY
 }
 
 /**
@@ -89,6 +90,17 @@ fun FriendlyEmptyStateIllustration(
     type: FriendlyEmptyStateType,
     modifier: Modifier = Modifier
 ) {
+    // Resolve @Composable color getters outside of Canvas DrawScope
+    val colorBlueLight = BentoBlueLight
+    val colorBorder = BentoBorder
+    val colorPrimaryBlue = BentoPrimaryBlue
+    val colorAmberText = BentoAmberText
+    val colorSlate700 = BentoSlate700
+    val colorSlate400 = BentoSlate400
+    val colorAmberBg = BentoAmberBg
+    val colorGreenBg = BentoGreenBg
+    val colorGreenText = BentoGreenText
+
     val infiniteTransition = rememberInfiniteTransition(label = "illustration_anim")
     val pulse by infiniteTransition.animateFloat(
         initialValue = 0.95f,
@@ -123,7 +135,7 @@ fun FriendlyEmptyStateIllustration(
                     // Soft background halo
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(BentoBlueLight, BentoBlueLight.copy(alpha = 0f)),
+                            colors = listOf(colorBlueLight, colorBlueLight.copy(alpha = 0f)),
                             center = Offset(cx, cy),
                             radius = size.width * 0.48f * pulse
                         ),
@@ -133,7 +145,7 @@ fun FriendlyEmptyStateIllustration(
 
                     // Folded Newspaper back shadow
                     drawRoundRect(
-                        color = BentoBorder,
+                        color = colorBorder,
                         topLeft = Offset(cx - 36f, cy - 30f),
                         size = Size(76f, 66f),
                         cornerRadius = CornerRadius(10f, 10f)
@@ -147,7 +159,7 @@ fun FriendlyEmptyStateIllustration(
                         cornerRadius = CornerRadius(8f, 8f)
                     )
                     drawRoundRect(
-                        color = BentoPrimaryBlue.copy(alpha = 0.3f),
+                        color = colorPrimaryBlue.copy(alpha = 0.3f),
                         topLeft = Offset(cx - 40f, cy - 34f),
                         size = Size(74f, 64f),
                         cornerRadius = CornerRadius(8f, 8f),
@@ -156,13 +168,13 @@ fun FriendlyEmptyStateIllustration(
 
                     // Newspaper Masthead & header
                     drawRoundRect(
-                        color = BentoPrimaryBlue,
+                        color = colorPrimaryBlue,
                         topLeft = Offset(cx - 34f, cy - 28f),
                         size = Size(36f, 8f),
                         cornerRadius = CornerRadius(4f, 4f)
                     )
                     drawCircle(
-                        color = BentoAmberText,
+                        color = colorAmberText,
                         radius = 4f,
                         center = Offset(cx + 20f, cy - 24f)
                     )
@@ -172,7 +184,7 @@ fun FriendlyEmptyStateIllustration(
                     lineYOffsets.forEachIndexed { idx, yOff ->
                         val lineWidth = if (idx % 2 == 0) 58f else 46f
                         drawLine(
-                            color = if (idx == 0) BentoSlate700 else BentoSlate400.copy(alpha = 0.7f),
+                            color = if (idx == 0) colorSlate700 else colorSlate400.copy(alpha = 0.7f),
                             start = Offset(cx - 34f, cy + yOff),
                             end = Offset(cx - 34f + lineWidth, cy + yOff),
                             strokeWidth = if (idx == 0) 3.5f else 2.5f,
@@ -182,12 +194,12 @@ fun FriendlyEmptyStateIllustration(
 
                     // Steaming morning tea cup badge
                     drawCircle(
-                        color = BentoAmberBg,
+                        color = colorAmberBg,
                         radius = 18f,
                         center = Offset(cx + 34f, cy + 22f)
                     )
                     drawCircle(
-                        color = BentoAmberText.copy(alpha = 0.5f),
+                        color = colorAmberText.copy(alpha = 0.5f),
                         radius = 18f,
                         center = Offset(cx + 34f, cy + 22f),
                         style = Stroke(width = 2.5f)
@@ -199,7 +211,7 @@ fun FriendlyEmptyStateIllustration(
                     }
                     drawPath(
                         path = steamPath,
-                        color = BentoAmberText,
+                        color = colorAmberText,
                         style = Stroke(width = 2.5f, cap = StrokeCap.Round)
                     )
                 }
@@ -214,7 +226,7 @@ fun FriendlyEmptyStateIllustration(
                     // Soft emerald protective aura
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(BentoGreenBg, BentoGreenBg.copy(alpha = 0f)),
+                            colors = listOf(colorGreenBg, colorGreenBg.copy(alpha = 0f)),
                             center = Offset(cx, cy),
                             radius = size.width * 0.48f * pulse
                         ),
@@ -279,7 +291,7 @@ fun FriendlyEmptyStateIllustration(
 
                     // Checkmark shield badge
                     drawCircle(
-                        color = BentoGreenText,
+                        color = colorGreenText,
                         radius = 16f,
                         center = Offset(cx + 36f, cy - 20f)
                     )
@@ -306,7 +318,7 @@ fun FriendlyEmptyStateIllustration(
                     // Amber/neutral warning halo
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(BentoAmberBg, BentoAmberBg.copy(alpha = 0f)),
+                            colors = listOf(colorAmberBg, colorAmberBg.copy(alpha = 0f)),
                             center = Offset(cx, cy),
                             radius = size.width * 0.48f * pulse
                         ),
@@ -329,13 +341,13 @@ fun FriendlyEmptyStateIllustration(
                     )
                     drawPath(
                         path = cloudPath,
-                        color = BentoAmberText.copy(alpha = 0.5f),
+                        color = colorAmberText.copy(alpha = 0.5f),
                         style = Stroke(width = 3f)
                     )
 
                     // Cloud offline diagonal slash
                     drawLine(
-                        color = BentoAmberText,
+                        color = colorAmberText,
                         start = Offset(cx - 24f, cy - 32f),
                         end = Offset(cx + 24f, cy + 16f),
                         strokeWidth = 3.5f,
@@ -344,13 +356,13 @@ fun FriendlyEmptyStateIllustration(
 
                     // Local Room Database Vault badge
                     drawRoundRect(
-                        color = BentoBlueLight,
+                        color = colorBlueLight,
                         topLeft = Offset(cx - 24f, cy + 16f),
                         size = Size(48f, 22f),
                         cornerRadius = CornerRadius(6f, 6f)
                     )
                     drawRoundRect(
-                        color = BentoPrimaryBlue,
+                        color = colorPrimaryBlue,
                         topLeft = Offset(cx - 24f, cy + 16f),
                         size = Size(48f, 22f),
                         cornerRadius = CornerRadius(6f, 6f),
@@ -359,14 +371,14 @@ fun FriendlyEmptyStateIllustration(
 
                     // Database cylinder lines inside badge
                     drawLine(
-                        color = BentoPrimaryBlue,
+                        color = colorPrimaryBlue,
                         start = Offset(cx - 16f, cy + 23f),
                         end = Offset(cx + 16f, cy + 23f),
                         strokeWidth = 2f,
                         cap = StrokeCap.Round
                     )
                     drawLine(
-                        color = BentoPrimaryBlue,
+                        color = colorPrimaryBlue,
                         start = Offset(cx - 16f, cy + 30f),
                         end = Offset(cx + 16f, cy + 30f),
                         strokeWidth = 2f,
@@ -383,7 +395,7 @@ fun FriendlyEmptyStateIllustration(
 
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(BentoBlueLight, BentoBlueLight.copy(alpha = 0f)),
+                            colors = listOf(colorBlueLight, colorBlueLight.copy(alpha = 0f)),
                             center = Offset(cx, cy),
                             radius = size.width * 0.48f * pulse
                         ),
@@ -398,7 +410,7 @@ fun FriendlyEmptyStateIllustration(
                     }
                     drawPath(
                         path = breeze1,
-                        color = BentoPrimaryBlue,
+                        color = colorPrimaryBlue,
                         style = Stroke(width = 3.5f, cap = StrokeCap.Round)
                     )
 
@@ -417,6 +429,84 @@ fun FriendlyEmptyStateIllustration(
                         color = Color(0xFF0284C7),
                         radius = 8f,
                         center = Offset(cx, cy + 24f)
+                    )
+                }
+            }
+
+            FriendlyEmptyStateType.TOURISM_EMPTY -> {
+                // Scenic Balasore coastal compass, palm frond & temple beacon
+                Canvas(modifier = Modifier.size(130.dp)) {
+                    val cx = size.width / 2f
+                    val cy = size.height / 2f + floatOffset
+
+                    // Soft coastal blue halo
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(colorBlueLight, colorBlueLight.copy(alpha = 0f)),
+                            center = Offset(cx, cy),
+                            radius = size.width * 0.48f * pulse
+                        ),
+                        center = Offset(cx, cy),
+                        radius = size.width * 0.48f * pulse
+                    )
+
+                    // Outer compass rim
+                    drawCircle(
+                        color = Color.White,
+                        radius = 36f,
+                        center = Offset(cx, cy)
+                    )
+                    drawCircle(
+                        color = colorPrimaryBlue.copy(alpha = 0.3f),
+                        radius = 36f,
+                        center = Offset(cx, cy),
+                        style = Stroke(width = 3f)
+                    )
+                    drawCircle(
+                        color = colorPrimaryBlue,
+                        radius = 4f,
+                        center = Offset(cx, cy)
+                    )
+
+                    // Compass North-South needle
+                    val needleNorth = Path().apply {
+                        moveTo(cx, cy - 26f)
+                        lineTo(cx + 7f, cy)
+                        lineTo(cx - 7f, cy)
+                        close()
+                    }
+                    drawPath(
+                        path = needleNorth,
+                        color = Color(0xFFEF4444) // Red North needle
+                    )
+
+                    val needleSouth = Path().apply {
+                        moveTo(cx, cy + 26f)
+                        lineTo(cx + 7f, cy)
+                        lineTo(cx - 7f, cy)
+                        close()
+                    }
+                    drawPath(
+                        path = needleSouth,
+                        color = colorSlate400
+                    )
+
+                    // Destination pin badge
+                    drawCircle(
+                        color = colorAmberBg,
+                        radius = 16f,
+                        center = Offset(cx + 34f, cy - 20f)
+                    )
+                    drawCircle(
+                        color = colorAmberText,
+                        radius = 16f,
+                        center = Offset(cx + 34f, cy - 20f),
+                        style = Stroke(width = 2.5f)
+                    )
+                    drawCircle(
+                        color = colorAmberText,
+                        radius = 5f,
+                        center = Offset(cx + 34f, cy - 20f)
                     )
                 }
             }

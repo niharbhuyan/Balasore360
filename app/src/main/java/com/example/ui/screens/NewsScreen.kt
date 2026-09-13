@@ -22,6 +22,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Clear
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
+import kotlin.math.roundToInt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,6 +97,7 @@ fun NewsScreen(
     onSearchQueryChange: (String) -> Unit,
     onArticleSelect: (NewsArticleEntity?) -> Unit,
     onToggleBookmark: (NewsArticleEntity) -> Unit,
+    onVerifyWithSearch: (NewsArticleEntity) -> Unit = {},
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
     isOnline: Boolean = true,
@@ -101,10 +105,10 @@ fun NewsScreen(
 ) {
     val categories = listOf(
         "All",
-        "Local",
-        "Tourism",
-        "Weather",
+        "Local News",
         "Events",
+        "Weather Alerts",
+        "Tourism",
         "Politics",
         "Read Later"
     )
@@ -353,9 +357,21 @@ fun NewsScreen(
                 onSubmitArticleReview(selectedArticle.id.toString(), selectedArticle.title, rating, comment, guestName)
             },
             onDismiss = { onArticleSelect(null) },
-            onToggleBookmark = { onToggleBookmark(selectedArticle) }
+            onToggleBookmark = { onToggleBookmark(selectedArticle) },
+            onVerifyWithSearch = { onVerifyWithSearch(selectedArticle) }
         )
     }
+}
+
+/**
+ * Calculates estimated reading time for each news article item to improve content readability.
+ * Average reading speed: ~150-180 words per minute.
+ */
+fun calculateReadingTime(article: NewsArticleEntity): String {
+    val fullText = "${article.title} ${article.summary} ${article.content}".trim()
+    val words = fullText.split("\\s+".toRegex()).count { it.isNotBlank() }
+    val minutes = kotlin.math.max(1, (words / 140.0).roundToInt())
+    return "$minutes min read"
 }
 
 /**
@@ -368,6 +384,8 @@ fun BentoNewsCard(
     onToggleBookmark: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
@@ -380,7 +398,7 @@ fun BentoNewsCard(
             .testTag("news_article_${article.id}")
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            // Top Row: Category pill + timestamp
+            // Top Row: Category pill + Reading Time + Timestamp
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -402,12 +420,36 @@ fun BentoNewsCard(
                     )
                 }
 
-                Text(
-                    text = article.publishedAt,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontSize = 11.sp,
-                    color = BentoSlate400
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = "Estimated reading time",
+                        tint = BentoSlate400,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = calculateReadingTime(article),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = BentoSlate500,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = BentoSlate400
+                    )
+                    Text(
+                        text = article.publishedAt,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = BentoSlate400
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -438,7 +480,7 @@ fun BentoNewsCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bottom row: Source + 'Read Later' Bookmark Button (Room DB Offline Saving)
+            // Bottom row: Source + Share Intent + 'Read Later' Bookmark Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -475,33 +517,71 @@ fun BentoNewsCard(
                     }
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (article.isBookmarked) BentoBlueLight else BentoCardWhite,
-                    border = BorderStroke(1.dp, if (article.isBookmarked) BentoPrimaryBlue else BentoBorder),
-                    modifier = Modifier
-                        .clickable(onClick = onToggleBookmark)
-                        .testTag("read_later_button_${article.id}")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // Quick Share Intent Button
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = BentoCardWhite,
+                        border = BorderStroke(1.dp, BentoBorder),
+                        modifier = Modifier
+                            .clickable {
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, article.title)
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "${article.title}\n\n${article.summary}\n\nRead more Balasore news on Balasore 360"
+                                    )
+                                }
+                                context.startActivity(Intent.createChooser(shareIntent, "Share Balasore News"))
+                            }
+                            .testTag("news_share_button_${article.id}")
                     ) {
-                        Icon(
-                            imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                            contentDescription = if (article.isBookmarked) "Saved to Read Later (Offline in Room DB)" else "Save to Read Later (Offline in Room DB)",
-                            tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Text(
-                            text = if (article.isBookmarked) "Saved Offline" else "Read Later",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
-                            ),
-                            color = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700
-                        )
+                        Box(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share Article",
+                                tint = BentoSlate700,
+                                modifier = Modifier.size(15.dp)
+                            )
+                        }
+                    }
+
+                    // Save to Room DB Bookmark Button
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (article.isBookmarked) BentoBlueLight else BentoCardWhite,
+                        border = BorderStroke(1.dp, if (article.isBookmarked) BentoPrimaryBlue else BentoBorder),
+                        modifier = Modifier
+                            .clickable(onClick = onToggleBookmark)
+                            .testTag("read_later_button_${article.id}")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                contentDescription = if (article.isBookmarked) "Saved to Read Later (Offline in Room DB)" else "Save to Read Later (Offline in Room DB)",
+                                tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Text(
+                                text = if (article.isBookmarked) "Saved Offline" else "Read Later",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                ),
+                                color = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700
+                            )
+                        }
                     }
                 }
             }
@@ -518,7 +598,8 @@ fun ArticleDetailSheet(
     onOpenAuth: () -> Unit = {},
     onSubmitReview: (rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _ -> },
     onDismiss: () -> Unit,
-    onToggleBookmark: () -> Unit
+    onToggleBookmark: () -> Unit,
+    onVerifyWithSearch: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
@@ -573,18 +654,43 @@ fun ArticleDetailSheet(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = article.source,
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = BentoPrimaryBlue
                 )
-                Text(
-                    text = article.publishedAt,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = BentoSlate400
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = "Estimated reading time",
+                        tint = BentoSlate400,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = calculateReadingTime(article),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = BentoSlate500,
+                        fontSize = 11.5.sp
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = BentoSlate400,
+                        fontSize = 11.sp
+                    )
+                    Text(
+                        text = article.publishedAt,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = BentoSlate400,
+                        fontSize = 11.5.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -661,6 +767,41 @@ fun ArticleDetailSheet(
                         text = if (article.isBookmarked) "Saved (Offline)" else "Read Later",
                         color = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700,
                         fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // AI Search Grounding Button
+            Surface(
+                onClick = onVerifyWithSearch,
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFF4285F4).copy(alpha = 0.09f),
+                border = BorderStroke(1.5.dp, Color(0xFF4285F4).copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("article_ai_search_grounding_button")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color(0xFF1A73E8),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Verify & Fact-Check with Google Search Grounding",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF1A73E8)
                     )
                 }
             }

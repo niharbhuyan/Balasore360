@@ -83,6 +83,7 @@ fun OfflineStatusBottomSheet(
     hotspotsCount: Int,
     hasWeatherCache: Boolean,
     forecastCount: Int = 0,
+    isCacheOlderThan24Hours: Boolean = false,
     onClose: () -> Unit,
     onSyncNow: () -> Unit,
     modifier: Modifier = Modifier
@@ -307,11 +308,27 @@ fun OfflineStatusBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(
-                                text = "Last Cache Sync",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BentoSlate900
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Last Cache Sync",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate900
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isCacheOlderThan24Hours) BentoAmberBg else BentoBlueLight
+                                ) {
+                                    Text(
+                                        text = if (isCacheOlderThan24Hours) ">24h Stale" else "Fresh (<24h)",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        color = if (isCacheOlderThan24Hours) BentoAmberText else BentoPrimaryBlue,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
                             Text(
                                 text = SyncManager.formatSyncTime(lastSyncTime),
                                 style = MaterialTheme.typography.bodySmall,

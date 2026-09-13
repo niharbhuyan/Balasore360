@@ -24,6 +24,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +35,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -102,6 +107,9 @@ import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
 import com.example.ui.components.BalasoreSocialHubCard
+import com.example.ui.components.FriendlyEmptyStateCard
+import com.example.ui.components.FriendlyEmptyStateType
+import com.example.ui.components.SearchEmptyStateCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,6 +127,7 @@ fun TourismScreen(
     onCategorySelect: (String) -> Unit,
     onHotspotSelect: (HotspotEntity?) -> Unit,
     onToggleFavorite: (HotspotEntity) -> Unit,
+    onExploreWithMaps: (HotspotEntity) -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
@@ -195,7 +204,229 @@ fun TourismScreen(
                         .weight(1f)
                 )
             }
+        } else if (isGridView) {
+            // Interactive Tourism Hotspot Gallery using LazyVerticalGrid with descriptive text overlays
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("tourism_hotspot_gallery_grid"),
+                contentPadding = PaddingValues(bottom = 90.dp)
+            ) {
+                // If searching, show an active search status banner; otherwise show Bento Hero cluster
+                if (searchQuery.isNotBlank()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = BentoBlueLight,
+                            border = BorderStroke(1.dp, BentoBorder),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Filtering spots for \"$searchQuery\"",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoPrimaryBlue
+                                )
+                                Text(
+                                    text = "${hotspots.size} spots found",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoSlate700
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        BentoTopGrid(
+                            weather = weather,
+                            onAlertClick = {
+                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                if (chandipur != null) onHotspotSelect(chandipur)
+                            }
+                        )
+                    }
+
+                    // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        BentoTourismHeroTile(
+                            onExplore = {
+                                val chandipur = hotspots.find { it.id == "chandipur_beach" }
+                                if (chandipur != null) onHotspotSelect(chandipur)
+                            }
+                        )
+                    }
+                }
+
+                // Category Filter Chips
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        categories.forEach { cat ->
+                            CategoryChip(
+                                name = cat,
+                                isSelected = cat == selectedCategory,
+                                onClick = { onCategorySelect(cat) }
+                            )
+                        }
+                    }
+                }
+
+                // Section Title with View Switcher (Grid / List / Map)
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = if (selectedCategory == "All") "Scenic Hotspots Gallery" else "$selectedCategory Hotspots",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+                            )
+                            Text(
+                                text = "${hotspots.size} destinations in Balasore",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BentoSlate500
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // Grid / List Toggle Button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = BentoBlueLight,
+                                border = BorderStroke(1.dp, BentoBorder),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { isGridView = false }
+                                    .testTag("hotspot_view_mode_toggle")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ViewAgenda,
+                                        contentDescription = "Switch to List View",
+                                        tint = BentoPrimaryBlue,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "List",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
+                            }
+
+                            // Map View Switcher Button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = BentoBlueLight,
+                                border = BorderStroke(1.dp, BentoBorder),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable(onClick = onToggleMapMode)
+                                    .testTag("hotspot_map_view_toggle")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Map,
+                                        contentDescription = "Interactive Map",
+                                        tint = BentoPrimaryBlue,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Map",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoPrimaryBlue
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Hotspots in LazyVerticalGrid
+                if (hotspots.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        if (searchQuery.isNotBlank()) {
+                            SearchEmptyStateCard(
+                                searchQuery = searchQuery,
+                                category = selectedCategory,
+                                feedType = "Tourism Hotspots",
+                                onClearSearch = { onSearchQueryChange("") },
+                                onResetCategory = { onCategorySelect("All") },
+                                onSuggestionClick = { onSearchQueryChange(it) },
+                                suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
+                            )
+                        } else {
+                            FriendlyEmptyStateCard(
+                                type = FriendlyEmptyStateType.TOURISM_EMPTY,
+                                title = if (selectedCategory == "Favorites") "No Favorite Spots Yet" else "No Hotspots Found",
+                                odiaTitle = if (selectedCategory == "Favorites") "କୌଣସି ପ୍ରିୟ ସ୍ଥାନ ସାଇତା ହୋଇନାହିଁ" else "କୌଣସି ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ମିଳିଲା ନାହିଁ",
+                                subtitle = if (selectedCategory == "Favorites") {
+                                    "Tap the heart icon on any scenic Balasore attraction to keep it in your personal travel wishlist."
+                                } else {
+                                    "No destinations listed under \"$selectedCategory\". Tap Show All to explore all Balasore coastal and temple sites."
+                                },
+                                actionButtonText = if (selectedCategory != "All") "Show All Hotspots" else null,
+                                onActionClick = { onCategorySelect("All") },
+                                tipsList = listOf(
+                                    "Balasore boasts unique receding tide beaches and 10th-century historical monuments.",
+                                    "Hotspot GPS coordinates and visiting tips are saved locally for offline exploring."
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+                } else {
+                    items(hotspots, key = { it.id }) { hotspot ->
+                        Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
+                            HotspotBentoGridCard(
+                                hotspot = hotspot,
+                                onClick = { onHotspotSelect(hotspot) },
+                                onToggleFavorite = { onToggleFavorite(hotspot) }
+                            )
+                        }
+                    }
+
+                    // Official Balasore 360 Social Media Hub
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        BalasoreSocialHubCard(
+                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
+                        )
+                    }
+                }
+            }
         } else {
+            // List View using LazyColumn
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 90.dp)
@@ -302,11 +533,11 @@ fun TourismScreen(
                             // Grid / List Toggle Button
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = if (isGridView) BentoBlueLight else BentoCardWhite,
+                                color = BentoCardWhite,
                                 border = BorderStroke(1.dp, BentoBorder),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .clickable { isGridView = !isGridView }
+                                    .clickable { isGridView = true }
                                     .testTag("hotspot_view_mode_toggle")
                             ) {
                                 Row(
@@ -314,14 +545,14 @@ fun TourismScreen(
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
                                 ) {
                                     Icon(
-                                        imageVector = if (isGridView) Icons.Default.ViewAgenda else Icons.Default.GridView,
-                                        contentDescription = if (isGridView) "List View" else "Grid View",
+                                        imageVector = Icons.Default.GridView,
+                                        contentDescription = "Switch to Grid View",
                                         tint = BentoPrimaryBlue,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = if (isGridView) "List" else "Grid",
+                                        text = "Grid",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = BentoPrimaryBlue
                                     )
@@ -360,50 +591,38 @@ fun TourismScreen(
                     }
                 }
 
-                // Hotspots Bento Cards List or Grid
+                // Hotspots Bento Cards List
                 if (hotspots.isEmpty()) {
                     item {
-                        SearchEmptyStateCard(
-                            searchQuery = searchQuery,
-                            category = selectedCategory,
-                            feedType = "Tourism Hotspots",
-                            onClearSearch = { onSearchQueryChange("") },
-                            onResetCategory = { onCategorySelect("All") },
-                            onSuggestionClick = { onSearchQueryChange(it) },
-                            suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
-                        )
-                    }
-                } else if (isGridView) {
-                    // 2-Column Grid of Hotspots with Images and Descriptions
-                    val chunkedHotspots = hotspots.chunked(2)
-                    items(chunkedHotspots, key = { row -> row.joinToString("-") { it.id } }) { rowItems ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 5.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            for (hotspot in rowItems) {
-                                Box(modifier = Modifier.weight(1f)) {
-                                    HotspotBentoGridCard(
-                                        hotspot = hotspot,
-                                        onClick = { onHotspotSelect(hotspot) },
-                                        onToggleFavorite = { onToggleFavorite(hotspot) }
-                                    )
-                                }
-                            }
-                            // Fill empty cell if odd number in the row
-                            if (rowItems.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                        if (searchQuery.isNotBlank()) {
+                            SearchEmptyStateCard(
+                                searchQuery = searchQuery,
+                                category = selectedCategory,
+                                feedType = "Tourism Hotspots",
+                                onClearSearch = { onSearchQueryChange("") },
+                                onResetCategory = { onCategorySelect("All") },
+                                onSuggestionClick = { onSearchQueryChange(it) },
+                                suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
+                            )
+                        } else {
+                            FriendlyEmptyStateCard(
+                                type = FriendlyEmptyStateType.TOURISM_EMPTY,
+                                title = if (selectedCategory == "Favorites") "No Favorite Spots Yet" else "No Hotspots Found",
+                                odiaTitle = if (selectedCategory == "Favorites") "କୌଣସି ପ୍ରିୟ ସ୍ଥାନ ସାଇତା ହୋଇନାହିଁ" else "କୌଣସି ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ମିଳିଲା ନାହିଁ",
+                                subtitle = if (selectedCategory == "Favorites") {
+                                    "Tap the heart icon on any scenic Balasore attraction to keep it in your personal travel wishlist."
+                                } else {
+                                    "No destinations listed under \"$selectedCategory\". Tap Show All to explore all Balasore coastal and temple sites."
+                                },
+                                actionButtonText = if (selectedCategory != "All") "Show All Hotspots" else null,
+                                onActionClick = { onCategorySelect("All") },
+                                tipsList = listOf(
+                                    "Balasore boasts unique receding tide beaches and 10th-century historical monuments.",
+                                    "Hotspot GPS coordinates and visiting tips are saved locally for offline exploring."
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
                         }
-                    }
-
-                    // Official Balasore 360 Social Media Hub
-                    item {
-                        BalasoreSocialHubCard(
-                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
-                        )
                     }
                 } else {
                     items(hotspots, key = { it.id }) { hotspot ->
@@ -435,7 +654,8 @@ fun TourismScreen(
                     onSubmitHotspotReview(selectedHotspot.id, selectedHotspot.name, rating, comment, guestName)
                 },
                 onDismiss = { onHotspotSelect(null) },
-                onToggleFavorite = { onToggleFavorite(selectedHotspot) }
+                onToggleFavorite = { onToggleFavorite(selectedHotspot) },
+                onExploreWithMaps = { onExploreWithMaps(selectedHotspot) }
             )
         }
     }
@@ -1046,7 +1266,8 @@ fun HotspotDetailSheet(
     onOpenAuth: () -> Unit = {},
     onSubmitReview: (rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _ -> },
     onDismiss: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onExploreWithMaps: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
@@ -1245,6 +1466,41 @@ fun HotspotDetailSheet(
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // AI Maps Grounding Guide Button
+            Surface(
+                onClick = onExploreWithMaps,
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFF0F9D58).copy(alpha = 0.09f),
+                border = BorderStroke(1.5.dp, Color(0xFF0F9D58).copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("hotspot_ai_maps_grounding_button")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color(0xFF0F9D58),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Explore Spot with Google Maps Grounding",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF0F9D58)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))

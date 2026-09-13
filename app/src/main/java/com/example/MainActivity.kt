@@ -22,11 +22,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Explore
@@ -34,6 +36,7 @@ import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -45,10 +48,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -63,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.fcm.BalasoreNotificationHelper
 import com.example.data.fcm.FcmManager
 import com.example.ui.components.AppHeader
+import com.example.ui.components.BalasoreGroundingSheet
 import com.example.ui.components.MainScrollableTabRow
 import com.example.ui.screens.AuthBottomSheet
 import com.example.ui.screens.EssentialsScreen
@@ -147,6 +154,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
     val breakingNewsEnabled by viewModel.breakingNewsEnabled.collectAsStateWithLifecycle()
     val fcmToken by viewModel.fcmToken.collectAsStateWithLifecycle()
     val timeSensitiveAlerts by viewModel.timeSensitiveAlerts.collectAsStateWithLifecycle()
+    val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
+    val groundingState by viewModel.groundingState.collectAsStateWithLifecycle()
 
     val breakingNewsList = remember(news) {
         news.filter {
@@ -160,6 +169,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val pullToRefreshState = rememberPullToRefreshState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -279,42 +289,70 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { viewModel.openGroundingSheet() },
+                containerColor = BentoPrimaryBlue,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(16.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "AI Guide",
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                text = {
+                    Text(
+                        text = "AI Guide",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                modifier = Modifier.testTag("ai_assistant_fab")
+            )
+        }
     ) { innerPadding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refreshData() },
+            state = pullToRefreshState,
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isRefreshing,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    containerColor = BentoCardWhite,
+                    color = BentoPrimaryBlue
+                )
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .testTag("main_activity_pull_to_refresh")
         ) {
             when (uiState.selectedTab) {
                 AppTab.HOTSPOTS -> {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshData() },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .testTag("main_pull_to_refresh")
-                    ) {
-                        TourismScreen(
-                            hotspots = hotspots,
-                            weather = weather,
-                            selectedCategory = uiState.hotspotCategory,
-                            selectedHotspot = uiState.selectedHotspot,
-                            isMapMode = uiState.isMapMode,
-                            currentUser = currentUser,
-                            onToggleMapMode = { viewModel.toggleMapMode() },
-                            onOpenAuth = { viewModel.openAuthSheet() },
-                            getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
-                            onSubmitHotspotReview = { id, name, rating, comment, guestName ->
-                                viewModel.submitReview("HOTSPOT", id, name, rating, comment, guestName)
-                            },
-                            onCategorySelect = { viewModel.setHotspotCategory(it) },
-                            onHotspotSelect = { viewModel.selectHotspot(it) },
-                            onToggleFavorite = { viewModel.toggleFavorite(it) },
-                            searchQuery = uiState.searchQuery,
-                            onSearchQueryChange = { viewModel.setSearchQuery(it) }
-                        )
-                    }
+                    TourismScreen(
+                        hotspots = hotspots,
+                        weather = weather,
+                        selectedCategory = uiState.hotspotCategory,
+                        selectedHotspot = uiState.selectedHotspot,
+                        isMapMode = uiState.isMapMode,
+                        currentUser = currentUser,
+                        onToggleMapMode = { viewModel.toggleMapMode() },
+                        onOpenAuth = { viewModel.openAuthSheet() },
+                        getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
+                        onSubmitHotspotReview = { id, name, rating, comment, guestName ->
+                            viewModel.submitReview("HOTSPOT", id, name, rating, comment, guestName)
+                        },
+                        onCategorySelect = { viewModel.setHotspotCategory(it) },
+                        onHotspotSelect = { viewModel.selectHotspot(it) },
+                        onToggleFavorite = { viewModel.toggleFavorite(it) },
+                        onExploreWithMaps = { hotspot -> viewModel.exploreHotspotWithMaps(hotspot) },
+                        searchQuery = uiState.searchQuery,
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) }
+                    )
                 }
                 AppTab.NEWS -> {
                     NewsScreen(
@@ -324,7 +362,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         selectedArticle = uiState.selectedArticle,
                         currentUser = currentUser,
                         isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshNewsFeed() },
+                        onRefresh = { viewModel.refreshData() },
                         onOpenAuth = { viewModel.openAuthSheet() },
                         getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
                         onSubmitArticleReview = { id, title, rating, comment, guestName ->
@@ -333,7 +371,9 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         onCategorySelect = { viewModel.setNewsCategory(it) },
                         onSearchQueryChange = { viewModel.setSearchQuery(it) },
                         onArticleSelect = { viewModel.selectArticle(it) },
-                        onToggleBookmark = { viewModel.toggleBookmark(it) }
+                        onToggleBookmark = { viewModel.toggleBookmark(it) },
+                        onVerifyWithSearch = { article -> viewModel.verifyNewsWithSearch(article) },
+                        isOnline = isOnline
                     )
                 }
                 AppTab.WEATHER -> {
@@ -343,7 +383,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         timeSensitiveAlerts = timeSensitiveAlerts,
                         currentUser = currentUser,
                         isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshWeatherFeed() },
+                        onRefresh = { viewModel.refreshData() },
                         onOpenAuth = { viewModel.openAuthSheet() },
                         getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
                         onSubmitWeatherReview = { id, title, rating, comment, guestName ->
@@ -351,7 +391,9 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         },
                         searchQuery = uiState.searchQuery,
                         onClearSearch = { viewModel.clearSearchQuery() },
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) }
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                        onCheckTideSearch = { tideState -> viewModel.checkCoastalTideSearch(tideState) },
+                        isOnline = isOnline
                     )
                 }
                 AppTab.ESSENTIALS -> {
@@ -362,7 +404,9 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
                         onOpenAlertCenter = { viewModel.openAlertsSheet() },
                         onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
-                        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() }
+                        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() },
+                        onLanguageChange = { lang -> viewModel.showUserNotice("Language preference updated to $lang") },
+                        onClearOfflineCache = { viewModel.clearOfflineCache() }
                     )
                 }
             }
@@ -391,7 +435,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         onUpdateAvatar = { avatarUri ->
             viewModel.updateAvatar(avatarUri)
         },
-        onLogout = { viewModel.logout() }
+        onLogout = { viewModel.logout(context) },
+        onGoogleSignIn = { viewModel.signInWithGoogle(context) }
     )
 
     // Offline & WorkManager Background Cache Sync Sheet
@@ -404,6 +449,7 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
         hotspotsCount = hotspots.size,
         hasWeatherCache = weather != null,
         forecastCount = dailyForecasts.size,
+        isCacheOlderThan24Hours = uiState.isCacheOlderThan24Hours,
         onClose = { viewModel.closeOfflineSheet() },
         onSyncNow = { viewModel.triggerManualSync() }
     )
@@ -426,5 +472,13 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
             viewModel.selectTab(AppTab.NEWS)
             viewModel.selectArticle(article)
         }
+    )
+
+    // Gemini 3.5 Flash Search & Google Maps Grounding Assistant Sheet
+    BalasoreGroundingSheet(
+        groundingState = groundingState,
+        onClose = { viewModel.closeGroundingSheet() },
+        onExecuteQuery = { query, mode -> viewModel.executeGrounding(query, mode) },
+        onModeChange = { mode -> viewModel.setGroundingToolMode(mode) }
     )
 }

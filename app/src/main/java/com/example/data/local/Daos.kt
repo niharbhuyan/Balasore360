@@ -1,6 +1,7 @@
 package com.example.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -9,6 +10,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NewsDao {
+    // --- CREATE ---
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertArticle(article: NewsArticleEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertArticles(articles: List<NewsArticleEntity>)
+
+    // --- READ ---
     @Query("SELECT * FROM news_articles ORDER BY isBreaking DESC, timestamp DESC")
     fun getAllNews(): Flow<List<NewsArticleEntity>>
 
@@ -33,23 +42,40 @@ interface NewsDao {
     @Query("SELECT * FROM news_articles WHERE title LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY timestamp DESC")
     fun searchNews(query: String): Flow<List<NewsArticleEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertArticles(articles: List<NewsArticleEntity>)
+    @Query("SELECT COUNT(*) FROM news_articles")
+    suspend fun getCount(): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertArticle(article: NewsArticleEntity): Long
+    @Query("SELECT COUNT(*) FROM news_articles")
+    fun getNewsCountFlow(): Flow<Int>
+
+    @Query("SELECT MAX(timestamp) FROM news_articles")
+    suspend fun getLatestTimestamp(): Long?
+
+    @Query("SELECT MIN(timestamp) FROM news_articles")
+    suspend fun getOldestTimestamp(): Long?
+
+    // --- UPDATE ---
+    @Update
+    suspend fun updateArticle(article: NewsArticleEntity): Int
+
+    @Update
+    suspend fun updateArticles(articles: List<NewsArticleEntity>): Int
 
     @Query("UPDATE news_articles SET isBookmarked = :isBookmarked WHERE id = :id")
     suspend fun updateBookmark(id: Long, isBookmarked: Boolean)
 
+    // --- DELETE ---
+    @Delete
+    suspend fun deleteArticle(article: NewsArticleEntity): Int
+
     @Query("DELETE FROM news_articles WHERE id = :id")
     suspend fun deleteArticleById(id: Long): Int
 
-    @Query("SELECT COUNT(*) FROM news_articles")
-    suspend fun getCount(): Int
-
     @Query("DELETE FROM news_articles WHERE isBookmarked = 0")
     suspend fun clearNonBookmarked()
+
+    @Query("DELETE FROM news_articles")
+    suspend fun clearAll()
 }
 
 @Dao
@@ -62,6 +88,12 @@ interface WeatherDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateWeather(weather: WeatherCacheEntity)
+
+    @Query("SELECT MAX(lastUpdated) FROM weather_cache")
+    suspend fun getLatestTimestamp(): Long?
+
+    @Query("DELETE FROM weather_cache")
+    suspend fun clearWeatherCache()
 
     @Query("SELECT * FROM daily_forecasts ORDER BY date ASC")
     fun getDailyForecasts(): Flow<List<DailyForecastEntity>>
@@ -78,13 +110,21 @@ interface WeatherDao {
 
 @Dao
 interface HotspotDao {
+    // --- CREATE ---
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHotspot(hotspot: HotspotEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHotspots(hotspots: List<HotspotEntity>)
+
+    // --- READ ---
     @Query("SELECT * FROM tourism_hotspots ORDER BY distanceKmFromBls ASC")
     fun getAllHotspots(): Flow<List<HotspotEntity>>
 
     @Query("SELECT * FROM tourism_hotspots WHERE category = :category ORDER BY distanceKmFromBls ASC")
     fun getHotspotsByCategory(category: String): Flow<List<HotspotEntity>>
 
-    @Query("SELECT * FROM tourism_hotspots WHERE isFavorite = 1")
+    @Query("SELECT * FROM tourism_hotspots WHERE isFavorite = 1 ORDER BY distanceKmFromBls ASC")
     fun getFavoriteHotspots(): Flow<List<HotspotEntity>>
 
     @Query("SELECT * FROM tourism_hotspots WHERE id = :id LIMIT 1")
@@ -96,21 +136,43 @@ interface HotspotDao {
     @Query("SELECT * FROM tourism_hotspots WHERE name LIKE '%' || :query || '%' OR odiaName LIKE '%' || :query || '%' OR shortDescription LIKE '%' || :query || '%' OR highlights LIKE '%' || :query || '%' ORDER BY distanceKmFromBls ASC")
     fun searchHotspots(query: String): Flow<List<HotspotEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHotspots(hotspots: List<HotspotEntity>)
+    @Query("SELECT COUNT(*) FROM tourism_hotspots")
+    suspend fun getCount(): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHotspot(hotspot: HotspotEntity)
+    @Query("SELECT COUNT(*) FROM tourism_hotspots")
+    fun getHotspotsCountFlow(): Flow<Int>
+
+    @Query("SELECT MAX(timestamp) FROM tourism_hotspots")
+    suspend fun getLatestTimestamp(): Long?
+
+    @Query("SELECT MIN(timestamp) FROM tourism_hotspots")
+    suspend fun getOldestTimestamp(): Long?
+
+    // --- UPDATE ---
+    @Update
+    suspend fun updateHotspot(hotspot: HotspotEntity): Int
+
+    @Update
+    suspend fun updateHotspots(hotspots: List<HotspotEntity>): Int
 
     @Query("UPDATE tourism_hotspots SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: String, isFavorite: Boolean)
 
+    // --- DELETE ---
+    @Delete
+    suspend fun deleteHotspot(hotspot: HotspotEntity): Int
+
     @Query("DELETE FROM tourism_hotspots WHERE id = :id")
     suspend fun deleteHotspotById(id: String): Int
 
-    @Query("SELECT COUNT(*) FROM tourism_hotspots")
-    suspend fun getCount(): Int
+    @Query("DELETE FROM tourism_hotspots")
+    suspend fun clearAllHotspots()
 }
+
+/**
+ * Typealias for semantic clarity: TourismDao refers directly to HotspotDao.
+ */
+typealias TourismDao = HotspotDao
 
 @Dao
 interface UserDao {
@@ -188,4 +250,7 @@ interface CacheMetadataDao {
 
     @Query("SELECT COUNT(*) FROM cache_sync_metadata")
     suspend fun getCount(): Int
+
+    @Query("DELETE FROM cache_sync_metadata")
+    suspend fun clearAll()
 }

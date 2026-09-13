@@ -77,7 +77,8 @@ data class DailyForecastEntity(
     indices = [
         Index("category"),
         Index("isFavorite"),
-        Index("distanceKmFromBls")
+        Index("distanceKmFromBls"),
+        Index("timestamp")
     ]
 )
 data class HotspotEntity(
@@ -97,7 +98,8 @@ data class HotspotEntity(
     val localTip: String,
     val latitude: Double = 21.4934,
     val longitude: Double = 86.9325,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "cache_sync_metadata")

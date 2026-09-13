@@ -16,6 +16,8 @@ import com.example.data.local.WeatherCacheEntity
 import com.example.data.model.BalasoreWeatherAlert
 import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.DefaultData
+import com.example.data.remote.GroundingResponse
+import com.example.data.remote.GroundingToolMode
 import com.example.data.sync.NetworkMonitor
 import com.example.data.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
@@ -50,6 +52,15 @@ enum class ThemeMode {
     DARK
 }
 
+data class GroundingState(
+    val isQuerying: Boolean = false,
+    val query: String = "",
+    val toolMode: GroundingToolMode = GroundingToolMode.COMBINED,
+    val response: GroundingResponse? = null,
+    val isSheetOpen: Boolean = false,
+    val errorMessage: String? = null
+)
+
 data class UiState(
     val isRefreshing: Boolean = false,
     val isSyncing: Boolean = false,
@@ -71,7 +82,8 @@ data class UiState(
     val authMode: AuthMode = AuthMode.PROFILE,
     val authError: String? = null,
     val authSuccessMessage: String? = null,
-    val themeMode: ThemeMode = ThemeMode.SYSTEM
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val isCacheOlderThan24Hours: Boolean = false
 )
 
 class BalasoreViewModel(application: Application) : AndroidViewModel(application) {
@@ -80,6 +92,9 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private val _groundingState = MutableStateFlow(GroundingState())
+    val groundingState: StateFlow<GroundingState> = _groundingState.asStateFlow()
 
     val currentUser: StateFlow<UserEntity?> = repository.currentUser
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -105,6 +120,9 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     val allReviews: StateFlow<List<ReviewEntity>> = repository.allReviews
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val isOnline: StateFlow<Boolean> = networkMonitor.isOnline
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     // Real-time Push & FCM Notification State
     val weatherAlertsEnabled: StateFlow<Boolean> = FcmManager.weatherAlertsEnabled
@@ -141,9 +159,9 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             val matchesCategory = when (state.newsCategory) {
                 "All" -> true
                 "Saved", "Read Later" -> article.isBookmarked
-                "Local" -> article.category.contains("Local", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true)
+                "Local", "Local News" -> article.category.contains("Local", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true)
                 "Tourism" -> article.category.contains("Tourism", ignoreCase = true) || article.category.contains("Coastal", ignoreCase = true)
-                "Weather" -> article.category.contains("Weather", ignoreCase = true) || article.category.contains("Alert", ignoreCase = true)
+                "Weather", "Weather Alerts" -> article.category.contains("Weather", ignoreCase = true) || article.category.contains("Alert", ignoreCase = true)
                 "Events" -> article.category.contains("Events", ignoreCase = true)
                 "Politics" -> article.category.contains("Politics", ignoreCase = true)
                 else -> article.category.contains(state.newsCategory, ignoreCase = true)
@@ -228,13 +246,22 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             repository.initializeIfNeeded()
             val lastSync = repository.getLastSyncTimestamp()
-            _uiState.value = _uiState.value.copy(lastSyncTime = lastSync)
+            val isCacheStale = repository.isCacheOlderThan24Hours()
+            _uiState.value = _uiState.value.copy(
+                lastSyncTime = lastSync,
+                isCacheOlderThan24Hours = isCacheStale
+            )
             
             // Schedule periodic background sync using WorkManager (caches news, weather, tourism)
             SyncManager.schedulePeriodicSync(getApplication())
             
-            // Trigger initial sync to ensure Room database is fresh
-            refreshData(silent = true)
+            // Automatically refresh cache data if it is older than 24 hours to ensure relevant updates
+            if (isCacheStale) {
+                Log.i("BalasoreViewModel", "Room cache is older than 24 hours. Automatically triggering network refresh...")
+                refreshData(silent = false)
+            } else {
+                refreshData(silent = true)
+            }
         }
 
         // Monitor Network State
@@ -243,9 +270,11 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
                 val wasOffline = !_uiState.value.isOnline && online
                 _uiState.value = _uiState.value.copy(isOnline = online)
                 if (wasOffline) {
-                    // When device comes back online, immediately run background sync
+                    // When device comes back online, check if cache is older than 24 hours and auto-refresh
+                    val isStale = repository.isCacheOlderThan24Hours()
+                    _uiState.value = _uiState.value.copy(isCacheOlderThan24Hours = isStale)
                     SyncManager.triggerImmediateSync(getApplication())
-                    refreshData(silent = true)
+                    refreshData(silent = !isStale)
                 }
             }
         }
@@ -390,9 +419,9 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     fun toggleTheme() {
         val current = _uiState.value.themeMode
         val next = when (current) {
+            ThemeMode.SYSTEM -> ThemeMode.LIGHT
             ThemeMode.LIGHT -> ThemeMode.DARK
-            ThemeMode.DARK -> ThemeMode.LIGHT
-            ThemeMode.SYSTEM -> ThemeMode.DARK
+            ThemeMode.DARK -> ThemeMode.SYSTEM
         }
         setThemeMode(next)
     }
@@ -414,6 +443,29 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     fun toggleFavorite(hotspot: HotspotEntity) {
         viewModelScope.launch {
             repository.toggleFavoriteHotspot(hotspot.id, hotspot.isFavorite)
+        }
+    }
+
+    fun clearOfflineCache(keepBookmarks: Boolean = true) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSyncing = true)
+            try {
+                repository.clearOfflineCache(keepBookmarks)
+                _uiState.value = _uiState.value.copy(
+                    isSyncing = false,
+                    lastSyncTime = System.currentTimeMillis(),
+                    userNotice = if (keepBookmarks) {
+                        "Offline cache cleared. Saved bookmarks preserved."
+                    } else {
+                        "All local cache and saved articles cleared."
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isSyncing = false,
+                    userNotice = "Failed to clear cache: ${e.localizedMessage}"
+                )
+            }
         }
     }
 
@@ -485,10 +537,11 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             try {
                 // Trigger background worker sync
                 SyncManager.triggerImmediateSync(getApplication())
-                val syncResult = repository.syncAllData()
+                val syncResult = repository.syncAllData(forceNetwork = true)
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
                     lastSyncTime = syncResult.timestamp,
+                    isCacheOlderThan24Hours = false,
                     userNotice = if (!silent) syncResult.message else null
                 )
             } catch (_: Exception) {
@@ -502,6 +555,20 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
                 if (!silent) {
                     _uiState.value = _uiState.value.copy(isRefreshing = false)
                 }
+            }
+        }
+    }
+
+    /**
+     * Checks if cached Room data is older than 24 hours and triggers an automatic refresh if needed.
+     */
+    fun checkCacheFreshnessAndRefresh() {
+        viewModelScope.launch {
+            val isStale = repository.isCacheOlderThan24Hours()
+            _uiState.value = _uiState.value.copy(isCacheOlderThan24Hours = isStale)
+            if (isStale) {
+                Log.i("BalasoreViewModel", "Cache >24h stale. Automatically triggering refresh...")
+                refreshData(silent = false)
             }
         }
     }
@@ -598,14 +665,98 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun logout() {
+    fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
-            repository.logout()
+            _uiState.value = _uiState.value.copy(authError = null, authSuccessMessage = null)
+            val result = repository.signInWithGoogle(context)
+            result.onSuccess { user ->
+                _uiState.value = _uiState.value.copy(
+                    authMode = AuthMode.PROFILE,
+                    authSuccessMessage = "Welcome, ${user.fullName}! Connected with Google & Firebase Auth."
+                )
+            }.onFailure { err ->
+                _uiState.value = _uiState.value.copy(
+                    authError = err.message ?: "Google Sign-In was not completed."
+                )
+            }
+        }
+    }
+
+    fun logout(context: Context? = null) {
+        viewModelScope.launch {
+            repository.logout(context)
             _uiState.value = _uiState.value.copy(
                 authMode = AuthMode.LOGIN,
                 authSuccessMessage = "You have logged out."
             )
         }
+    }
+
+    // --- Gemini 3.5 Flash Grounding (Google Search & Google Maps) ---
+    fun openGroundingSheet(
+        initialQuery: String? = null,
+        mode: GroundingToolMode = GroundingToolMode.COMBINED
+    ) {
+        _groundingState.value = _groundingState.value.copy(
+            isSheetOpen = true,
+            toolMode = mode,
+            query = initialQuery ?: _groundingState.value.query,
+            errorMessage = null
+        )
+        if (!initialQuery.isNullOrBlank()) {
+            executeGrounding(initialQuery, mode)
+        }
+    }
+
+    fun closeGroundingSheet() {
+        _groundingState.value = _groundingState.value.copy(isSheetOpen = false)
+    }
+
+    fun setGroundingToolMode(mode: GroundingToolMode) {
+        _groundingState.value = _groundingState.value.copy(toolMode = mode)
+    }
+
+    fun executeGrounding(query: String, mode: GroundingToolMode? = null) {
+        val targetMode = mode ?: _groundingState.value.toolMode
+        val cleanQuery = query.trim()
+        if (cleanQuery.isBlank()) return
+
+        viewModelScope.launch {
+            _groundingState.value = _groundingState.value.copy(
+                isQuerying = true,
+                query = cleanQuery,
+                toolMode = targetMode,
+                errorMessage = null
+            )
+            try {
+                val response = repository.queryGeminiGrounding(cleanQuery, targetMode)
+                _groundingState.value = _groundingState.value.copy(
+                    isQuerying = false,
+                    response = response,
+                    errorMessage = if (!response.isSuccess) response.errorMessage else null
+                )
+            } catch (e: Exception) {
+                _groundingState.value = _groundingState.value.copy(
+                    isQuerying = false,
+                    errorMessage = e.localizedMessage ?: "Failed to generate grounded response"
+                )
+            }
+        }
+    }
+
+    fun verifyNewsWithSearch(article: NewsArticleEntity) {
+        val prompt = "Verify real-time news in Balasore regarding: \"${article.title}\". What are the verified facts, latest status, and source updates from local authorities and reporters?"
+        openGroundingSheet(initialQuery = prompt, mode = GroundingToolMode.SEARCH_ONLY)
+    }
+
+    fun exploreHotspotWithMaps(hotspot: HotspotEntity) {
+        val prompt = "Provide a local travel and visitor guide for ${hotspot.name} in Balasore district. Include Google Maps directions from Balasore railway station, nearby dhabas/restaurants, scenic viewpoints, and visiting tips."
+        openGroundingSheet(initialQuery = prompt, mode = GroundingToolMode.MAPS_ONLY)
+    }
+
+    fun checkCoastalTideSearch(tideState: String) {
+        val prompt = "What are the latest live Bay of Bengal weather alerts, sea conditions, and Chandipur beach vanishing tide timings today in Balasore?"
+        openGroundingSheet(initialQuery = prompt, mode = GroundingToolMode.SEARCH_ONLY)
     }
 
     fun updateProfile(fullName: String, phone: String, locality: String, bio: String) {

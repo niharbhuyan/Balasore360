@@ -38,15 +38,39 @@ object FcmManager {
     private val _breakingNewsEnabled = MutableStateFlow(true)
     val breakingNewsEnabled: StateFlow<Boolean> = _breakingNewsEnabled.asStateFlow()
 
+    @Volatile
+    private var isFirebaseReady: Boolean = false
+
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
     /**
-     * Initializes Firebase and FCM topic subscriptions safely, handling environments
-     * where google-services.json might be pre-configured or running in dev mode.
+     * Verifies if Firebase has been genuinely initialized via google-services.json
+     * with valid project credentials (not a placeholder or dummy configuration).
      */
-    @Suppress("DEPRECATION")
+    fun isFirebaseConfigured(context: Context): Boolean {
+        return try {
+            if (FirebaseApp.getApps(context).isEmpty()) {
+                false
+            } else {
+                val app = FirebaseApp.getInstance()
+                val apiKey = app.options.apiKey
+                apiKey.isNotBlank() &&
+                        !apiKey.contains("Fallback", ignoreCase = true) &&
+                        !apiKey.contains("dummy", ignoreCase = true) &&
+                        !apiKey.contains("placeholder", ignoreCase = true)
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Initializes local notification channels and safely checks for Firebase Messaging.
+     * If google-services.json is absent, runs in offline-first mode without triggering
+     * Firebase Installations Service (FIS) network errors.
+     */
     fun initialize(context: Context) {
         BalasoreNotificationHelper.createNotificationChannels(context)
 
@@ -55,16 +79,22 @@ object FcmManager {
         _weatherAlertsEnabled.value = prefs.getBoolean(KEY_WEATHER_ALERTS, true)
         _breakingNewsEnabled.value = prefs.getBoolean(KEY_BREAKING_NEWS, true)
 
-        try {
-            ensureFirebaseInitialized(context)
+        isFirebaseReady = isFirebaseConfigured(context)
 
+        if (!isFirebaseReady) {
+            Log.i(TAG, "Running in offline-first mode: google-services.json not configured. Local Room database and notification engine active.")
+            return
+        }
+
+        try {
+            FirebaseMessaging.getInstance().isAutoInitEnabled = true
             FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
                     Log.d(TAG, "FCM registration token obtained: $token")
                     saveToken(context, token)
                 }
                 .addOnFailureListener { e ->
-                    Log.w(TAG, "Failed to retrieve FCM registration token", e)
+                    Log.w(TAG, "FCM registration token retrieval deferred: ${e.message}")
                 }
 
             // Ensure topics are subscribed if enabled
@@ -75,30 +105,19 @@ object FcmManager {
                 subscribeToTopic(TOPIC_BREAKING_NEWS)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing FCM", e)
-        }
-    }
-
-    private fun ensureFirebaseInitialized(context: Context) {
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            // Provide a graceful fallback configuration if google-services.json was not loaded
-            val options = FirebaseOptions.Builder()
-                .setApplicationId("1:613265325843:android:balasoreliveapp")
-                .setProjectId("balasore-live")
-                .setGcmSenderId("613265325843")
-                .setApiKey("AIzaSyFallbackKeyForBalasoreLiveApp2026")
-                .build()
-            FirebaseApp.initializeApp(context, options)
-            Log.i(TAG, "Firebase initialized with fallback configuration (Sender ID: 613265325843)")
+            Log.w(TAG, "Non-blocking FCM initialization notice: ${e.message}")
         }
     }
 
     /**
-     * Manually requests a fresh Firebase Cloud Messaging registration token.
+     * Manually requests a fresh Firebase Cloud Messaging registration token if configured.
      */
     fun refreshToken(context: Context) {
+        if (!isFirebaseConfigured(context)) {
+            Log.i(TAG, "Token refresh skipped: Firebase not configured via google-services.json.")
+            return
+        }
         try {
-            ensureFirebaseInitialized(context)
             FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
                     Log.d(TAG, "FCM registration token refreshed: $token")
@@ -146,30 +165,38 @@ object FcmManager {
     }
 
     fun subscribeToTopic(topic: String) {
+        if (!isFirebaseReady) {
+            Log.d(TAG, "Topic subscription '$topic' stored in preferences (running in offline-first mode)")
+            return
+        }
         try {
             FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnSuccessListener {
                     Log.d(TAG, "Subscribed successfully to FCM topic: $topic")
                 }
                 .addOnFailureListener { e ->
-                    Log.w(TAG, "Failed to subscribe to FCM topic: $topic", e)
+                    Log.w(TAG, "FCM topic subscription deferred: $topic: ${e.message}")
                 }
         } catch (e: Exception) {
-            Log.w(TAG, "Cannot subscribe to topic $topic: ${e.message}")
+            Log.d(TAG, "Cannot subscribe to topic $topic: ${e.message}")
         }
     }
 
     fun unsubscribeFromTopic(topic: String) {
+        if (!isFirebaseReady) {
+            Log.d(TAG, "Topic unsubscription '$topic' updated in preferences (running in offline-first mode)")
+            return
+        }
         try {
             FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
                 .addOnSuccessListener {
                     Log.d(TAG, "Unsubscribed from FCM topic: $topic")
                 }
                 .addOnFailureListener { e ->
-                    Log.w(TAG, "Failed to unsubscribe from topic: $topic", e)
+                    Log.w(TAG, "FCM topic unsubscription deferred: $topic: ${e.message}")
                 }
         } catch (e: Exception) {
-            Log.w(TAG, "Cannot unsubscribe from topic $topic: ${e.message}")
+            Log.d(TAG, "Cannot unsubscribe from topic $topic: ${e.message}")
         }
     }
 

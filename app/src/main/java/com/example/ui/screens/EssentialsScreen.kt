@@ -26,10 +26,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocalPolice
@@ -37,6 +40,8 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PhoneInTalk
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Train
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
@@ -140,9 +145,14 @@ fun EssentialsScreen(
     onOpenAlertCenter: () -> Unit = {},
     onSimulateWeatherAlert: () -> Unit = {},
     onSimulateBreakingNews: () -> Unit = {},
+    selectedLanguage: String = "English",
+    onLanguageChange: (String) -> Unit = {},
+    onClearOfflineCache: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var currentLanguage by remember { mutableStateOf(selectedLanguage) }
+    var showCacheClearedConfirm by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(EmergencyCategory.ALL) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -844,6 +854,161 @@ fun EssentialsScreen(
                                 .testTag("essentials_test_news_btn")
                         ) {
                             Text("📰 Test News", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BentoPrimaryBlue)
+                        }
+                    }
+
+                    HorizontalDivider(color = BentoBorder, modifier = Modifier.padding(vertical = 12.dp))
+
+                    // Language Preference Setting
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = null,
+                                tint = BentoPrimaryBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Language & Script Preference",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = BentoSlate900
+                            )
+                        }
+                        Text(
+                            text = "Choose your display language for titles and cultural annotations",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BentoSlate500,
+                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("English" to "English (Default)", "Odia" to "ଓଡ଼ିଆ (Odia)").forEach { (code, label) ->
+                                val isSelected = currentLanguage.equals(code, ignoreCase = true)
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isSelected) BentoBlueLight else BentoCardWhite,
+                                    border = BorderStroke(1.dp, if (isSelected) BentoPrimaryBlue else BentoBorder),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            currentLanguage = code
+                                            onLanguageChange(code)
+                                        }
+                                        .testTag("language_option_$code")
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = BentoPrimaryBlue,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                        }
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                            ),
+                                            color = if (isSelected) BentoPrimaryBlue else BentoSlate700
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = BentoBorder, modifier = Modifier.padding(vertical = 12.dp))
+
+                    // Offline Data & Cache Management
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Storage,
+                                contentDescription = null,
+                                tint = BentoSlate700,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Offline Data & Cache",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = BentoSlate900
+                            )
+                        }
+                        Text(
+                            text = "News articles, weather feeds, and hotspot data are cached locally via Room for instant offline access.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BentoSlate500,
+                            modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                        )
+
+                        if (showCacheClearedConfirm) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = BentoGreenBg,
+                                border = BorderStroke(1.dp, BentoGreenText.copy(alpha = 0.3f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = BentoGreenText,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = "Offline cache successfully cleared!",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = BentoGreenText
+                                    )
+                                }
+                            }
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                onClearOfflineCache()
+                                showCacheClearedConfirm = true
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, BentoRedText.copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = BentoRedText),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("clear_offline_cache_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteOutline,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Clear Offline Cache",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = BentoRedText
+                            )
                         }
                     }
                 }

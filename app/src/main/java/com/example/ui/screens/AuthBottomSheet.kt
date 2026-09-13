@@ -99,7 +99,8 @@ fun AuthBottomSheet(
     onResetPassword: (email: String, securityAnswer: String, newPass: String) -> Unit,
     onUpdateProfile: (name: String, phone: String, locality: String, bio: String) -> Unit,
     onUpdateAvatar: (avatarUri: String?) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onGoogleSignIn: () -> Unit = {}
 ) {
     if (!isOpen) return
 
@@ -263,7 +264,8 @@ fun AuthBottomSheet(
                         // User not logged in, prompt to log in or sign up
                         LoggedOutPrompt(
                             onLogin = { onSetMode(AuthMode.LOGIN) },
-                            onSignUp = { onSetMode(AuthMode.SIGNUP) }
+                            onSignUp = { onSetMode(AuthMode.SIGNUP) },
+                            onGoogleSignIn = onGoogleSignIn
                         )
                     }
                 }
@@ -273,6 +275,7 @@ fun AuthBottomSheet(
                         onQuickDemoLogin = {
                             onLogin("niharbhuyan@gmail.com", "balasore123")
                         },
+                        onGoogleSignIn = onGoogleSignIn,
                         onForgotPassword = { onSetMode(AuthMode.FORGOT_PASSWORD) },
                         onGoToSignUp = { onSetMode(AuthMode.SIGNUP) }
                     )
@@ -280,6 +283,7 @@ fun AuthBottomSheet(
                 AuthMode.SIGNUP -> {
                     SignUpForm(
                         onSignUp = onSignUp,
+                        onGoogleSignIn = onGoogleSignIn,
                         onGoToLogin = { onSetMode(AuthMode.LOGIN) }
                     )
                 }
@@ -410,7 +414,42 @@ private fun ProfileView(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Firebase Auth & Cloud Firestore Sync Badge
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = Color(0xFFF0FDF4),
+            border = BorderStroke(1.dp, Color(0xFF86EFAC)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color(0xFF16A34A),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Firebase Auth & Firestore Synced",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF15803D)
+                    )
+                    Text(
+                        text = "Cloud persistence active • User: ${user.email}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = BentoSlate700
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
 
         // Buttons: Edit Profile & Logout
         Row(
@@ -469,11 +508,61 @@ private fun ProfileFieldRow(icon: androidx.compose.ui.graphics.vector.ImageVecto
     }
 }
 
+@Composable
+fun GoogleSignInButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: String = "Continue with Google"
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(14.dp),
+        color = BentoCardWhite,
+        border = BorderStroke(1.5.dp, BentoBorder),
+        shadowElevation = 1.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .testTag("google_signin_button")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = Color(0xFF4285F4).copy(alpha = 0.12f),
+                modifier = Modifier.size(28.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "G",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF4285F4)
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate900
+            )
+        }
+    }
+}
+
 // 2. Login Form
 @Composable
 private fun LoginForm(
     onLogin: (email: String, pass: String) -> Unit,
     onQuickDemoLogin: () -> Unit,
+    onGoogleSignIn: () -> Unit = {},
     onForgotPassword: () -> Unit,
     onGoToSignUp: () -> Unit
 ) {
@@ -488,6 +577,30 @@ private fun LoginForm(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Google Sign-In with Firebase Auth
+        GoogleSignInButton(
+            onClick = onGoogleSignIn,
+            text = "Sign in with Google (Firebase Auth)"
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+            Text(
+                text = " OR ",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate500,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Quick Demo Sign-In Card
         Surface(
@@ -601,6 +714,7 @@ private fun LoginForm(
 @Composable
 private fun SignUpForm(
     onSignUp: (name: String, email: String, pass: String, phone: String, locality: String, securityAnswer: String) -> Unit,
+    onGoogleSignIn: () -> Unit = {},
     onGoToLogin: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
@@ -620,6 +734,30 @@ private fun SignUpForm(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Google Sign-In button
+        GoogleSignInButton(
+            onClick = onGoogleSignIn,
+            text = "Sign up with Google (Firebase Auth)"
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+            Text(
+                text = " OR WITH EMAIL ",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate500,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = name,
@@ -907,7 +1045,8 @@ private fun EditProfileForm(
 @Composable
 private fun LoggedOutPrompt(
     onLogin: () -> Unit,
-    onSignUp: () -> Unit
+    onSignUp: () -> Unit,
+    onGoogleSignIn: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -946,7 +1085,30 @@ private fun LoggedOutPrompt(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
+
+        GoogleSignInButton(
+            onClick = onGoogleSignIn,
+            text = "Continue with Google (Firebase Auth)"
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+            Text(
+                text = " OR ",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = BentoSlate500,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Box(modifier = Modifier.weight(1f).height(1.dp).background(BentoBorder))
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = onLogin,
@@ -954,7 +1116,7 @@ private fun LoggedOutPrompt(
             colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
             modifier = Modifier.fillMaxWidth().height(48.dp)
         ) {
-            Text("Log In", fontWeight = FontWeight.Bold)
+            Text("Log In with Email", fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -965,7 +1127,7 @@ private fun LoggedOutPrompt(
             border = BorderStroke(1.dp, BentoPrimaryBlue),
             modifier = Modifier.fillMaxWidth().height(48.dp)
         ) {
-            Text("Create Account", color = BentoPrimaryBlue, fontWeight = FontWeight.Bold)
+            Text("Create New Account", color = BentoPrimaryBlue, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(24.dp))

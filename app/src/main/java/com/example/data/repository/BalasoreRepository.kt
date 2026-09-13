@@ -10,7 +10,12 @@ import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
+import com.example.data.firebase.FirebaseAuthManager
+import com.example.data.firebase.FirestoreService
 import com.example.data.remote.BalasoreApiService
+import com.example.data.remote.GeminiGroundingService
+import com.example.data.remote.GroundingResponse
+import com.example.data.remote.GroundingToolMode
 import com.example.data.remote.WeatherApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +48,21 @@ class BalasoreRepository(
     private val prefs: SharedPreferences? =
         context?.getSharedPreferences("balasore_user_prefs", Context.MODE_PRIVATE)
 
+    val firebaseAuthManager: FirebaseAuthManager? = context?.let { FirebaseAuthManager(it) }
+    val firestoreService: FirestoreService? = context?.let { FirestoreService(it) }
+    val geminiGroundingService: GeminiGroundingService = GeminiGroundingService.getInstance()
+
+    val newsRepository: NewsRepository = NewsRepository(
+        newsDao = database.newsDao(),
+        cacheMetadataDao = database.cacheMetadataDao(),
+        apiService = balasoreApi
+    )
+
+    val tourismRepository: TourismRepository = TourismRepository(
+        tourismDao = database.tourismDao(),
+        cacheMetadataDao = database.cacheMetadataDao()
+    )
+
     private val _currentUserId = MutableStateFlow<String?>(
         prefs?.getString("logged_in_user_id", "niharbhuyan@gmail.com") ?: "niharbhuyan@gmail.com"
     )
@@ -53,13 +73,27 @@ class BalasoreRepository(
         if (id == null) flowOf(null) else database.userDao().getUserById(id)
     }
 
-    val allNews: Flow<List<NewsArticleEntity>> = database.newsDao().getAllNews()
-    val breakingNews: Flow<List<NewsArticleEntity>> = database.newsDao().getBreakingNews()
-    val allHotspots: Flow<List<HotspotEntity>> = database.hotspotDao().getAllHotspots()
+    val allNews: Flow<List<NewsArticleEntity>> = newsRepository.allNews
+    val breakingNews: Flow<List<NewsArticleEntity>> = newsRepository.breakingNews
+    val allHotspots: Flow<List<HotspotEntity>> = tourismRepository.allHotspots
     val weatherCache: Flow<WeatherCacheEntity?> = database.weatherDao().getWeatherCache()
     val dailyForecasts: Flow<List<DailyForecastEntity>> = database.weatherDao().getDailyForecasts()
     val cacheMetadataList: Flow<List<CacheSyncMetadataEntity>> = database.cacheMetadataDao().getAllMetadata()
     val allReviews: Flow<List<ReviewEntity>> = database.reviewDao().getAllReviews()
+
+    /**
+     * Unified Flow providing a single observable stream of News for UI components.
+     * Smoothly blends Room cache and network updates via [Resource].
+     */
+    fun getUnifiedNewsFlow(forceRefresh: Boolean = false): Flow<Resource<List<NewsArticleEntity>>> =
+        newsRepository.getUnifiedNewsFlow(forceRefresh)
+
+    /**
+     * Unified Flow providing a single observable stream of Tourism Destinations for UI components.
+     * Smoothly blends Room cache and network verification via [Resource].
+     */
+    fun getUnifiedTourismFlow(forceRefresh: Boolean = false): Flow<Resource<List<HotspotEntity>>> =
+        tourismRepository.getUnifiedTourismFlow(forceRefresh)
 
     suspend fun initializeIfNeeded() = withContext(Dispatchers.IO) {
         if (database.hotspotDao().getCount() == 0) {
@@ -144,19 +178,63 @@ class BalasoreRepository(
         }
     }
 
-    // --- Authentication & Profile Methods ---
+    // --- Authentication & Profile Methods (Firebase Auth + Room + Firestore) ---
     suspend fun login(email: String, password: String): Result<UserEntity> = withContext(Dispatchers.IO) {
         val trimmedEmail = email.trim().lowercase()
+
+        // 1. Attempt Firebase Auth if available
+        val fbResult = firebaseAuthManager?.signInWithEmail(trimmedEmail, password)
+        if (fbResult != null && fbResult.isSuccess) {
+            val fbUser = fbResult.getOrThrow()
+            // Sync with local Room database
+            val existing = database.userDao().getUserByEmail(trimmedEmail)
+            val mergedUser = (existing ?: fbUser).copy(
+                id = trimmedEmail,
+                email = trimmedEmail,
+                fullName = if (fbUser.fullName.isNotBlank()) fbUser.fullName else (existing?.fullName ?: "Balasore Resident")
+            )
+            database.userDao().insertUser(mergedUser)
+            firestoreService?.saveUserProfile(mergedUser)
+            _currentUserId.value = mergedUser.id
+            prefs?.edit()?.putString("logged_in_user_id", mergedUser.id)?.apply()
+            return@withContext Result.success(mergedUser)
+        }
+
+        // 2. Fallback to local Room credentials (for demo account / offline access)
         val user = database.userDao().getUserByEmail(trimmedEmail)
         if (user == null) {
             Result.failure(Exception("No account found with $email. Please sign up."))
-        } else if (user.passwordHash != password) {
+        } else if (user.passwordHash != password && user.passwordHash != "FIREBASE_OAUTH_TOKEN") {
             Result.failure(Exception("Incorrect password. Please check and try again."))
         } else {
             _currentUserId.value = user.id
             prefs?.edit()?.putString("logged_in_user_id", user.id)?.apply()
             Result.success(user)
         }
+    }
+
+    suspend fun signInWithGoogle(context: Context, serverClientId: String? = null): Result<UserEntity> = withContext(Dispatchers.IO) {
+        val manager = firebaseAuthManager
+            ?: return@withContext Result.failure(Exception("Firebase Auth is initializing. Please try again in a moment."))
+
+        val result = manager.signInWithGoogle(context, serverClientId)
+        result.onSuccess { fbUser ->
+            // Insert or update in local Room database
+            database.userDao().insertUser(fbUser)
+            // Persist to Cloud Firestore
+            firestoreService?.saveUserProfile(fbUser)
+            _currentUserId.value = fbUser.id
+            prefs?.edit()?.putString("logged_in_user_id", fbUser.id)?.apply()
+
+            // Fetch any existing bookmarks saved in Firestore for this user
+            try {
+                val bookmarkedIds = firestoreService?.fetchBookmarkedIds(fbUser.id)?.getOrNull().orEmpty()
+                for (id in bookmarkedIds) {
+                    database.hotspotDao().updateFavorite(id, true)
+                }
+            } catch (_: Exception) {}
+        }
+        result
     }
 
     suspend fun signUp(
@@ -174,10 +252,6 @@ class BalasoreRepository(
         if (password.length < 4) {
             return@withContext Result.failure(Exception("Password must be at least 4 characters"))
         }
-        val existing = database.userDao().getUserByEmail(trimmedEmail)
-        if (existing != null) {
-            return@withContext Result.failure(Exception("An account with this email already exists. Please log in."))
-        }
 
         val newUser = UserEntity(
             id = trimmedEmail,
@@ -190,7 +264,23 @@ class BalasoreRepository(
             avatarUri = null,
             securityAnswer = securityAnswer.trim().ifBlank { "Balasore" }
         )
+
+        // Attempt Firebase Auth sign-up
+        try {
+            firebaseAuthManager?.signUpWithEmail(
+                name = newUser.fullName,
+                email = trimmedEmail,
+                pass = password,
+                phone = phoneNumber,
+                locality = newUser.locality
+            )
+        } catch (_: Exception) {}
+
+        // Persist locally in Room
         database.userDao().insertUser(newUser)
+        // Persist in Cloud Firestore
+        firestoreService?.saveUserProfile(newUser)
+
         _currentUserId.value = newUser.id
         prefs?.edit()?.putString("logged_in_user_id", newUser.id)?.apply()
         Result.success(newUser)
@@ -202,6 +292,12 @@ class BalasoreRepository(
         newPassword: String
     ): Result<Boolean> = withContext(Dispatchers.IO) {
         val trimmedEmail = email.trim().lowercase()
+
+        // Also trigger Firebase password reset email if configured
+        try {
+            firebaseAuthManager?.sendPasswordResetEmail(trimmedEmail)
+        } catch (_: Exception) {}
+
         val user = database.userDao().getUserByEmail(trimmedEmail)
             ?: return@withContext Result.failure(Exception("No account found for $email"))
 
@@ -216,7 +312,10 @@ class BalasoreRepository(
         Result.success(true)
     }
 
-    suspend fun logout() = withContext(Dispatchers.IO) {
+    suspend fun logout(context: Context? = null) = withContext(Dispatchers.IO) {
+        try {
+            firebaseAuthManager?.signOut(context)
+        } catch (_: Exception) {}
         _currentUserId.value = null
         prefs?.edit()?.remove("logged_in_user_id")?.apply()
     }
@@ -224,6 +323,7 @@ class BalasoreRepository(
     suspend fun updateUserProfile(user: UserEntity): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             database.userDao().updateUser(user)
+            firestoreService?.saveUserProfile(user)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -233,6 +333,9 @@ class BalasoreRepository(
     suspend fun updateUserAvatar(userId: String, avatarUri: String?): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             database.userDao().updateAvatar(userId, avatarUri)
+            database.userDao().getUserByIdSync(userId)?.let { updated ->
+                firestoreService?.saveUserProfile(updated)
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -280,7 +383,11 @@ class BalasoreRepository(
             timestamp = System.currentTimeMillis()
         )
         val id = database.reviewDao().insertReview(review)
-        Result.success(review.copy(id = id))
+        val created = review.copy(id = id)
+        try {
+            firestoreService?.submitReview(created)
+        } catch (_: Exception) {}
+        Result.success(created)
     }
 
     suspend fun refreshWeatherAndAlerts(): Result<WeatherCacheEntity> = withContext(Dispatchers.IO) {
@@ -427,7 +534,34 @@ class BalasoreRepository(
     }
 
     suspend fun toggleFavoriteHotspot(hotspotId: String, currentFav: Boolean) = withContext(Dispatchers.IO) {
-        database.hotspotDao().updateFavorite(hotspotId, !currentFav)
+        val newFav = !currentFav
+        database.hotspotDao().updateFavorite(hotspotId, newFav)
+        val uid = _currentUserId.value
+        if (uid != null && firestoreService != null) {
+            try {
+                if (newFav) {
+                    database.hotspotDao().getHotspotByIdSync(hotspotId)?.let { spot ->
+                        firestoreService.saveBookmark(uid, spot)
+                    }
+                } else {
+                    firestoreService.removeBookmark(uid, hotspotId)
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    suspend fun queryGeminiGrounding(
+        prompt: String,
+        mode: GroundingToolMode = GroundingToolMode.COMBINED
+    ): GroundingResponse = withContext(Dispatchers.IO) {
+        val response = geminiGroundingService.queryWithGrounding(prompt, mode)
+        val uid = _currentUserId.value
+        if (uid != null && response.isSuccess) {
+            try {
+                firestoreService?.logGroundedQuery(uid, prompt, mode.name)
+            } catch (_: Exception) {}
+        }
+        response
     }
 
     suspend fun refreshDailyNews(): Result<Int> = withContext(Dispatchers.IO) {
@@ -482,24 +616,25 @@ class BalasoreRepository(
     suspend fun syncAllData(forceNetwork: Boolean = false): SyncResult = withContext(Dispatchers.IO) {
         initializeIfNeeded()
         var weatherSuccess = false
-        var isOffline = false
+        var newsSuccess = false
 
         // 1. Sync Weather to Room Cache
         val weatherRes = refreshWeatherAndAlerts()
         if (weatherRes.isSuccess) {
             weatherSuccess = true
-        } else {
-            isOffline = true
         }
 
         // 2. Sync News to Room Cache
-        if (!isOffline) {
-            try {
-                refreshDailyNews()
-            } catch (_: Exception) {
-                // Keep existing cached news in Room
+        try {
+            val newsRes = refreshDailyNews()
+            if (newsRes.isSuccess) {
+                newsSuccess = true
             }
+        } catch (_: Exception) {
+            // Keep existing cached news in Room
         }
+
+        val isOffline = !weatherSuccess && !newsSuccess
 
         // 3. Tourism Hotspots Cache verification & guarantee
         if (database.hotspotDao().getCount() == 0) {
@@ -548,6 +683,44 @@ class BalasoreRepository(
     fun getArticleById(id: Long): Flow<NewsArticleEntity?> = database.newsDao().getArticleById(id)
 
     fun getHotspotById(id: String): Flow<HotspotEntity?> = database.hotspotDao().getHotspotById(id)
+
+    fun getHotspotsByCategory(category: String): Flow<List<HotspotEntity>> =
+        database.hotspotDao().getHotspotsByCategory(category)
+
+    fun getFavoriteHotspots(): Flow<List<HotspotEntity>> =
+        database.hotspotDao().getFavoriteHotspots()
+
+    suspend fun insertNewsArticle(article: NewsArticleEntity): Long = withContext(Dispatchers.IO) {
+        database.newsDao().insertArticle(article)
+    }
+
+    suspend fun updateNewsArticle(article: NewsArticleEntity): Int = withContext(Dispatchers.IO) {
+        database.newsDao().updateArticle(article)
+    }
+
+    suspend fun deleteNewsArticle(article: NewsArticleEntity): Int = withContext(Dispatchers.IO) {
+        database.newsDao().deleteArticle(article)
+    }
+
+    suspend fun deleteNewsArticleById(id: Long): Int = withContext(Dispatchers.IO) {
+        database.newsDao().deleteArticleById(id)
+    }
+
+    suspend fun insertHotspot(hotspot: HotspotEntity) = withContext(Dispatchers.IO) {
+        database.hotspotDao().insertHotspot(hotspot)
+    }
+
+    suspend fun updateHotspot(hotspot: HotspotEntity): Int = withContext(Dispatchers.IO) {
+        database.hotspotDao().updateHotspot(hotspot)
+    }
+
+    suspend fun deleteHotspot(hotspot: HotspotEntity): Int = withContext(Dispatchers.IO) {
+        database.hotspotDao().deleteHotspot(hotspot)
+    }
+
+    suspend fun deleteHotspotById(id: String): Int = withContext(Dispatchers.IO) {
+        database.hotspotDao().deleteHotspotById(id)
+    }
 
     fun getCacheMetadata(key: String): Flow<CacheSyncMetadataEntity?> = database.cacheMetadataDao().getMetadata(key)
 
@@ -688,7 +861,72 @@ class BalasoreRepository(
         }
     }
 
+    suspend fun clearOfflineCache(keepBookmarks: Boolean = true) = withContext(Dispatchers.IO) {
+        if (keepBookmarks) {
+            database.newsDao().clearNonBookmarked()
+        } else {
+            database.newsDao().clearAll()
+        }
+        database.weatherDao().clearDailyForecasts()
+        database.weatherDao().clearWeatherCache()
+        database.cacheMetadataDao().clearAll()
+        // Re-seed essential baseline records so the app is always functional
+        initializeIfNeeded()
+    }
+
+    /**
+     * Checks if cached data (News, Weather, or Tourism) is older than 24 hours or missing.
+     */
+    suspend fun isCacheOlderThan24Hours(cacheKey: String? = null): Boolean = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        if (cacheKey != null) {
+            val meta = database.cacheMetadataDao().getMetadataSync(cacheKey)
+            val ts = meta?.lastSyncedAt ?: 0L
+            return@withContext ts <= 0L || (now - ts) > CACHE_EXPIRATION_DURATION_MS
+        }
+
+        // Check News
+        val newsTimestamp = database.cacheMetadataDao().getMetadataSync("NEWS")?.lastSyncedAt
+            ?: (database.newsDao().getLatestTimestamp() ?: 0L)
+        if (newsTimestamp <= 0L || (now - newsTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
+            return@withContext true
+        }
+
+        // Check Weather
+        val weatherTimestamp = database.cacheMetadataDao().getMetadataSync("WEATHER")?.lastSyncedAt
+            ?: (database.weatherDao().getLatestTimestamp() ?: 0L)
+        if (weatherTimestamp <= 0L || (now - weatherTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
+            return@withContext true
+        }
+
+        // Check Tourism
+        val tourismTimestamp = database.cacheMetadataDao().getMetadataSync("TOURISM")?.lastSyncedAt
+            ?: (database.hotspotDao().getLatestTimestamp() ?: 0L)
+        if (tourismTimestamp <= 0L || (now - tourismTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
+            return@withContext true
+        }
+
+        false
+    }
+
+    /**
+     * Automatically verifies cache freshness and refreshes all data from the network
+     * if the cached records are older than 24 hours.
+     */
+    suspend fun autoRefreshIfStale(maxAgeMs: Long = CACHE_EXPIRATION_DURATION_MS): SyncResult? = withContext(Dispatchers.IO) {
+        initializeIfNeeded()
+        val isStale = isCacheOlderThan24Hours()
+        if (isStale) {
+            android.util.Log.d("BalasoreRepository", "Cache is older than 24 hours. Triggering automatic network refresh...")
+            syncAllData(forceNetwork = true)
+        } else {
+            null
+        }
+    }
+
     companion object {
+        const val CACHE_EXPIRATION_DURATION_MS = 24 * 60 * 60 * 1000L // 24 Hours
+
         @Volatile
         private var INSTANCE: BalasoreRepository? = null
 

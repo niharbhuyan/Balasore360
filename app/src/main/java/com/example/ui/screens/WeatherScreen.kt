@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
@@ -63,6 +64,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import com.example.ui.components.RealtimeWeatherWidget
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -117,6 +119,8 @@ fun WeatherScreen(
     onClearSearch: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onEmergencyCallClick: ((String) -> Unit)? = null,
+    onCheckTideSearch: (String) -> Unit = {},
+    isOnline: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
@@ -193,14 +197,26 @@ fun WeatherScreen(
         if (weather == null) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp, 80.dp, 16.dp, 90.dp),
+                contentPadding = PaddingValues(16.dp, 40.dp, 16.dp, 90.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Text(
-                        text = "Loading Balasore meteorological data...\nPull down to refresh.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = BentoSlate500
+                    FriendlyEmptyStateCard(
+                        type = if (!isOnline) FriendlyEmptyStateType.OFFLINE_NO_INTERNET else FriendlyEmptyStateType.WEATHER_LOADING,
+                        title = if (!isOnline) "Weather Radar Offline" else "Retrieving Balasore Weather",
+                        odiaTitle = if (!isOnline) "ପାଣିପାଗ ତଥ୍ୟ ଅଫଲାଇନ ଅଛି" else "ବାଲେଶ୍ୱର ପାଣିପାଗ ରାଡାର ସଂଯୋଗ ହେଉଛି",
+                        subtitle = if (!isOnline) {
+                            "Unable to reach the Indian Meteorological satellite feed without network. Connect to the internet to load real-time coastal radar."
+                        } else {
+                            "Connecting to Chandipur coastal observatory & Bay of Bengal radar feeds. Pull down anytime to re-sync."
+                        },
+                        actionButtonText = if (!isOnline) "Retry Connection" else "Fetch Radar Feed",
+                        isActionLoading = isRefreshing,
+                        onActionClick = onRefresh,
+                        tipsList = listOf(
+                            "Chandipur tidal predictions and cyclone protocols are cached in Room for offline access.",
+                            "District disaster control numbers remain accessible even when disconnected."
+                        )
                     )
                 }
             }
@@ -304,10 +320,15 @@ fun WeatherScreen(
                     }
                 }
 
-                // Bento Weather Primary Tile (when matches or when not filtering)
+                // Bento Weather Primary Real-time Widget Component
                 if (weatherMatchesCurrent) {
                     item {
-                        BentoWeatherHeroCard(weather = weather)
+                        RealtimeWeatherWidget(
+                            weather = weather,
+                            dailyForecasts = dailyForecasts,
+                            onRefresh = onRefresh,
+                            isRefreshing = isRefreshing
+                        )
                     }
 
                     // Time-Sensitive Weather Alerts for Balasore Region
@@ -365,7 +386,10 @@ fun WeatherScreen(
 
                     // Chandipur Vanishing Sea Tide Bento Card
                     item {
-                        BentoChandipurTideCard(weather = weather)
+                        BentoChandipurTideCard(
+                            weather = weather,
+                            onCheckTideSearch = { onCheckTideSearch(weather.tideState) }
+                        )
                     }
 
                     // Atmospheric & Marine Parameters Grid
@@ -578,7 +602,8 @@ fun BentoCoastalAlertCard(
 @Composable
 fun BentoChandipurTideCard(
     weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCheckTideSearch: () -> Unit = {}
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -665,6 +690,41 @@ fun BentoChandipurTideCard(
                         },
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                         color = BentoSlate700
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Live Marine Tide Grounding Button
+            Surface(
+                onClick = onCheckTideSearch,
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFF4285F4).copy(alpha = 0.08f),
+                border = BorderStroke(1.5.dp, Color(0xFF4285F4).copy(alpha = 0.4f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+                    .testTag("chandipur_tide_grounding_button")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color(0xFF1A73E8),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Search Live Tide & Sea Conditions (Google Search)",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF1A73E8)
                     )
                 }
             }

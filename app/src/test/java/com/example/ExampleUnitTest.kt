@@ -196,5 +196,36 @@ class ExampleUnitTest {
     assertEquals(1, breakingOnly.first().id)
     assertEquals("Emergency", breakingOnly.first().category)
   }
+
+  @Test
+  fun testGroundingToolModesAndResponseModel() {
+    val response = com.example.data.remote.GroundingResponse(
+      text = "Balasore is known for Chandipur Beach with vanishing sea phenomenon.",
+      searchQueries = listOf("Chandipur Beach Balasore", "vanishing sea timing"),
+      citations = listOf(
+        com.example.data.remote.WebCitation(title = "Odisha Tourism", uri = "https://odishatourism.gov.in")
+      ),
+      mapPlaces = listOf(
+        com.example.data.remote.MapPlaceInfo(name = "Chandipur Beach", address = "Balasore, Odisha")
+      ),
+      toolModeUsed = com.example.data.remote.GroundingToolMode.COMBINED,
+      isSuccess = true
+    )
+
+    assertTrue(response.isSuccess)
+    assertEquals(com.example.data.remote.GroundingToolMode.COMBINED, response.toolModeUsed)
+    assertEquals(1, response.citations.size)
+    assertEquals(1, response.mapPlaces.size)
+    assertEquals("Odisha Tourism", response.citations.first().title)
+  }
+
+  @Test
+  fun testReviewTargetValidation() {
+    val validTargets = listOf("HOTSPOT", "NEWS", "WEATHER")
+    assertTrue(validTargets.contains("HOTSPOT"))
+    assertTrue(validTargets.contains("NEWS"))
+    assertTrue(validTargets.contains("WEATHER"))
+    assertFalse(validTargets.contains("UNKNOWN"))
+  }
 }
 
