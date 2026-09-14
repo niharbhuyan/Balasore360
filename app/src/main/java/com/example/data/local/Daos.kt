@@ -124,11 +124,17 @@ interface HotspotDao {
     @Query("SELECT * FROM tourism_hotspots ORDER BY distanceKmFromBls ASC")
     fun getAllHotspots(): Flow<List<HotspotEntity>>
 
+    @Query("SELECT * FROM tourism_hotspots ORDER BY distanceKmFromBls ASC")
+    suspend fun getAllHotspotsSync(): List<HotspotEntity>
+
     @Query("SELECT * FROM tourism_hotspots WHERE category = :category ORDER BY distanceKmFromBls ASC")
     fun getHotspotsByCategory(category: String): Flow<List<HotspotEntity>>
 
     @Query("SELECT * FROM tourism_hotspots WHERE isFavorite = 1 ORDER BY distanceKmFromBls ASC")
     fun getFavoriteHotspots(): Flow<List<HotspotEntity>>
+
+    @Query("SELECT * FROM tourism_hotspots WHERE isFavorite = 1 ORDER BY distanceKmFromBls ASC")
+    suspend fun getFavoriteHotspotsSync(): List<HotspotEntity>
 
     @Query("SELECT * FROM tourism_hotspots WHERE id = :id LIMIT 1")
     fun getHotspotById(id: String): Flow<HotspotEntity?>
@@ -136,7 +142,7 @@ interface HotspotDao {
     @Query("SELECT * FROM tourism_hotspots WHERE id = :id LIMIT 1")
     suspend fun getHotspotByIdSync(id: String): HotspotEntity?
 
-    @Query("SELECT * FROM tourism_hotspots WHERE name LIKE '%' || :query || '%' OR odiaName LIKE '%' || :query || '%' OR shortDescription LIKE '%' || :query || '%' OR highlights LIKE '%' || :query || '%' ORDER BY distanceKmFromBls ASC")
+    @Query("SELECT * FROM tourism_hotspots WHERE name LIKE '%' || :query || '%' OR odiaName LIKE '%' || :query || '%' OR hindiName LIKE '%' || :query || '%' OR shortDescription LIKE '%' || :query || '%' OR highlights LIKE '%' || :query || '%' ORDER BY distanceKmFromBls ASC")
     fun searchHotspots(query: String): Flow<List<HotspotEntity>>
 
     @Query("SELECT COUNT(*) FROM tourism_hotspots")

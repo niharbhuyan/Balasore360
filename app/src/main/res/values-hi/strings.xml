@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">बालेश्वर ३६०</string>
+    <string name="brand_name">निहार सेल्स</string>
+    <string name="app_subtitle">डिजिटल हब एवं पर्यटन पोर्टल</string>
+    <string name="tab_tourism">पर्यटन</string>
+    <string name="tab_news">ताज़ा समाचार</string>
+    <string name="tab_weather">मौसम एवं अलर्ट</string>
+    <string name="tab_essentials">आवश्यक सेवाएं</string>
+    <string name="search_hint">समाचार, समुद्र तट, मंदिर, मौसम खोजें...</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="offline_mode_active">इंटरनेट नहीं है • ऑफ़लाइन मोड सक्रिय</string>
+    <string name="offline_room_cached">रूम डेटाबेस में सुरक्षित समाचार, मौसम और पर्यटन स्थल</string>
+    <string name="favorites">पसंदीदा स्थल</string>
+    <string name="language_preference">भाषा एवं लिपि प्राथमिकता</string>
+    <string name="language_hint">अपनी पसंदीदा भाषा चुनें (अंग्रेजी, ओड़िया, हिन्दी)</string>
+    <string name="lang_english">English</string>
+    <string name="lang_odia">ଓଡ଼ିଆ</string>
+    <string name="lang_hindi">हिन्दी</string>
+</resources>

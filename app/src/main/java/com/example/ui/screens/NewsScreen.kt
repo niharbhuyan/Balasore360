@@ -94,6 +94,7 @@ import com.example.ui.components.openSocialMediaLink
 import com.example.ui.components.NewsCardSkeleton
 import com.example.ui.components.NewsBreakingBannerSkeleton
 import com.example.ui.components.ShimmerSyncBanner
+import com.example.ui.components.OfflineConnectionBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -355,6 +356,17 @@ fun NewsScreen(
                     }
                 }
             } else {
+                if (!isOnline) {
+                    item {
+                        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                            OfflineConnectionBanner(
+                                isOnline = false,
+                                isRetrying = isRefreshing,
+                                onRetry = onRefresh
+                            )
+                        }
+                    }
+                }
                 if (isRefreshing) {
                     item {
                         ShimmerSyncBanner(

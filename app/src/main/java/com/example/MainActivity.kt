@@ -25,16 +25,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,8 +54,10 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -62,6 +75,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -80,13 +94,19 @@ import com.example.ui.screens.NewsScreen
 import com.example.ui.screens.OfflineStatusBottomSheet
 import com.example.ui.screens.TourismScreen
 import com.example.ui.screens.WeatherScreen
+import com.example.ui.theme.BentoAmberBg
+import com.example.ui.theme.BentoAmberText
+import com.example.ui.theme.BentoBlueLight
 import com.example.ui.theme.BentoBluePill
 import com.example.ui.theme.BentoBorder
 import com.example.ui.theme.BentoCanvas
 import com.example.ui.theme.BentoCardWhite
 import com.example.ui.theme.BentoPrimaryBlue
 import com.example.ui.theme.BentoSlate400
+import com.example.ui.theme.BentoSlate800
+import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.util.AppLanguage
 import com.example.ui.viewmodel.AppTab
 import com.example.ui.viewmodel.BalasoreViewModel
 
@@ -192,8 +212,27 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
     LaunchedEffect(uiState.userNotice) {
         val notice = uiState.userNotice
         if (notice != null) {
-            snackbarHostState.showSnackbar(notice)
+            val isOfflineOrFailed = notice.contains("Offline", ignoreCase = true) ||
+                    notice.contains("No Connection", ignoreCase = true) ||
+                    notice.contains("Internet", ignoreCase = true) ||
+                    notice.contains("Failed", ignoreCase = true) ||
+                    notice.contains("Error", ignoreCase = true)
+
             viewModel.dismissNotice()
+            val result = snackbarHostState.showSnackbar(
+                message = notice,
+                actionLabel = if (isOfflineOrFailed) "Retry" else null,
+                duration = if (isOfflineOrFailed) SnackbarDuration.Long else SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                // Trigger refresh on the currently selected tab
+                when (uiState.selectedTab) {
+                    AppTab.HOTSPOTS -> viewModel.refreshData()
+                    AppTab.NEWS -> viewModel.refreshNewsFeed()
+                    AppTab.WEATHER -> viewModel.refreshWeatherFeed()
+                    else -> viewModel.refreshData()
+                }
+            }
         }
     }
 
@@ -210,7 +249,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 },
                 onNavigateBack = { viewModel.selectHotspot(null) },
                 onToggleFavorite = { viewModel.toggleFavorite(uiState.selectedHotspot!!) },
-                onExploreWithMaps = { viewModel.exploreHotspotWithMaps(uiState.selectedHotspot!!) }
+                onExploreWithMaps = { viewModel.exploreHotspotWithMaps(uiState.selectedHotspot!!) },
+                selectedLanguage = uiState.selectedLanguage
             )
         } else if (uiState.selectedArticle != null) {
             NewsDetailScreen(
@@ -250,7 +290,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                     onSelectTab = { viewModel.selectTab(it) },
                     onToggleTheme = { viewModel.toggleTheme() },
                     onAlertsClick = { viewModel.openAlertsSheet() },
-                    hasActiveAlerts = hasActiveAlerts
+                    hasActiveAlerts = hasActiveAlerts,
+                    selectedLanguage = uiState.selectedLanguage
                 )
 
                 // Horizontal scrollable tab row component to toggle between News, Weather, and Tourism feeds
@@ -259,7 +300,8 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                     onSelectTab = { viewModel.selectTab(it) },
                     hotspotsCount = hotspots.size,
                     newsCount = news.size,
-                    weatherTemp = weather?.temperature?.toInt()?.let { "$it°C" }
+                    weatherTemp = weather?.temperature?.toInt()?.let { "$it°C" },
+                    selectedLanguage = uiState.selectedLanguage
                 )
             }
         },
@@ -288,18 +330,34 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                             AppTab.ESSENTIALS -> Pair(Icons.Default.ContactPhone, Icons.Outlined.ContactPhone)
                         }
 
+                        val tabLabel = when (uiState.selectedLanguage) {
+                            AppLanguage.ODIA -> when (tab) {
+                                AppTab.HOTSPOTS -> "ପର୍ଯ୍ୟଟନ"
+                                AppTab.NEWS -> "ଖବର"
+                                AppTab.WEATHER -> "ପାଣିପାଗ"
+                                AppTab.ESSENTIALS -> "ଜରୁରୀ ସେବା"
+                            }
+                            AppLanguage.HINDI -> when (tab) {
+                                AppTab.HOTSPOTS -> "पर्यटन"
+                                AppTab.NEWS -> "समाचार"
+                                AppTab.WEATHER -> "मौसम"
+                                AppTab.ESSENTIALS -> "सेवाएं"
+                            }
+                            AppLanguage.ENGLISH -> tab.title
+                        }
+
                         NavigationBarItem(
                             selected = isSelected,
                             onClick = { viewModel.selectTab(tab) },
                             icon = {
                                 Icon(
                                     imageVector = if (isSelected) iconFilled else iconOutlined,
-                                    contentDescription = tab.title
+                                    contentDescription = tabLabel
                                 )
                             },
                             label = {
                                 Text(
-                                    text = tab.title.uppercase(),
+                                    text = tabLabel.uppercase(),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.sp,
@@ -320,7 +378,113 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag("app_snackbar_host")
+            ) { snackbarData ->
+                val isConnectionError = snackbarData.visuals.actionLabel != null ||
+                        snackbarData.visuals.message.contains("Offline", ignoreCase = true) ||
+                        snackbarData.visuals.message.contains("No Connection", ignoreCase = true) ||
+                        snackbarData.visuals.message.contains("Internet", ignoreCase = true)
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (isConnectionError) BentoSlate900 else BentoSlate800,
+                    border = BorderStroke(
+                        1.5.dp,
+                        if (isConnectionError) BentoAmberText.copy(alpha = 0.55f) else BentoBorder
+                    ),
+                    shadowElevation = 8.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .testTag("custom_snackbar")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isConnectionError) BentoAmberBg else BentoBlueLight,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = if (isConnectionError) Icons.Default.CloudOff else Icons.Default.Info,
+                                        contentDescription = if (isConnectionError) "No connection" else "Notice",
+                                        tint = if (isConnectionError) BentoAmberText else BentoPrimaryBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+
+                            Column {
+                                Text(
+                                    text = snackbarData.visuals.message,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    ),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (isConnectionError) {
+                                    Text(
+                                        text = "ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ • ସାଇତା ତଥ୍ୟ ଉପଲବ୍ଧ",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 11.sp,
+                                            color = BentoAmberText
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        if (snackbarData.visuals.actionLabel != null) {
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Button(
+                                onClick = { snackbarData.performAction() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BentoPrimaryBlue,
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                modifier = Modifier.testTag("snackbar_retry_button")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Retry",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Text(
+                                        text = snackbarData.visuals.actionLabel ?: "Retry",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.openGroundingSheet() },
@@ -384,7 +548,9 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
                         onToggleFavorite = { viewModel.toggleFavorite(it) },
                         onExploreWithMaps = { hotspot -> viewModel.exploreHotspotWithMaps(hotspot) },
                         searchQuery = uiState.searchQuery,
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) }
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                        isOnline = isOnline,
+                        selectedLanguage = uiState.selectedLanguage
                     )
                 }
                 AppTab.NEWS -> {

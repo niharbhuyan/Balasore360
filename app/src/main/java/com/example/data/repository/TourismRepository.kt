@@ -63,8 +63,7 @@ class TourismRepository(
 
         val count = tourismDao.getCount()
         val isStale = isCacheOlderThan24Hours()
-        if (count == 0 || forceRefresh || isStale) {
-            // Seed default tourism destinations if not already present or refresh timestamps
+        if (count == 0) {
             val defaultSpots = DefaultData.getInitialHotspots()
             tourismDao.insertHotspots(defaultSpots)
 
@@ -79,6 +78,25 @@ class TourismRepository(
                 )
             )
             emit(Resource.Success(data = defaultSpots, isOfflineCached = true))
+        } else if (forceRefresh || isStale) {
+            // Preserve user-selected favorite spots persisted in Room
+            val favoriteIds = tourismDao.getFavoriteHotspotsSync().map { it.id }.toSet()
+            val mergedSpots = DefaultData.getInitialHotspots().map { spot ->
+                if (spot.id in favoriteIds) spot.copy(isFavorite = true) else spot
+            }
+            tourismDao.insertHotspots(mergedSpots)
+
+            cacheMetadataDao?.insertOrUpdate(
+                CacheSyncMetadataEntity(
+                    cacheKey = "TOURISM",
+                    lastSyncedAt = System.currentTimeMillis(),
+                    itemCount = mergedSpots.size,
+                    status = "FRESH",
+                    cacheLabel = "${mergedSpots.size} Tourism Destinations in Room",
+                    details = "Persisted offline travel guide & navigation coords."
+                )
+            )
+            emit(Resource.Success(data = mergedSpots, isOfflineCached = true))
         } else {
             cacheMetadataDao?.insertOrUpdate(
                 CacheSyncMetadataEntity(

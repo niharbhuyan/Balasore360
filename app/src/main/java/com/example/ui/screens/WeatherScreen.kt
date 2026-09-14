@@ -78,6 +78,7 @@ import com.example.ui.components.FriendlyEmptyStateType
 import com.example.ui.components.ReviewsSection
 import com.example.ui.components.SearchEmptyStateCard
 import com.example.ui.components.TimeSensitiveWeatherAlertCard
+import com.example.ui.components.OfflineConnectionBanner
 import com.example.ui.theme.AlertCyclone
 import com.example.ui.theme.AlertNormal
 import com.example.ui.theme.AlertWarning
@@ -275,6 +276,18 @@ fun WeatherScreen(
                                 color = BentoSlate400
                             )
                         }
+                    }
+                }
+
+                // Offline Notice Banner with working Retry Button
+                if (!isOnline) {
+                    item {
+                        OfflineConnectionBanner(
+                            isOnline = false,
+                            isRetrying = isRefreshing,
+                            onRetry = onRefresh,
+                            modifier = Modifier.padding(horizontal = 2.dp)
+                        )
                     }
                 }
 

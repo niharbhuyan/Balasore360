@@ -51,6 +51,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -101,6 +102,8 @@ import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.LocalBentoPalette
+import com.example.ui.util.AppLanguage
+import com.example.ui.util.AppStrings
 import com.example.ui.viewmodel.AppTab
 import com.example.ui.theme.TideIncoming
 import com.example.ui.theme.TideReceding
@@ -126,6 +129,7 @@ fun AppHeader(
     onToggleTheme: () -> Unit = {},
     onAlertsClick: () -> Unit = {},
     hasActiveAlerts: Boolean = false,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
     val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
@@ -177,7 +181,7 @@ fun AppHeader(
 
                     Column {
                         Text(
-                            text = "NIHAR SALES",
+                            text = AppStrings.brandName(selectedLanguage).uppercase(),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 2.sp,
@@ -186,7 +190,7 @@ fun AppHeader(
                             color = BentoPrimaryBlue
                         )
                         Text(
-                            text = "BALASORE 360",
+                            text = AppStrings.appName(selectedLanguage).uppercase(),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = (-0.5).sp
@@ -197,8 +201,13 @@ fun AppHeader(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
+                            val subBrand = when (selectedLanguage) {
+                                AppLanguage.ODIA -> "ବାଲେଶ୍ୱର • ${AppStrings.brandName(selectedLanguage)}"
+                                AppLanguage.HINDI -> "बालेश्वर • ${AppStrings.brandName(selectedLanguage)}"
+                                AppLanguage.ENGLISH -> "Balasore • Nihar Sales"
+                            }
                             Text(
-                                text = "ବାଲେଶ୍ୱର • Nihar Sales",
+                                text = subBrand,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = BentoSlate500
                             )
@@ -387,37 +396,92 @@ fun AppHeader(
                 }
             }
 
-            // Offline Mode Banner Indicator
+            // Offline Mode Banner Indicator with Retry Action
             if (!isOnline) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = BentoAmberBg,
-                    border = BorderStroke(1.dp, BentoAmberText.copy(alpha = 0.25f)),
+                    border = BorderStroke(1.dp, BentoAmberText.copy(alpha = 0.35f)),
+                    shadowElevation = 0.5.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable(onClick = onOfflineStatusClick)
                         .testTag("offline_notice_banner")
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CloudOff,
-                            contentDescription = null,
-                            tint = BentoAmberText,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Text(
-                            text = "Offline Mode • All news, weather tides & tourism hotspots running from Room database",
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable(onClick = onOfflineStatusClick)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = "Offline indicator",
+                                tint = BentoAmberText,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = AppStrings.offlineTitle(selectedLanguage),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = BentoAmberText,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = AppStrings.offlineSubtitle(selectedLanguage),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.5.sp),
+                                    color = BentoAmberText.copy(alpha = 0.85f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        // Retry Button
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
                             color = BentoAmberText,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(enabled = !isRefreshing, onClick = onRefresh)
+                                .testTag("header_retry_button")
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                if (isRefreshing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(12.dp),
+                                        color = Color.White,
+                                        strokeWidth = 1.5.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Retry connection",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                }
+                                Text(
+                                    text = if (isRefreshing) "Retrying..." else "Retry",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -430,10 +494,26 @@ fun AppHeader(
                 placeholder = {
                     Text(
                         text = when (selectedTab) {
-                            AppTab.NEWS -> "Filter Balasore news by keyword..."
-                            AppTab.WEATHER -> "Filter weather, tides & forecasts..."
-                            AppTab.HOTSPOTS -> "Filter tourism spots & heritage..."
-                            AppTab.ESSENTIALS -> "Filter emergency contacts & services..."
+                            AppTab.NEWS -> when (selectedLanguage) {
+                                AppLanguage.ODIA -> "ବାଲେଶ୍ୱର ଖବର ଖୋଜନ୍ତୁ..."
+                                AppLanguage.HINDI -> "बालेश्वर समाचार खोजें..."
+                                AppLanguage.ENGLISH -> "Filter Balasore news by keyword..."
+                            }
+                            AppTab.WEATHER -> when (selectedLanguage) {
+                                AppLanguage.ODIA -> "ପାଣିପାଗ, ଜୁଆର ଓ ପୂର୍ବାନୁମାନ..."
+                                AppLanguage.HINDI -> "मौसम, ज्वार और पूर्वानुमान..."
+                                AppLanguage.ENGLISH -> "Filter weather, tides & forecasts..."
+                            }
+                            AppTab.HOTSPOTS -> when (selectedLanguage) {
+                                AppLanguage.ODIA -> "ପର୍ଯ୍ୟଟନ ସ୍ଥଳ ଓ ଐତିହ୍ୟ ଖୋଜନ୍ତୁ..."
+                                AppLanguage.HINDI -> "पर्यटन स्थल एवं धरोहर खोजें..."
+                                AppLanguage.ENGLISH -> "Filter tourism spots & heritage..."
+                            }
+                            AppTab.ESSENTIALS -> when (selectedLanguage) {
+                                AppLanguage.ODIA -> "ଜରୁରୀକାଳୀନ ସେବା ଓ ନମ୍ବର ଖୋଜନ୍ତୁ..."
+                                AppLanguage.HINDI -> "आपातकालीन सेवाएं और संपर्क..."
+                                AppLanguage.ENGLISH -> "Filter emergency contacts & services..."
+                            }
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = BentoSlate400,
@@ -909,13 +989,46 @@ fun MainScrollableTabRow(
     hotspotsCount: Int,
     newsCount: Int,
     weatherTemp: String? = null,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
     val tabs = listOf(
-        Triple(AppTab.HOTSPOTS, "Tourism", Icons.Default.Explore),
-        Triple(AppTab.NEWS, "News", Icons.AutoMirrored.Filled.Article),
-        Triple(AppTab.WEATHER, "Weather", Icons.Default.Cloud),
-        Triple(AppTab.ESSENTIALS, "Essentials", Icons.Default.ContactPhone)
+        Triple(
+            AppTab.HOTSPOTS,
+            when (selectedLanguage) {
+                AppLanguage.ODIA -> "ପର୍ଯ୍ୟଟନ"
+                AppLanguage.HINDI -> "पर्यटन"
+                AppLanguage.ENGLISH -> "Tourism"
+            },
+            Icons.Default.Explore
+        ),
+        Triple(
+            AppTab.NEWS,
+            when (selectedLanguage) {
+                AppLanguage.ODIA -> "ଖବର"
+                AppLanguage.HINDI -> "समाचार"
+                AppLanguage.ENGLISH -> "News"
+            },
+            Icons.AutoMirrored.Filled.Article
+        ),
+        Triple(
+            AppTab.WEATHER,
+            when (selectedLanguage) {
+                AppLanguage.ODIA -> "ପାଣିପାଗ"
+                AppLanguage.HINDI -> "मौसम"
+                AppLanguage.ENGLISH -> "Weather"
+            },
+            Icons.Default.Cloud
+        ),
+        Triple(
+            AppTab.ESSENTIALS,
+            when (selectedLanguage) {
+                AppLanguage.ODIA -> "ଜରୁରୀ ସେବା"
+                AppLanguage.HINDI -> "सेवाएं"
+                AppLanguage.ENGLISH -> "Essentials"
+            },
+            Icons.Default.ContactPhone
+        )
     )
 
     val selectedIndex = tabs.indexOfFirst { it.first == selectedTab }.coerceAtLeast(0)
@@ -1180,4 +1293,114 @@ fun SearchEmptyStateCard(
         }
     }
 }
+
+/**
+ * High-visibility, user-friendly offline status strip with an interactive Retry button.
+ * Used at the top of content feeds (News, Tourism, Weather) when operating from Room cache.
+ */
+@Composable
+fun OfflineConnectionBanner(
+    isOnline: Boolean,
+    isRetrying: Boolean = false,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (!isOnline) {
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = BentoAmberBg,
+            border = BorderStroke(1.dp, BentoAmberText.copy(alpha = 0.35f)),
+            shadowElevation = 1.dp,
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("offline_connection_banner")
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = BentoAmberText.copy(alpha = 0.15f),
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = "Offline indicator",
+                                tint = BentoAmberText,
+                                modifier = Modifier.size(17.dp)
+                            )
+                        }
+                    }
+                    Column {
+                        Text(
+                            text = "No Connection • Viewing Offline Data",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoAmberText
+                            )
+                        )
+                        Text(
+                            text = "Showing Room cached stories & attractions • ଇଣ୍ଟରନେଟ୍ ନାହିଁ",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 11.sp,
+                                color = BentoAmberText.copy(alpha = 0.85f)
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = BentoAmberText,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(enabled = !isRetrying, onClick = onRetry)
+                        .testTag("offline_banner_retry_btn")
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                    ) {
+                        if (isRetrying) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(13.dp),
+                                color = Color.White,
+                                strokeWidth = 1.7.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Retry connection",
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                        Text(
+                            text = if (isRetrying) "Retrying..." else "Retry",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 11.5.sp
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 

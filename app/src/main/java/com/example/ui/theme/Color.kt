@@ -87,6 +87,7 @@ val LocalBentoPalette = staticCompositionLocalOf { LightBentoPalette }
 val BentoCanvas: Color @Composable get() = LocalBentoPalette.current.canvas
 val BentoCardWhite: Color @Composable get() = LocalBentoPalette.current.cardBackground
 val BentoSlate900: Color @Composable get() = LocalBentoPalette.current.textPrimary
+val BentoSlate800: Color @Composable get() = Color(0xFF1E293B)
 val BentoSlate700: Color @Composable get() = LocalBentoPalette.current.textSecondary
 val BentoSlate500: Color @Composable get() = LocalBentoPalette.current.textMuted
 val BentoSlate400: Color @Composable get() = LocalBentoPalette.current.textPlaceholder

@@ -86,6 +86,7 @@ data class HotspotEntity(
     val id: String,
     val name: String,
     val odiaName: String,
+    val hindiName: String = "",
     val category: String, // "Beach", "Temple", "Wildlife", "Heritage", "Port"
     val shortDescription: String,
     val fullDescription: String,

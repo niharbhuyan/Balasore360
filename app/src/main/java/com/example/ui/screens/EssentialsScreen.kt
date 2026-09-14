@@ -92,18 +92,21 @@ import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.components.BalasoreSocialHubCard
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.util.AppLanguage
+import com.example.ui.util.AppStrings
 
-enum class EmergencyCategory(val label: String, val odiaLabel: String) {
-    ALL("All Contacts", "ସମସ୍ତ"),
-    HOSPITALS("Hospitals", "ଡାକ୍ତରଖାନା"),
-    POLICE("Police", "ପୋଲିସ"),
-    FIRE_RESCUE("Fire & Rescue", "ଅଗ୍ନିଶମ ଓ ବିପର୍ଯ୍ୟୟ")
+enum class EmergencyCategory(val label: String, val odiaLabel: String, val hindiLabel: String) {
+    ALL("All Contacts", "ସମସ୍ତ", "सभी संपर्क"),
+    HOSPITALS("Hospitals", "ଡାକ୍ତରଖାନା", "अस्पताल"),
+    POLICE("Police", "ପୋଲିସ", "पुलिस"),
+    FIRE_RESCUE("Fire & Rescue", "ଅଗ୍ନିଶମ ଓ ବିପର୍ଯ୍ୟୟ", "अग्निशमन एवं बचाव")
 }
 
 data class EmergencyContact(
     val id: String,
     val name: String,
     val odiaName: String,
+    val hindiName: String = "",
     val phone: String,
     val tollFree: String? = null,
     val role: String,
@@ -151,7 +154,8 @@ fun EssentialsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var currentLanguage by remember { mutableStateOf(selectedLanguage) }
+    var currentLanguage by remember(selectedLanguage) { mutableStateOf(selectedLanguage) }
+    val activeAppLang = AppLanguage.fromCode(currentLanguage)
     var showCacheClearedConfirm by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(EmergencyCategory.ALL) }
     var searchQuery by remember { mutableStateOf("") }
@@ -204,6 +208,7 @@ fun EssentialsScreen(
                 id = "fm_mch",
                 name = "FM Medical College & Hospital",
                 odiaName = "ଫକୀର ମୋହନ ମେଡିକାଲ କଲେଜ ଓ ହସ୍ପିଟାଲ",
+                hindiName = "फकीर मोहन मेडिकल कॉलेज एवं अस्पताल",
                 phone = "06782-255010",
                 tollFree = "108",
                 role = "Casualty & Trauma Centre",
@@ -216,6 +221,7 @@ fun EssentialsScreen(
                 id = "dhh_balasore",
                 name = "District Headquarters Hospital (DHH)",
                 odiaName = "ଜିଲ୍ଲା ମୁଖ୍ୟ ଚିକିତ୍ସାଳୟ, ବାଲେଶ୍ୱର",
+                hindiName = "जिला मुख्य चिकित्सालय, बालेश्वर",
                 phone = "06782-262016",
                 role = "District Trauma & Emergency Unit",
                 location = "Hospital Road, Balasore Town",
@@ -227,6 +233,7 @@ fun EssentialsScreen(
                 id = "red_cross_blood",
                 name = "Red Cross Central Blood Bank",
                 odiaName = "ରେଡକ୍ରସ କେନ୍ଦ୍ରୀୟ ରକ୍ତ ଭଣ୍ଡାର",
+                hindiName = "रेड क्रॉस केंद्रीय रक्त बैंक",
                 phone = "06782-262035",
                 role = "Emergency Blood & Component Bank",
                 location = "DHH Campus, Balasore",
@@ -238,6 +245,7 @@ fun EssentialsScreen(
                 id = "sdh_nilagiri",
                 name = "Sub-Divisional Hospital (SDH) Nilagiri",
                 odiaName = "ଉପଖଣ୍ଡ ଡାକ୍ତରଖାନା, ନୀଳଗିରି",
+                hindiName = "उप-मंडलीय अस्पताल, नीलगिरि",
                 phone = "06782-233224",
                 role = "Sub-Divisional Emergency & Maternity",
                 location = "Nilagiri Town",
@@ -249,6 +257,7 @@ fun EssentialsScreen(
                 id = "chc_chandipur",
                 name = "Chandipur Coastal Primary Health Centre",
                 odiaName = "ଚାନ୍ଦିପୁର ଉପକୂଳ ସ୍ୱାସ୍ଥ୍ୟ କେନ୍ଦ୍ର",
+                hindiName = "चांदीपुर तटीय प्राथमिक स्वास्थ्य केंद्र",
                 phone = "06782-272212",
                 role = "Coastal Emergency & Beach First Aid",
                 location = "Near Chandipur Beach",
@@ -262,6 +271,7 @@ fun EssentialsScreen(
                 id = "sp_balasore",
                 name = "Superintendent of Police (SP) Balasore",
                 odiaName = "ଆରକ୍ଷୀ ଅଧୀକ୍ଷକ କାର୍ଯ୍ୟାଳୟ, ବାଲେଶ୍ୱର",
+                hindiName = "पुलिस अधीक्षक कार्यालय, बालेश्वर",
                 phone = "06782-262024",
                 tollFree = "112",
                 role = "District Police Headquarters & Control",
@@ -274,6 +284,7 @@ fun EssentialsScreen(
                 id = "town_ps",
                 name = "Balasore Town Police Station",
                 odiaName = "ବାଲେଶ୍ୱର ଟାଉନ ଥାନା",
+                hindiName = "बालेश्वर टाउन थाना",
                 phone = "06782-262032",
                 tollFree = "112",
                 role = "Town Law & Order Patrol",
@@ -286,6 +297,7 @@ fun EssentialsScreen(
                 id = "sahadevkhunta_ps",
                 name = "Sahadevkhunta Police Station",
                 odiaName = "ସହଦେବଖୁଣ୍ଟା ଥାନା",
+                hindiName = "सहदेवखूंटा थाना",
                 phone = "06782-262054",
                 tollFree = "112",
                 role = "Central Station & Bus Terminal Sector",
@@ -298,6 +310,7 @@ fun EssentialsScreen(
                 id = "chandipur_marine_ps",
                 name = "Chandipur Marine Police Station",
                 odiaName = "ଚାନ୍ଦିପୁର ସାମୁଦ୍ରିକ ଥାନା",
+                hindiName = "चांदीपुर समुद्री पुलिस थाना",
                 phone = "06782-272100",
                 tollFree = "112",
                 role = "Coastal Security & Beach Lifeguards",
@@ -310,6 +323,7 @@ fun EssentialsScreen(
                 id = "women_cyber_cell",
                 name = "Women Helpline & Cyber Crime Unit",
                 odiaName = "ମହିଳା ସହାୟତା ଓ ସାଇବର ଥାନା",
+                hindiName = "महिला हेल्पलाइन एवं साइबर अपराध सेल",
                 phone = "1930",
                 tollFree = "181",
                 role = "Financial Cyber Fraud & Women Safety",
@@ -324,6 +338,7 @@ fun EssentialsScreen(
                 id = "balasore_main_fire",
                 name = "Balasore Main Fire Station",
                 odiaName = "ବାଲେଶ୍ୱର ମୁଖ୍ୟ ଅଗ୍ନିଶମ କେନ୍ଦ୍ର",
+                hindiName = "बालेश्वर मुख्य अग्निशमन केंद्र",
                 phone = "06782-262101",
                 tollFree = "101",
                 role = "Fire Fighting & Rapid Accident Rescue",
@@ -336,6 +351,7 @@ fun EssentialsScreen(
                 id = "remuna_fire",
                 name = "Remuna Fire & Rescue Station",
                 odiaName = "ରେମୁଣା ଅଗ୍ନିଶମ କେନ୍ଦ୍ର",
+                hindiName = "रेमुणा अग्निशमन एवं बचाव केंद्र",
                 phone = "06782-275101",
                 tollFree = "101",
                 role = "Industrial Zone & Highway Rescue",
@@ -348,6 +364,7 @@ fun EssentialsScreen(
                 id = "deoc_disaster",
                 name = "District Emergency Operation Centre (DEOC)",
                 odiaName = "ଜିଲ୍ଲା ଜରୁରୀକାଳୀନ ବିପର୍ଯ୍ୟୟ ପରିଚାଳନା କକ୍ଷ",
+                hindiName = "जिला आपातकालीन परिचालन केंद्र (DEOC)",
                 phone = "06782-262274",
                 tollFree = "1077",
                 role = "Cyclone, Flood & Disaster Management",
@@ -360,6 +377,7 @@ fun EssentialsScreen(
                 id = "odraf_balasore",
                 name = "ODRAF 4th Battalion Rescue Unit",
                 odiaName = "ଓଡ଼ିଶା ବିପର୍ଯ୍ୟୟ ଦ୍ରୁତ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ ବଳ",
+                hindiName = "ओडिशा आपदा त्वरित प्रतिक्रिया बल (ODRAF)",
                 phone = "06782-262333",
                 role = "Marine Search & Flood Evacuation Force",
                 location = "Balasore Coastal Command",
@@ -377,6 +395,7 @@ fun EssentialsScreen(
             val matchesSearch = searchQuery.isBlank() ||
                     contact.name.contains(searchQuery, ignoreCase = true) ||
                     contact.odiaName.contains(searchQuery, ignoreCase = true) ||
+                    contact.hindiName.contains(searchQuery, ignoreCase = true) ||
                     contact.role.contains(searchQuery, ignoreCase = true) ||
                     contact.location.contains(searchQuery, ignoreCase = true) ||
                     contact.phone.contains(searchQuery, ignoreCase = true)
@@ -616,8 +635,13 @@ fun EssentialsScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
+                                val catTitle = when (activeAppLang) {
+                                    AppLanguage.ODIA -> category.odiaLabel
+                                    AppLanguage.HINDI -> category.hindiLabel
+                                    AppLanguage.ENGLISH -> category.label
+                                }
                                 Text(
-                                    text = category.label,
+                                    text = catTitle,
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                     color = if (isSelected) Color.White else BentoSlate700
                                 )
@@ -683,6 +707,7 @@ fun EssentialsScreen(
             items(filteredContacts, key = { it.id }) { contact ->
                 EmergencyContactCard(
                     contact = contact,
+                    currentLanguage = activeAppLang,
                     onCallClick = { dialPhoneNumber(context, contact.phone) }
                 )
             }
@@ -888,7 +913,11 @@ fun EssentialsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            listOf("English" to "English (Default)", "Odia" to "ଓଡ଼ିଆ (Odia)").forEach { (code, label) ->
+                            listOf(
+                                Triple("English", "English", "EN"),
+                                Triple("Odia", "ଓଡ଼ିଆ", "OR"),
+                                Triple("Hindi", "हिन्दी", "HI")
+                            ).forEach { (code, label, _) ->
                                 val isSelected = currentLanguage.equals(code, ignoreCase = true)
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
@@ -901,10 +930,10 @@ fun EssentialsScreen(
                                             currentLanguage = code
                                             onLanguageChange(code)
                                         }
-                                        .testTag("language_option_$code")
+                                        .testTag("language_option_${code.lowercase()}")
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.Center
                                     ) {
@@ -1095,7 +1124,7 @@ fun EssentialsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "• Version: 1.0.0 (Production Release ready)\n" +
+                        text = "• Version: ${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE} - Release)\n" +
                                 "• Theme: Bento Grid System with Dark/Light Support\n" +
                                 "• Package: com.niharsales.balasore360\n" +
                                 "• Target SDK: Android 15 (API 36)\n" +
@@ -1208,6 +1237,7 @@ fun SosQuickDialCard(
 @Composable
 fun EmergencyContactCard(
     contact: EmergencyContact,
+    currentLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier,
     onCallClick: () -> Unit
 ) {
@@ -1216,6 +1246,24 @@ fun EmergencyContactCard(
         EmergencyCategory.POLICE -> Pair(Color(0xFF4338CA), Color(0xFFEEF2FF))
         EmergencyCategory.FIRE_RESCUE -> Pair(BentoAmberText, BentoAmberBg)
         EmergencyCategory.ALL -> Pair(BentoPrimaryBlue, BentoBluePill)
+    }
+
+    val catBadgeText = when (currentLanguage) {
+        AppLanguage.ODIA -> contact.category.odiaLabel
+        AppLanguage.HINDI -> contact.category.hindiLabel
+        AppLanguage.ENGLISH -> contact.category.label
+    }
+
+    val primaryName = when (currentLanguage) {
+        AppLanguage.ODIA -> if (contact.odiaName.isNotBlank()) contact.odiaName else contact.name
+        AppLanguage.HINDI -> if (contact.hindiName.isNotBlank()) contact.hindiName else contact.name
+        AppLanguage.ENGLISH -> contact.name
+    }
+
+    val secondaryName = when (currentLanguage) {
+        AppLanguage.ODIA -> contact.name
+        AppLanguage.HINDI -> contact.name
+        AppLanguage.ENGLISH -> contact.odiaName
     }
 
     Card(
@@ -1244,7 +1292,7 @@ fun EmergencyContactCard(
                     color = categoryBg
                 ) {
                     Text(
-                        text = contact.category.label.uppercase(),
+                        text = catBadgeText.uppercase(),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
@@ -1263,7 +1311,7 @@ fun EmergencyContactCard(
                 )
             }
 
-            // Name, Odia Name, Location
+            // Name, Localized Subtitle, Location
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
@@ -1287,16 +1335,18 @@ fun EmergencyContactCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = contact.name,
+                        text = primaryName,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                         color = BentoSlate900
                     )
-                    Text(
-                        text = contact.odiaName,
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        fontSize = 12.sp,
-                        color = BentoPrimaryBlue
-                    )
+                    if (secondaryName.isNotBlank() && secondaryName != primaryName) {
+                        Text(
+                            text = secondaryName,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                            fontSize = 12.sp,
+                            color = BentoPrimaryBlue
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "${contact.role} • ${contact.location}",

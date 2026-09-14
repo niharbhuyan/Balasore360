@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">ବାଲେଶ୍ୱର ୩୬୦</string>
+    <string name="brand_name">ନିହାର ସେଲ୍ସ</string>
+    <string name="app_subtitle">ଡିଜିଟାଲ୍ ସୂଚନା ଓ ପର୍ଯ୍ୟଟନ ପୋର୍ଟାଲ୍</string>
+    <string name="tab_tourism">ପର୍ଯ୍ୟଟନ</string>
+    <string name="tab_news">ବାଲେଶ୍ୱର ଖବର</string>
+    <string name="tab_weather">ପାଣିପାଗ ଓ ସତର୍କତା</string>
+    <string name="tab_essentials">ଜରୁରୀ ସେବା</string>
+    <string name="search_hint">ଖବର, ବେଳାଭୂମି, ମନ୍ଦିର, ପାଣିପାଗ ଖୋଜନ୍ତୁ...</string>
+    <string name="retry">ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ</string>
+    <string name="offline_mode_active">ସଂଯୋଗ ନାହିଁ • ଅଫଲାଇନ୍ ମୋଡ୍ ସକ୍ରିୟ</string>
+    <string name="offline_room_cached">ରୁମ୍ କ୍ୟାସ୍ ସାଇତା ଖବର, ପାଣିପାଗ ଓ ଦର୍ଶନୀୟ ସ୍ଥାନ</string>
+    <string name="favorites">ପସନ୍ଦିତା ସ୍ଥାନ</string>
+    <string name="language_preference">ଭାଷା ଓ ଲିପି ପସନ୍ଦ</string>
+    <string name="language_hint">ପ୍ରଦର୍ଶନ ଭାଷା ବାଛନ୍ତୁ (English, ଓଡ଼ିଆ, हिन्दी)</string>
+    <string name="lang_english">English</string>
+    <string name="lang_odia">ଓଡ଼ିଆ</string>
+    <string name="lang_hindi">हिन्दी</string>
+</resources>

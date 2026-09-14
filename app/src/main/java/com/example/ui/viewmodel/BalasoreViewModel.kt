@@ -20,6 +20,7 @@ import com.example.data.remote.GroundingResponse
 import com.example.data.remote.GroundingToolMode
 import com.example.data.sync.NetworkMonitor
 import com.example.data.sync.SyncManager
+import com.example.ui.util.AppLanguage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import android.util.Log
 
@@ -85,6 +87,7 @@ data class UiState(
     val authError: String? = null,
     val authSuccessMessage: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     val isCacheOlderThan24Hours: Boolean = false
 )
 
@@ -143,6 +146,7 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             val matchesSearch = query.isBlank() ||
                     hotspot.name.contains(query, ignoreCase = true) ||
                     hotspot.odiaName.contains(query, ignoreCase = true) ||
+                    hotspot.hindiName.contains(query, ignoreCase = true) ||
                     hotspot.shortDescription.contains(query, ignoreCase = true) ||
                     hotspot.fullDescription.contains(query, ignoreCase = true) ||
                     hotspot.highlights.contains(query, ignoreCase = true) ||
@@ -231,12 +235,14 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     init {
-        // Load saved theme preference
+        // Load saved theme and language preference
         try {
             val prefs = getApplication<Application>().getSharedPreferences("balasore_app_prefs", Context.MODE_PRIVATE)
             val savedTheme = prefs.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
             val initialTheme = try { ThemeMode.valueOf(savedTheme) } catch (_: Exception) { ThemeMode.SYSTEM }
-            _uiState.value = _uiState.value.copy(themeMode = initialTheme)
+            val savedLang = prefs.getString("app_language", AppLanguage.ENGLISH.code) ?: AppLanguage.ENGLISH.code
+            val initialLang = AppLanguage.fromCode(savedLang)
+            _uiState.value = _uiState.value.copy(themeMode = initialTheme, selectedLanguage = initialLang)
         } catch (_: Exception) {}
         
         // Initialize Firebase Cloud Messaging for real-time weather & breaking news alerts
@@ -271,11 +277,20 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             networkMonitor.isOnline.collect { online ->
                 val wasOffline = !_uiState.value.isOnline && online
+                val wentOffline = _uiState.value.isOnline && !online
                 _uiState.value = _uiState.value.copy(isOnline = online)
+                if (wentOffline) {
+                    _uiState.value = _uiState.value.copy(
+                        userNotice = "No Connection • Balasore 360 is operating offline from Room database."
+                    )
+                }
                 if (wasOffline) {
                     // When device comes back online, check if cache is older than 24 hours and auto-refresh
                     val isStale = repository.isCacheOlderThan24Hours()
-                    _uiState.value = _uiState.value.copy(isCacheOlderThan24Hours = isStale)
+                    _uiState.value = _uiState.value.copy(
+                        isCacheOlderThan24Hours = isStale,
+                        userNotice = "Connection restored • Online data synced."
+                    )
                     SyncManager.triggerImmediateSync(getApplication())
                     refreshData(silent = !isStale)
                 }
@@ -429,8 +444,33 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
         setThemeMode(next)
     }
 
+    fun setLanguage(language: AppLanguage) {
+        _uiState.update { it.copy(selectedLanguage = language) }
+        try {
+            val prefs = getApplication<Application>().getSharedPreferences("balasore_app_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("app_language", language.code).apply()
+        } catch (_: Exception) {}
+        showUserNotice(
+            when (language) {
+                AppLanguage.ODIA -> "ଭାଷା ବଦଳାଗଲା: ଓଡ଼ିଆ"
+                AppLanguage.HINDI -> "भाषा बदली गई: हिन्दी"
+                AppLanguage.ENGLISH -> "Display language changed to English"
+            }
+        )
+    }
+
     fun triggerManualSync() {
         viewModelScope.launch {
+            if (!_uiState.value.isOnline) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    isSyncing = false,
+                    isNewsLoading = false,
+                    isTourismLoading = false,
+                    userNotice = "No Connection • Cannot sync without network. Showing cached data."
+                )
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(
                 isRefreshing = true,
                 isSyncing = true,
@@ -452,8 +492,21 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun toggleFavorite(hotspot: HotspotEntity) {
+        val newFav = !hotspot.isFavorite
+        if (_uiState.value.selectedHotspot?.id == hotspot.id) {
+            _uiState.value = _uiState.value.copy(
+                selectedHotspot = hotspot.copy(isFavorite = newFav)
+            )
+        }
         viewModelScope.launch {
             repository.toggleFavoriteHotspot(hotspot.id, hotspot.isFavorite)
+            _uiState.value = _uiState.value.copy(
+                userNotice = if (newFav) {
+                    "★ Added \"${hotspot.name}\" to Favorites in Room"
+                } else {
+                    "Removed \"${hotspot.name}\" from Favorites"
+                }
+            )
         }
     }
 
@@ -496,6 +549,14 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshNewsFeed() {
         viewModelScope.launch {
+            if (!_uiState.value.isOnline) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    isNewsLoading = false,
+                    userNotice = "No Connection • Showing cached Balasore news stories."
+                )
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(isRefreshing = true, isNewsLoading = true)
             try {
                 // Minimum presentation window to let shimmer animation smoothly complete sweep
@@ -512,7 +573,7 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
                     isNewsLoading = false,
-                    userNotice = "Offline mode: Showing cached Balasore news."
+                    userNotice = "No Connection • Failed to fetch latest news. Showing cached stories."
                 )
             } finally {
                 _uiState.value = _uiState.value.copy(isRefreshing = false, isNewsLoading = false)
@@ -522,6 +583,13 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshWeatherFeed() {
         viewModelScope.launch {
+            if (!_uiState.value.isOnline) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    userNotice = "No Connection • Showing cached meteorological data."
+                )
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(isRefreshing = true)
             try {
                 val res = repository.refreshWeatherAndAlerts()
@@ -536,7 +604,7 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = false,
-                    userNotice = "Offline mode: Showing cached meteorological data."
+                    userNotice = "No Connection • Failed to fetch weather radar. Showing cached data."
                 )
             } finally {
                 _uiState.value = _uiState.value.copy(isRefreshing = false)
@@ -546,6 +614,15 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshData(silent: Boolean = false) {
         viewModelScope.launch {
+            if (!silent && !_uiState.value.isOnline) {
+                _uiState.value = _uiState.value.copy(
+                    isRefreshing = false,
+                    isNewsLoading = false,
+                    isTourismLoading = false,
+                    userNotice = "No Connection • Showing cached Balasore data from Room."
+                )
+                return@launch
+            }
             if (!silent) {
                 _uiState.value = _uiState.value.copy(
                     isRefreshing = true,
@@ -574,7 +651,7 @@ class BalasoreViewModel(application: Application) : AndroidViewModel(application
                         isRefreshing = false,
                         isNewsLoading = false,
                         isTourismLoading = false,
-                        userNotice = "Offline mode: Showing cached Balasore data from Room."
+                        userNotice = "No Connection • Failed to sync with server. Showing cached data."
                     )
                 }
             } finally {

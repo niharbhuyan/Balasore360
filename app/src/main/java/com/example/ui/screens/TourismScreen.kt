@@ -98,6 +98,7 @@ import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
 import com.example.ui.components.CategoryChip
 import com.example.ui.components.ReviewsSection
+import com.example.ui.util.AppLanguage
 import kotlinx.coroutines.flow.Flow
 import com.example.ui.theme.BentoAmberBg
 import com.example.ui.theme.BentoAmberText
@@ -122,6 +123,7 @@ import com.example.ui.components.HotspotListCardSkeleton
 import com.example.ui.components.BentoTopGridSkeleton
 import com.example.ui.components.BentoHeroSkeleton
 import com.example.ui.components.ShimmerSyncBanner
+import com.example.ui.components.OfflineConnectionBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,18 +146,48 @@ fun TourismScreen(
     onExploreWithMaps: (HotspotEntity) -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
+    isOnline: Boolean = true,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
-    val tourismFilterChips = remember(hotspots) {
+    val tourismFilterChips = remember(selectedLanguage) {
         listOf(
-            FilterChipItem(id = "All", label = "All", icon = Icons.Default.Explore),
-            FilterChipItem(id = "Beach", label = "Beach", icon = Icons.Default.BeachAccess),
-            FilterChipItem(id = "Temple", label = "Temple", icon = Icons.Default.Place),
-            FilterChipItem(id = "Wildlife", label = "Wildlife", icon = Icons.Default.Park),
-            FilterChipItem(id = "Heritage", label = "Heritage", icon = Icons.Default.Museum),
-            FilterChipItem(id = "Port", label = "Port", icon = Icons.Default.DirectionsBoat),
-            FilterChipItem(id = "Favorites", label = "Favorites", icon = Icons.Default.Favorite)
+            FilterChipItem(id = "All", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ସମସ୍ତ"
+                AppLanguage.HINDI -> "सभी"
+                AppLanguage.ENGLISH -> "All"
+            }, icon = Icons.Default.Explore),
+            FilterChipItem(id = "Beach", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ବେଳାଭୂମି"
+                AppLanguage.HINDI -> "समुद्र तट"
+                AppLanguage.ENGLISH -> "Beach"
+            }, icon = Icons.Default.BeachAccess),
+            FilterChipItem(id = "Temple", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ମନ୍ଦିର"
+                AppLanguage.HINDI -> "मंदिर"
+                AppLanguage.ENGLISH -> "Temple"
+            }, icon = Icons.Default.Place),
+            FilterChipItem(id = "Wildlife", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ବନ୍ୟପ୍ରାଣୀ"
+                AppLanguage.HINDI -> "वन्यजीव"
+                AppLanguage.ENGLISH -> "Wildlife"
+            }, icon = Icons.Default.Park),
+            FilterChipItem(id = "Heritage", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ଐତିହ୍ୟ"
+                AppLanguage.HINDI -> "धरोहर"
+                AppLanguage.ENGLISH -> "Heritage"
+            }, icon = Icons.Default.Museum),
+            FilterChipItem(id = "Port", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ବନ୍ଦର"
+                AppLanguage.HINDI -> "बंदरगाह"
+                AppLanguage.ENGLISH -> "Port"
+            }, icon = Icons.Default.DirectionsBoat),
+            FilterChipItem(id = "Favorites", label = when (selectedLanguage) {
+                AppLanguage.ODIA -> "ପସନ୍ଦିତା"
+                AppLanguage.HINDI -> "पसंदीदा"
+                AppLanguage.ENGLISH -> "Favorites"
+            }, icon = Icons.Default.Favorite)
         )
     }
     var isGridView by remember { mutableStateOf(true) }
@@ -427,7 +459,22 @@ fun TourismScreen(
                     }
                 } else if (hotspots.isEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (searchQuery.isNotBlank()) {
+                        if (!isOnline) {
+                            FriendlyEmptyStateCard(
+                                type = FriendlyEmptyStateType.OFFLINE_NO_INTERNET,
+                                title = "You're Browsing Offline",
+                                odiaTitle = "ଆପଣ ଅଫଲାଇନ ଅଛନ୍ତି (ଇଣ୍ଟରନେଟ ସଂଯୋଗ ନାହିଁ)",
+                                subtitle = "Tourism destinations have not yet downloaded to your device. Connect to Wi-Fi or mobile data to fetch the latest Balasore hotspots.",
+                                actionButtonText = "Retry Connection",
+                                isActionLoading = isRefreshing,
+                                onActionClick = onRefresh,
+                                tipsList = listOf(
+                                    "Chandipur beach coordinates and emergency contacts are cached in Room for offline access.",
+                                    "Once loaded, all Balasore hotspots remain accessible without internet."
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        } else if (searchQuery.isNotBlank()) {
                             SearchEmptyStateCard(
                                 searchQuery = searchQuery,
                                 category = selectedCategory,
@@ -458,6 +505,17 @@ fun TourismScreen(
                         }
                     }
                 } else {
+                    if (!isOnline) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                                OfflineConnectionBanner(
+                                    isOnline = false,
+                                    isRetrying = isRefreshing,
+                                    onRetry = onRefresh
+                                )
+                            }
+                        }
+                    }
                     if (isRefreshing) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             ShimmerSyncBanner(
@@ -471,7 +529,8 @@ fun TourismScreen(
                             HotspotBentoGridCard(
                                 hotspot = hotspot,
                                 onClick = { onHotspotSelect(hotspot) },
-                                onToggleFavorite = { onToggleFavorite(hotspot) }
+                                onToggleFavorite = { onToggleFavorite(hotspot) },
+                                selectedLanguage = selectedLanguage
                             )
                         }
                     }
@@ -665,7 +724,22 @@ fun TourismScreen(
                     }
                 } else if (hotspots.isEmpty()) {
                     item {
-                        if (searchQuery.isNotBlank()) {
+                        if (!isOnline) {
+                            FriendlyEmptyStateCard(
+                                type = FriendlyEmptyStateType.OFFLINE_NO_INTERNET,
+                                title = "You're Browsing Offline",
+                                odiaTitle = "ଆପଣ ଅଫଲାଇନ ଅଛନ୍ତି (ଇଣ୍ଟରନେଟ ସଂଯୋଗ ନାହିଁ)",
+                                subtitle = "Tourism destinations have not yet downloaded to your device. Connect to Wi-Fi or mobile data to fetch the latest Balasore hotspots.",
+                                actionButtonText = "Retry Connection",
+                                isActionLoading = isRefreshing,
+                                onActionClick = onRefresh,
+                                tipsList = listOf(
+                                    "Chandipur beach coordinates and emergency contacts are cached in Room for offline access.",
+                                    "Once loaded, all Balasore hotspots remain accessible without internet."
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        } else if (searchQuery.isNotBlank()) {
                             SearchEmptyStateCard(
                                 searchQuery = searchQuery,
                                 category = selectedCategory,
@@ -696,6 +770,17 @@ fun TourismScreen(
                         }
                     }
                 } else {
+                    if (!isOnline) {
+                        item {
+                            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                OfflineConnectionBanner(
+                                    isOnline = false,
+                                    isRetrying = isRefreshing,
+                                    onRetry = onRefresh
+                                )
+                            }
+                        }
+                    }
                     if (isRefreshing) {
                         item {
                             ShimmerSyncBanner(
@@ -708,7 +793,8 @@ fun TourismScreen(
                         HotspotBentoCard(
                             hotspot = hotspot,
                             onClick = { onHotspotSelect(hotspot) },
-                            onToggleFavorite = { onToggleFavorite(hotspot) }
+                            onToggleFavorite = { onToggleFavorite(hotspot) },
+                            selectedLanguage = selectedLanguage
                         )
                     }
 
@@ -734,7 +820,8 @@ fun TourismScreen(
                 },
                 onDismiss = { onHotspotSelect(null) },
                 onToggleFavorite = { onToggleFavorite(selectedHotspot) },
-                onExploreWithMaps = { onExploreWithMaps(selectedHotspot) }
+                onExploreWithMaps = { onExploreWithMaps(selectedHotspot) },
+                selectedLanguage = selectedLanguage
             )
         }
     }
@@ -1016,8 +1103,19 @@ fun HotspotBentoCard(
     hotspot: HotspotEntity,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
+    val primaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
+        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
+        AppLanguage.ENGLISH -> hotspot.name
+    }
+    val secondaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> hotspot.name
+        AppLanguage.HINDI -> hotspot.name
+        AppLanguage.ENGLISH -> hotspot.odiaName
+    }
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
@@ -1037,12 +1135,12 @@ fun HotspotBentoCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = hotspot.name,
+                        text = primaryName,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = BentoSlate900
                     )
                     Text(
-                        text = hotspot.odiaName,
+                        text = secondaryName,
                         style = MaterialTheme.typography.bodySmall,
                         color = BentoPrimaryBlue
                     )
@@ -1153,8 +1251,19 @@ fun HotspotBentoGridCard(
     hotspot: HotspotEntity,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
+    val primaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
+        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
+        AppLanguage.ENGLISH -> hotspot.name
+    }
+    val secondaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> hotspot.name
+        AppLanguage.HINDI -> hotspot.name
+        AppLanguage.ENGLISH -> hotspot.odiaName
+    }
     val imageRes = getHotspotImageRes(hotspot.id)
 
     Card(
@@ -1300,7 +1409,7 @@ fun HotspotBentoGridCard(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = hotspot.name,
+                    text = primaryName,
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
@@ -1312,7 +1421,7 @@ fun HotspotBentoGridCard(
                 )
 
                 Text(
-                    text = hotspot.odiaName,
+                    text = secondaryName,
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.5.sp),
                     color = BentoPrimaryBlue,
                     maxLines = 1,
@@ -1346,8 +1455,19 @@ fun HotspotDetailSheet(
     onSubmitReview: (rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _ -> },
     onDismiss: () -> Unit,
     onToggleFavorite: () -> Unit,
-    onExploreWithMaps: () -> Unit = {}
+    onExploreWithMaps: () -> Unit = {},
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH
 ) {
+    val primaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
+        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
+        AppLanguage.ENGLISH -> hotspot.name
+    }
+    val secondaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> hotspot.name
+        AppLanguage.HINDI -> hotspot.name
+        AppLanguage.ENGLISH -> hotspot.odiaName
+    }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
 
@@ -1371,12 +1491,12 @@ fun HotspotDetailSheet(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = hotspot.name,
+                        text = primaryName,
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         color = BentoSlate900
                     )
                     Text(
-                        text = hotspot.odiaName,
+                        text = secondaryName,
                         style = MaterialTheme.typography.titleMedium,
                         color = BentoPrimaryBlue
                     )

@@ -88,6 +88,7 @@ import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
 import com.example.ui.components.ReviewsSection
+import com.example.ui.util.AppLanguage
 import com.example.ui.theme.BentoBlueLight
 import com.example.ui.theme.BentoBorder
 import com.example.ui.theme.BentoCardWhite
@@ -118,8 +119,19 @@ fun HotspotDetailScreen(
     onNavigateBack: () -> Unit,
     onToggleFavorite: () -> Unit,
     onExploreWithMaps: () -> Unit = {},
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
+    val primaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
+        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
+        AppLanguage.ENGLISH -> hotspot.name
+    }
+    val secondaryName = when (selectedLanguage) {
+        AppLanguage.ODIA -> hotspot.name
+        AppLanguage.HINDI -> hotspot.name
+        AppLanguage.ENGLISH -> hotspot.odiaName
+    }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
@@ -140,14 +152,14 @@ fun HotspotDetailScreen(
                 title = {
                     Column {
                         Text(
-                            text = hotspot.name,
+                            text = primaryName,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = BentoSlate900,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = hotspot.odiaName,
+                            text = secondaryName,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                             color = BentoPrimaryBlue,
                             maxLines = 1
@@ -228,7 +240,11 @@ fun HotspotDetailScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Get Directions",
+                        text = when (selectedLanguage) {
+                            AppLanguage.ODIA -> "ଦିଗ ନିର୍ଣ୍ଣୟ"
+                            AppLanguage.HINDI -> "दिशा-निर्देश"
+                            AppLanguage.ENGLISH -> "Get Directions"
+                        },
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -346,13 +362,13 @@ fun HotspotDetailScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = hotspot.name,
+                        text = primaryName,
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                         color = Color.White
                     )
 
                     Text(
-                        text = hotspot.odiaName,
+                        text = secondaryName,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
                         color = Color(0xFF93C5FD)
                     )

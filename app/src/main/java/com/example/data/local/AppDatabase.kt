@@ -16,7 +16,7 @@ import androidx.room.TypeConverters
         UserEntity::class,
         ReviewEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

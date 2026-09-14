@@ -23,6 +23,7 @@ import com.example.ui.theme.BentoRedText
 enum class AlertSeverity(
     val levelName: String,
     val odiaLabel: String,
+    val hindiLabel: String,
     val badgeBg: Color,
     val badgeText: Color,
     val isUrgent: Boolean
@@ -30,6 +31,7 @@ enum class AlertSeverity(
     SAFE(
         levelName = "SAFE & CLEAR",
         odiaLabel = "ସୁରକ୍ଷିତ ପାଣିପାଗ",
+        hindiLabel = "सुरक्षित मौसम",
         badgeBg = BentoGreenBg,
         badgeText = BentoGreenText,
         isUrgent = false
@@ -37,6 +39,7 @@ enum class AlertSeverity(
     ADVISORY(
         levelName = "ADVISORY (YELLOW)",
         odiaLabel = "ସତର୍କ ସୂଚନା (ହଳଦିଆ)",
+        hindiLabel = "सलाह (पीला)",
         badgeBg = BentoAmberBg,
         badgeText = BentoAmberText,
         isUrgent = false
@@ -44,6 +47,7 @@ enum class AlertSeverity(
     WARNING(
         levelName = "WARNING (ORANGE)",
         odiaLabel = "ଚେତାବନୀ (କମଳା)",
+        hindiLabel = "चेतावनी (नारंगी)",
         badgeBg = BentoAmberBg,
         badgeText = BentoAmberText,
         isUrgent = true
@@ -51,6 +55,7 @@ enum class AlertSeverity(
     CYCLONE_ALERT(
         levelName = "CYCLONE ALERT (RED)",
         odiaLabel = "ବାତ୍ୟା ସତର୍କତା (ନାଲି)",
+        hindiLabel = "चक्रवात चेतावनी (लाल)",
         badgeBg = BentoRedBg,
         badgeText = BentoRedText,
         isUrgent = true
@@ -58,6 +63,7 @@ enum class AlertSeverity(
     HIGH_TIDE(
         levelName = "TIDAL INGRESS",
         odiaLabel = "ଜୁଆର ସତର୍କତା",
+        hindiLabel = "ज्वार चेतावनी",
         badgeBg = Color(0xFFE0F2FE),
         badgeText = BentoPrimaryBlue,
         isUrgent = false
@@ -67,13 +73,13 @@ enum class AlertSeverity(
 /**
  * Affected sub-regions or geographic clusters in Balasore.
  */
-enum class BalasoreZone(val zoneName: String, val odiaName: String) {
-    COASTAL_CHANDIPUR("Chandipur & Balaramgadi Coast", "ଚାନ୍ଦିପୁର ଓ ବଳରାମଗଡ଼ି ଉପକୂଳ"),
-    TALASARI_SUBARNAREKHA("Talasari & Subarnarekha Estuary", "ତାଳସାରୀ ଓ ସୁବର୍ଣ୍ଣରେଖା ମୁହାଣ"),
-    BALASORE_TOWN("Balasore Municipality & Remuna", "ବାଲେଶ୍ୱର ସହର ଓ ରେମୁଣା"),
-    NILAGIRI_HILLS("Nilagiri & Kuldiha Forest Foothills", "ନୀଳଗିରି ଓ କୁଳଡିହା ପାଦଦେଶ"),
-    KASAFAL_BAHANAGA("Kasafal & Bahanaga Coastline", "କାସାଫାଳ ଓ ବାହାନଗା ତଟବର୍ତ୍ତୀ"),
-    DISTRICT_WIDE("Entire Balasore District", "ସମଗ୍ର ବାଲେଶ୍ୱର ଜିଲ୍ଲା")
+enum class BalasoreZone(val zoneName: String, val odiaName: String, val hindiName: String) {
+    COASTAL_CHANDIPUR("Chandipur & Balaramgadi Coast", "ଚାନ୍ଦିପୁର ଓ ବଳରାମଗଡ଼ି ଉପକୂଳ", "चांदीपुर एवं बलरामगढ़ी तट"),
+    TALASARI_SUBARNAREKHA("Talasari & Subarnarekha Estuary", "ତାଳସାରୀ ଓ ସୁବର୍ଣ୍ଣରେଖା ମୁହାଣ", "तालसारी एवं सुवर्णरेखा मुहाना"),
+    BALASORE_TOWN("Balasore Municipality & Remuna", "ବାଲେଶ୍ୱର ସହର ଓ ରେମୁଣା", "बालेश्वर नगर पालिका एवं रेमुणा"),
+    NILAGIRI_HILLS("Nilagiri & Kuldiha Forest Foothills", "ନୀଳଗିରି ଓ କୁଳଡିହା ପାଦଦେଶ", "नीलगिरि एवं कुलडीहा तलहटी"),
+    KASAFAL_BAHANAGA("Kasafal & Bahanaga Coastline", "କାସାଫାଳ ଓ ବାହାନଗା ତଟବର୍ତ୍ତୀ", "कासाफाल एवं बाहानगा तट"),
+    DISTRICT_WIDE("Entire Balasore District", "ସମଗ୍ର ବାଲେଶ୍ୱର ଜିଲ୍ଲା", "संपूर्ण बालेश्वर ज़िला")
 }
 
 /**
@@ -100,6 +106,7 @@ data class BalasoreWeatherAlert(
     val id: String,
     val title: String,
     val odiaTitle: String,
+    val hindiTitle: String = "",
     val summary: String,
     val detailedDescription: String,
     val category: WeatherAlertCategory,
