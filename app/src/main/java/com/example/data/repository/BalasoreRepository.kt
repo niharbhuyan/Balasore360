@@ -1,12 +1,211 @@
 package com.example.data.repository
 
+import com.example.data.model.CycloneShelter
+import com.example.data.model.DailyBalasoreIdiom
+import com.example.data.model.DrdoAdvisory
 import com.example.data.model.EmergencyContact
 import com.example.data.model.Hotspot
+import com.example.data.model.LiteraryTrailPoint
 import com.example.data.model.NewsArticle
+import com.example.data.model.RiverGauge
+import com.example.data.model.SeafoodCatch
+import com.example.data.model.TempleRitualInfo
+import com.example.data.model.TidalClockData
 import com.example.data.model.TransitSchedule
 import com.example.data.model.WeatherInfo
 
 object BalasoreRepository {
+
+    // 1. Chandipur Tidal Clock & Safe Walk Data
+    val tidalClock = TidalClockData(
+        currentPhase = "Vanishing Sea (Low Tide)",
+        odiaPhase = "ଭଟ୍ଟା ସମୟ (ସମୁଦ୍ର ଅପସାରିତ)",
+        distanceRecededKm = 4.8,
+        safeWalkMinutesRemaining = 135,
+        highTideTime = "08:15 PM",
+        lowTideTime = "02:30 PM",
+        tidalCoefficient = "Semi-Diurnal Spring Tide",
+        biodiversitySightings = listOf(
+            "Rare Horseshoe Crabs (Living fossils / Tachypleus gigas) spotted at Sandbar #2",
+            "Swarms of Red Ghost Crabs active around northern casuarina dunes",
+            "Conch shells, sea dollars, and mudskippers exposed in shallow sand ripples"
+        )
+    )
+
+    // 2. DRDO ITR Coastal Advisories & Defense Milestones
+    val drdoAdvisories = listOf(
+        DrdoAdvisory(
+            id = "drdo_1",
+            title = "Coastal Waters Cleared for Artisanal Fishing",
+            odiaTitle = "ଉପକୂଳ ଜଳରାଶି ମତ୍ସ୍ୟଜୀବୀଙ୍କ ପାଇଁ ମୁକ୍ତ ଘୋଷଣା",
+            dateOrTime = "Today • Valid until 18:00 hrs",
+            status = "CLEARED FOR FISHING",
+            seaZone = "Chandipur to Kasafal (Zone Alpha)",
+            fishermenAdvisory = "All registered fishing boats and trawlers can operate normally up to 25 nautical miles.",
+            sonicBoomWarning = false,
+            heritageMilestone = "Historical: Chandipur was the launchpad for India's first Prithvi missile test in 1988."
+        ),
+        DrdoAdvisory(
+            id = "drdo_2",
+            title = "Scheduled Radar & Electronic Telemetry Tracking Window",
+            odiaTitle = "ନିର୍ଦ୍ଧାରିତ ରାଡାର ଓ ଟେଲିମେଟ୍ରି ଟ୍ରାକିଂ ଅବଧି",
+            dateOrTime = "Tomorrow 09:30 AM - 13:00 PM",
+            status = "COASTAL NOTICE",
+            seaZone = "Abdul Kalam Island Corridor (Zone Bravo)",
+            fishermenAdvisory = "Trawlers are advised to avoid deep-sea corridor 15 km south of Dhamra-Chandipur boundary.",
+            sonicBoomWarning = true,
+            heritageMilestone = "BrahMos supersonic cruise missile coastal batteries regularly validate pinpoint strike accuracy here."
+        )
+    )
+
+    // 3. Remuna Khirachora Bhog & Darshan Data
+    val templeRitualInfo = TempleRitualInfo(
+        templeName = "Khirachora Gopinatha Temple, Remuna",
+        odiaTempleName = "କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ଜିଉ, ରେମୁଣା",
+        nextBhogDistribution = "12:30 PM (Mid-day) & 07:30 PM (Sandhya)",
+        bhogName = "Amruta Keli (ଦିବ୍ୟ କ୍ଷୀର ଭୋଗ)",
+        bhogAvailabilityNote = "Handcrafted condensed milk cooked in terracotta pots using centuries-old sacred recipe",
+        currentDarshanStatus = "Open • Mangala Alati Completed",
+        mangalaAlati = "05:30 AM",
+        sandhyaArati = "06:45 PM",
+        pahadaTime = "01:00 PM - 04:00 PM",
+        pilgrimageCircuit = listOf(
+            "1. Remuna Gopinatha (9 km from city center)",
+            "2. Panchalingeswar Mountain Spring (30 km)",
+            "3. Emami Jagannath Temple, Januganj (6.5 km)",
+            "4. Baba Bhusandeswar Giant Shiva Linga, Bhograi (85 km)"
+        )
+    )
+
+    // 4. River Gauge Telemetry & Flood Early Warning
+    val riverGauges = listOf(
+        RiverGauge(
+            riverName = "Subarnarekha River",
+            odiaRiverName = "ସୁବର୍ଣ୍ଣରେଖା ନଦୀ",
+            stationName = "Rajghat Station (Jaleswar)",
+            currentLevelMeters = 8.42,
+            warningLevelMeters = 9.45,
+            dangerLevelMeters = 10.36,
+            status = "NORMAL",
+            trend = "Steady"
+        ),
+        RiverGauge(
+            riverName = "Budhabalanga River",
+            odiaRiverName = "ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ",
+            stationName = "NH-16 Bridge (Balasore City)",
+            currentLevelMeters = 6.85,
+            warningLevelMeters = 7.80,
+            dangerLevelMeters = 8.53,
+            status = "NORMAL",
+            trend = "Falling (-0.05m/hr)"
+        ),
+        RiverGauge(
+            riverName = "Jalaka River",
+            odiaRiverName = "ଜଳକା ନଦୀ",
+            stationName = "Mathani Station (Basta)",
+            currentLevelMeters = 5.20,
+            warningLevelMeters = 5.50,
+            dangerLevelMeters = 6.50,
+            status = "ALERT",
+            trend = "Rising slowly (+0.02m/hr)"
+        )
+    )
+
+    val cycloneShelters = listOf(
+        CycloneShelter(
+            name = "Bhograi Multipurpose Cyclone Shelter",
+            block = "Bhograi (Coastal)",
+            capacityPeople = 1200,
+            nodalContact = "Block Disaster Officer",
+            phone = "06781-232115"
+        ),
+        CycloneShelter(
+            name = "Jaleswar Flood Relief Center",
+            block = "Jaleswar (Subarnarekha Basin)",
+            capacityPeople = 850,
+            nodalContact = "Tahasildar Office Jaleswar",
+            phone = "06781-222045"
+        ),
+        CycloneShelter(
+            name = "Chandipur Sea-Front Shelter #3",
+            block = "Balasore Sadar",
+            capacityPeople = 600,
+            nodalContact = "Marine Fishery Inspector",
+            phone = "06782-272210"
+        )
+    )
+
+    // 5. Bahabalpur & Kasafal Fresh Seafood Catch Index
+    val seafoodCatches = listOf(
+        SeafoodCatch(
+            id = "sf_1",
+            name = "Bay of Bengal Hilsa (Ilish)",
+            odiaName = "ବଙ୍ଗୋପସାଗର ଇଲିସି",
+            harbor = "Balaramgadi Fish Landing Center",
+            priceRangeKg = "₹850 - ₹1,200 / kg",
+            qualityGrade = "Grade A (Silver Fresh)",
+            freshness = "Caught 4 hrs ago",
+            peakSeason = "Monsoon to Early Winter (Jul - Nov)"
+        ),
+        SeafoodCatch(
+            id = "sf_2",
+            name = "Chandipur Black Tiger Prawns",
+            odiaName = "ବାଗଦା ଚିଙ୍ଗୁଡ଼ି (ବ୍ଲାକ୍ ଟାଇଗର)",
+            harbor = "Bahabalpur Harbor",
+            priceRangeKg = "₹580 - ₹750 / kg",
+            qualityGrade = "Export Quality (Head-on)",
+            freshness = "Landed 2 hrs ago",
+            peakSeason = "Round the Year • Peak Autumn"
+        ),
+        SeafoodCatch(
+            id = "sf_3",
+            name = "White Silver Pomfret",
+            odiaName = "ଧଳା ଚାନ୍ଦି ମାଛ",
+            harbor = "Kasafal Marine Center",
+            priceRangeKg = "₹650 - ₹900 / kg",
+            qualityGrade = "Premium Medium & Large",
+            freshness = "Morning Boat Trawl",
+            peakSeason = "September to February"
+        ),
+        SeafoodCatch(
+            id = "sf_4",
+            name = "Mud & Sea Crabs",
+            odiaName = "ସମୁଦ୍ର ଓ ନଦୀ ମୁହାଣ କଙ୍କଡ଼ା",
+            harbor = "Balaramgadi Harbor",
+            priceRangeKg = "₹420 - ₹550 / kg",
+            qualityGrade = "Live Catch (Green Shell)",
+            freshness = "Live in Sea Baskets",
+            peakSeason = "All Seasons"
+        )
+    )
+
+    // 6. Fakir Mohan Literary Trail & Balasore Dialect
+    val literaryTrailPoints = listOf(
+        LiteraryTrailPoint(
+            id = "lit_1",
+            title = "Shanti Kanan (ଶାନ୍ତି କାନନ)",
+            odiaTitle = "ବ୍ୟାସକବିଙ୍କ ସାଧନା ସ୍ଥଳୀ - ଶାନ୍ତି କାନନ",
+            location = "Mallikashpur, Balasore City",
+            excerpt = "Where Vyasa Kabi Fakir Mohan Senapati penned iconic classics including 'Chha Mana Atha Guntha' and 'Rebati'.",
+            historicalContext = "A serene botanical sanctuary preserved with the author's original study desk, mango groves, and bronze statue."
+        ),
+        LiteraryTrailPoint(
+            id = "lit_2",
+            title = "Historic Utkal Press Heritage",
+            odiaTitle = "ପ୍ରାଚୀନ ଉତ୍କଳ ପ୍ରେସ ପୃଷ୍ଠଭୂମି",
+            location = "Motiganj Market, Balasore",
+            excerpt = "The pioneering printing press that sparked the renaissance of Odia language and literature in the late 19th century.",
+            historicalContext = "Established in 1868, this historic site printed the first independent Odia newspaper 'Bodhadayini'."
+        )
+    )
+
+    val dailyIdiom = DailyBalasoreIdiom(
+        wordOrIdiom = "ବାଲେଶ୍ୱରୀ ଶବ୍ଦ: କାକସ୍ନାନ (Kakashnana)",
+        odiaScript = "କାକସ୍ନାନ • ଅର୍ଥ: ଅଳ୍ପ ସମୟରେ ଖୁବ୍ ଶୀଘ୍ର ଗାଧୋଇବା",
+        meaning = "A very quick, dip-and-go bath (literally 'crow's bath') used affectionately across North Balasore households.",
+        literaryWork = "Frequently used in Fakir Mohan Senapati's rural social satires.",
+        funContext = "Commonly heard during chilly winter mornings before school or morning temple visits."
+    )
 
     val hotspots = listOf(
         Hotspot(

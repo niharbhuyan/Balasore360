@@ -3,1147 +3,637 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Download Balasore 360° - Release AAB</title>
+  <title>Balasore 360 - Official Android App & Privacy Policy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Oriya:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1d4ed8;
-      --primary-dark: #1e40af;
-      --primary-light: #eff6ff;
-      --navy: #0f172a;
-      --slate: #475569;
-      --slate-light: #f8fafc;
-      --border: #e2e8f0;
-      --card-bg: #ffffff;
-      --success: #16a34a;
-      --gold: #f59e0b;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --accent: #f59e0b;
+      --emerald: #10b981;
+      --emerald-dark: #059669;
+      --emerald-light: #d1fae5;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
     }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
-      color: var(--navy);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(180deg, #f0f9ff 0%, #f8fafc 40%, #ffffff 100%);
+      color: var(--slate-900);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 16px;
+      padding: 0 16px 48px;
     }
-    .container {
-      max-width: 680px;
+
+    /* Top Navigation */
+    .nav-bar {
       width: 100%;
+      max-width: 860px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     }
-    .hero {
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--slate-600);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .nav-link:hover {
+      color: var(--primary);
+    }
+    .nav-btn-privacy {
+      background: #e0f2fe;
+      color: var(--primary-dark);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn-privacy:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* Header Hero Card */
+    .header-card {
+      max-width: 860px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
       text-align: center;
       margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
     }
-    .app-icon {
-      width: 110px;
-      height: 110px;
-      border-radius: 26px;
-      box-shadow: 0 16px 32px -8px rgba(29, 78, 216, 0.25);
-      margin-bottom: 16px;
-      object-fit: cover;
-      border: 3px solid #ffffff;
+    .header-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0284c7, #38bdf8, #10b981);
     }
-    .title {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .subtitle {
-      font-size: 15px;
-      color: var(--slate);
-      font-weight: 500;
-    }
-    .badge-row {
+    .badges-row {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-top: 14px;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge-blue {
-      background-color: #dbeafe;
-      color: #1e40af;
-    }
-    .badge-green {
-      background-color: #dcfce7;
-      color: #15803d;
-    }
-    .card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-    .download-card {
-      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
-      color: white;
-      border: none;
-      box-shadow: 0 16px 36px -10px rgba(29, 78, 216, 0.45);
-      text-align: center;
-      padding: 32px 24px;
-    }
-    .download-card h2 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .download-card p {
-      font-size: 14px;
-      opacity: 0.9;
-      margin-bottom: 24px;
-    }
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: #ffffff;
-      color: var(--primary-dark);
-      font-size: 16px;
-      font-weight: 700;
-      padding: 16px 32px;
-      border-radius: 14px;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .btn-download:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-    .file-meta {
-      margin-top: 14px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    .section-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--navy);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .asset-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      background: var(--slate-light);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border);
-    }
-    .asset-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .asset-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--navy);
-    }
-    .asset-sub {
-      font-size: 12px;
-      color: var(--slate);
-    }
-    .btn-secondary {
-      padding: 8px 16px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
-      transition: all 0.15s ease;
-    }
-    .btn-secondary:hover {
-      background: var(--primary-light);
-      border-color: #bfdbfe;
-    }
-    .steps-list {
-      list-style-type: decimal;
-      padding-left: 20px;
-      color: var(--slate);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .steps-list li {
-      margin-bottom: 8px;
-    }
-    .steps-list strong {
-      color: var(--navy);
-    }
-    .code-box {
-      background: #0f172a;
-      color: #93c5fd;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      overflow-x: auto;
-      margin-top: 10px;
-    }
-    /* QR Button in Card */
-    .btn-qr-card {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 10px 22px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-    .btn-qr-card:hover {
-      background: rgba(255, 255, 255, 0.26);
-      border-color: rgba(255, 255, 255, 0.6);
-      transform: translateY(-1px);
-    }
-    /* Floating Action Button (FAB) */
-    .fab-qr {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 1000;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
-      color: #ffffff;
-      padding: 14px 22px;
-      border-radius: 9999px;
-      font-weight: 700;
-      font-size: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 12px 28px -4px rgba(29, 78, 216, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15);
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      font-family: inherit;
-    }
-    .fab-qr:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 18px 36px -4px rgba(29, 78, 216, 0.65), 0 6px 16px rgba(0, 0, 0, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-    .fab-qr:active {
-      transform: translateY(0) scale(0.98);
-    }
-    /* Modal Dialog Overlay */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.72);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      padding: 16px;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-    .modal-overlay.active {
-      display: flex;
-      opacity: 1;
-    }
-    .modal-content {
-      background: #ffffff;
-      border-radius: 24px;
-      max-width: 440px;
-      width: 100%;
-      padding: 26px 24px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-      position: relative;
-      transform: scale(0.92);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-overlay.active .modal-content {
-      transform: scale(1);
-    }
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: #f1f5f9;
-      border: none;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: var(--slate);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      line-height: 1;
-    }
-    .modal-close:hover {
-      background: #e2e8f0;
-      color: var(--navy);
-    }
-    .modal-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-      padding-right: 28px;
-    }
-    .modal-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      border: 2px solid #e2e8f0;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-      object-fit: cover;
-    }
-    .modal-title {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -0.3px;
-      margin-bottom: 2px;
-    }
-    .modal-subtitle {
-      font-size: 13px;
-      color: var(--slate);
-      font-weight: 500;
-    }
-    .qr-container {
-      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-    .qr-box {
-      background: #ffffff;
-      padding: 12px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 220px;
-      min-height: 220px;
-    }
-    .qr-box canvas, .qr-box img {
-      display: block;
-      border-radius: 8px;
-      max-width: 220px;
-      max-height: 220px;
-    }
-    .qr-hint {
-      margin-top: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--primary);
-      text-align: center;
-    }
-    .copy-url-group {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .url-input {
-      flex: 1;
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 12px;
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      color: var(--slate);
-      outline: none;
-    }
-    .btn-copy {
-      display: inline-flex;
-      align-items: center;
       gap: 6px;
-      background: var(--navy);
-      color: #ffffff;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      font-family: inherit;
-    }
-    .btn-copy:hover {
-      background: #1e293b;
-    }
-    .modal-instructions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 13px;
-      color: #1e40af;
-      line-height: 1.45;
-    }
-    .step-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .step-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-      background: #1d4ed8;
-      color: #ffffff;
-      border-radius: 50%;
-      font-size: 11px;
+      background: #e0f2fe;
+      color: var(--primary-dark);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
       font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 1px;
+      letter-spacing: 0.5px;
     }
-    .btn-direct-modal {
-      display: inline-block;
-      color: var(--primary);
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: underline;
-      cursor: pointer;
+    .badge-compliance {
+      background: var(--emerald-light);
+      color: var(--emerald-dark);
     }
-    /* Version History Section */
-    .version-timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-top: 14px;
-    }
-    .version-card {
-      background: var(--slate-light);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      transition: all 0.2s ease;
-    }
-    .version-card.active-version {
-      background: #ffffff;
-      border: 1.5px solid #bfdbfe;
-      box-shadow: 0 6px 16px rgba(29, 78, 216, 0.08);
-    }
-    .version-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+    .title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.5px;
       margin-bottom: 8px;
     }
-    .version-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .version-tag {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -0.2px;
-    }
-    .version-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      font-size: 11px;
+    .subtitle-odia {
+      font-family: 'Noto Sans Oriya', sans-serif;
+      font-size: 18px;
+      color: var(--primary);
       font-weight: 700;
-      letter-spacing: 0.2px;
-    }
-    .badge-current {
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
-    }
-    .badge-archive {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #e2e8f0;
-    }
-    .badge-initial {
-      background: #fef3c7;
-      color: #b45309;
-      border: 1px solid #fde68a;
-    }
-    .version-date {
-      font-size: 12px;
-      color: var(--slate);
-      font-weight: 500;
-    }
-    .version-meta-bar {
-      display: flex;
-      gap: 14px;
-      font-size: 12px;
-      color: var(--slate);
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .version-meta-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .version-notes-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: var(--slate);
-      margin-bottom: 6px;
-    }
-    .version-notes-list {
-      list-style-type: none;
-      padding-left: 0;
       margin-bottom: 14px;
     }
-    .version-notes-list li {
-      position: relative;
-      padding-left: 18px;
-      font-size: 13px;
-      color: #334155;
-      line-height: 1.5;
-      margin-bottom: 5px;
+    .desc {
+      color: var(--slate-700);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 28px;
+      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .version-notes-list li::before {
-      content: "•";
-      position: absolute;
-      left: 6px;
-      top: 0;
-      color: var(--primary);
-      font-weight: bold;
-      font-size: 14px;
-    }
-    .version-actions-row {
+    .cta-group {
       display: flex;
-      gap: 10px;
+      justify-content: center;
       flex-wrap: wrap;
-      align-items: center;
-      padding-top: 12px;
-      border-top: 1px dashed var(--border);
+      gap: 14px;
     }
-    .btn-version-dl {
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 13px 26px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+    }
+    .privacy-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: white;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 13px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--slate-300);
+      transition: all 0.15s ease;
+    }
+    .privacy-cta-btn:hover {
+      background: var(--slate-50);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Features Grid */
+    .features-grid {
+      max-width: 860px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .feature-box {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+    }
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #e0f2fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--slate-900);
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: var(--slate-600);
+      line-height: 1.6;
+    }
+
+    /* PRIVACY POLICY SECTION (Google Play Mandatory Compliance) */
+    .privacy-section {
+      max-width: 860px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 36px 32px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+      margin-bottom: 32px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--slate-200);
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--slate-900);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .compliance-tag {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .policy-meta {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin-top: 4px;
+    }
+    .policy-direct-link-box {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .link-info-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin-bottom: 2px;
+    }
+    .link-info-url {
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--primary-dark);
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: white;
+      border: 1px solid var(--slate-300);
+      color: var(--slate-700);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 14px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--navy);
-      text-decoration: none;
       transition: all 0.15s ease;
     }
-    .btn-version-dl:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-      color: var(--primary);
-      transform: translateY(-1px);
-    }
-    .btn-version-primary {
-      background: var(--primary);
-      color: #ffffff;
+    .copy-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
       border-color: var(--primary);
     }
-    .btn-version-primary:hover {
-      background: var(--primary-dark);
-      border-color: var(--primary-dark);
-      color: #ffffff;
-    }
-    .revert-callout {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: 14px;
-      font-size: 12.5px;
-      color: #92400e;
-      line-height: 1.5;
+    .policy-content {
       display: flex;
-      gap: 10px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 20px;
+      line-height: 1.7;
+      font-size: 14px;
+      color: var(--slate-700);
+    }
+    .policy-clause {
+      background: var(--slate-50);
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid var(--slate-100);
+    }
+    .policy-clause h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .policy-clause ul {
+      margin-left: 20px;
+      margin-top: 8px;
+    }
+    .policy-clause li {
+      margin-bottom: 6px;
+    }
+    .policy-link {
+      color: var(--primary);
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    /* AdMob Status Bar */
+    .admob-status {
+      max-width: 860px;
+      width: 100%;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 16px 20px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      color: var(--slate-700);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      display: inline-block;
+      margin-right: 6px;
+    }
+    code {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    /* Footer */
+    footer {
+      max-width: 860px;
+      width: 100%;
+      text-align: center;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 13px;
+      color: var(--slate-500);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+    .footer-link {
+      color: var(--slate-600);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-link:hover {
+      color: var(--primary);
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="hero">
-      <img src="/marketing_assets/app_icon_512.png" alt="Balasore 360 App Icon" class="app-icon" onerror="this.src='/app/src/main/res/drawable/ic_app_icon_circle.png'">
-      <h1 class="title">Balasore 360°</h1>
-      <p class="subtitle">Tourism, Weather, Breaking News & Local Essentials</p>
-      <div class="badge-row">
-        <span class="badge badge-blue">Version 1.0.2</span>
-        <span class="badge badge-blue">Build Code: 3</span>
-        <span class="badge badge-green">Signed Release (Upload Key)</span>
-        <span class="badge badge-blue">Target SDK: Android 15 (API 36)</span>
-        <a href="#versionHistory" class="badge badge-blue" style="text-decoration: none; cursor: pointer; border: 1px solid #93c5fd; display: inline-flex; align-items: center; gap: 4px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          Version History
-        </a>
+
+  <!-- Navigation Bar -->
+  <nav class="nav-bar">
+    <a href="#" class="nav-logo">
+      <span>🌐</span> Balasore 360
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#compliance" class="nav-link">AdMob</a>
+      <a href="#privacy-policy" class="nav-btn-privacy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Privacy Policy
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Header Card -->
+  <header class="header-card">
+    <div class="badges-row">
+      <div class="badge">✦ OFFICIAL COMMUNITY APP</div>
+      <div class="badge badge-compliance">✓ GOOGLE PLAY COMPLIANT</div>
+    </div>
+    <h1 class="title">Balasore 360</h1>
+    <div class="subtitle-odia">ବାଲେଶ୍ୱର • ଚାନ୍ଦିପୁର ସ୍ପନ୍ଦନ</div>
+    <p class="desc">
+      Your all-in-one local guide to Balasore, Odisha. Featuring Chandipur vanishing sea tidal telemetry, 12th-century Kalinga temples, 24x7 emergency helplines, live bus & train schedules, coastal defense notices, and regional Odia journalism.
+    </p>
+    <div class="cta-group">
+      <a href="/app-debug.apk" class="download-btn" download="Balasore360.apk">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download APK (v1.0.2)
+      </a>
+      <a href="#privacy-policy" class="privacy-cta-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        View Privacy Policy
+      </a>
+    </div>
+  </header>
+
+  <!-- Features Grid -->
+  <section id="features" class="features-grid">
+    <div class="feature-box">
+      <div class="feature-icon">🌊</div>
+      <h3 class="feature-title">Chandipur Vanishing Sea</h3>
+      <p class="feature-desc">Real-time tidal telemetry tracking sea recession (up to 5 km) with safe walk windows and horseshoe crab biodiversity spotting.</p>
+    </div>
+    <div class="feature-box">
+      <div class="feature-icon">🛕</div>
+      <h3 class="feature-title">Spiritual & Cultural Heritage</h3>
+      <p class="feature-desc">Live Amruta Keli bhog and darshan timings for Remuna Khirachora Gopinatha, Panchalingeswar, and Fakir Mohan literary trail.</p>
+    </div>
+    <div class="feature-box">
+      <div class="feature-icon">🚨</div>
+      <h3 class="feature-title">Emergency & Cyclone Shelters</h3>
+      <p class="feature-desc">1-tap dialer for Police (112), FM Medical College Hospital (DHH), Subarnarekha river gauges, and block-level flood shelters.</p>
+    </div>
+    <div class="feature-box">
+      <div class="feature-icon">📰</div>
+      <h3 class="feature-title">Bilingual News & Coastal Alerts</h3>
+      <p class="feature-desc">Odia and English local district journalism, DRDO ITR Chandipur defense coastal test advisories, and harbor seafood indexes.</p>
+    </div>
+    <div class="feature-box">
+      <div class="feature-icon">🔄</div>
+      <h3 class="feature-title">Google Play Auto-Updates</h3>
+      <p class="feature-desc">Official Google Play In-App Updates API integrated. Supports background auto-downloading over Wi-Fi, instant version notifications, and zero-downtime updates.</p>
+    </div>
+  </section>
+
+  <!-- PRIVACY POLICY SECTION (Google Play Store Requirement) -->
+  <section id="privacy-policy" class="privacy-section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">
+          <span>🛡️</span> Privacy Policy
+        </h2>
+        <div class="policy-meta">
+          <strong>Application:</strong> Balasore 360 &bull; <strong>Package:</strong> com.aistudio.balasore360.vxknrt &bull; <strong>Effective Date:</strong> September 15, 2026
+        </div>
       </div>
+      <div class="compliance-tag">Google Play Store Compliant</div>
     </div>
 
-    <!-- Main Download Card -->
-    <div class="card download-card">
-      <h2>Google Play Android App Bundle (AAB)</h2>
-      <p>Signed and ready for direct upload to Google Play Console production track</p>
-      
-      <div style="margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap;">
-        <a href="/Balasore360-v1.0.2-release.aab" download="Balasore360-v1.0.2-release.aab" class="btn-download" style="flex: 1; min-width: 260px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Download Release AAB (v1.0.2)
-        </a>
-        <a href="/Balasore360-v1.0.2-release.apk" download="Balasore360-v1.0.2-release.apk" class="btn-download" style="flex: 1; min-width: 260px; background: #0f172a;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Download Installable APK (v1.0.2)
-        </a>
+    <!-- Official URL display for Play Console Submission -->
+    <div class="policy-direct-link-box">
+      <div>
+        <div class="link-info-title">Mandatory Play Console Policy URL:</div>
+        <div class="link-info-url" id="policyUrlText">https://ais-pre-honzkaxc7yscu2h42zeagl-613265325843.asia-east1.run.app/privacy</div>
       </div>
-
-      <div style="margin-top: 14px; display: flex; justify-content: center;">
-        <button type="button" class="btn-qr-card" onclick="openQrModal()" id="btnCardQr">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-            <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            <line x1="17" y1="7" x2="17.01" y2="7"></line>
-            <line x1="7" y1="17" x2="7.01" y2="17"></line>
-            <line x1="17" y1="17" x2="17.01" y2="17"></line>
-          </svg>
-          Scan QR Code to Download APK on Mobile
-        </button>
-      </div>
-    
-      <div class="file-meta">
-        Size: ~23.9 MB (AAB) / 24.5 MB (APK) &bull; SHA-256 verified &bull; Keystore: my-upload-key.jks
-      </div>
-      <div style="margin-top: 12px; font-size: 12.5px;">
-        <a href="#versionHistory" style="color: #bfdbfe; text-decoration: underline; opacity: 0.95; font-weight: 500;">
-          Looking for an older release? View Version History &amp; Release Archive &darr;
-        </a>
-      </div>
+      <button class="copy-btn" onclick="copyPolicyUrl()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span id="copyBtnText">Copy Link</span>
+      </button>
     </div>
 
-    <!-- Store Assets Download -->
-    <div class="card">
-      <div class="section-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-        Play Store Graphic Assets (Store Listing)
+    <div class="policy-content">
+      <div class="policy-clause">
+        <h3>1. Introduction & Overview</h3>
+        <p>
+          Welcome to <strong>Balasore 360</strong> ("we", "our", or "the app"), developed by Nihar Bhuyan (<a href="mailto:niharbhuyan@gmail.com" class="policy-link">niharbhuyan@gmail.com</a>). This Privacy Policy explains our practices regarding data collection, usage, and user protection in accordance with Google Play Developer Program policies and applicable privacy regulations.
+        </p>
       </div>
 
-      <div class="asset-item">
-        <div class="asset-info">
-          <span class="asset-title">High-Res App Icon (512 &times; 512 px)</span>
-          <span class="asset-sub">PNG &bull; Full-bleed safe zone &bull; 270 KB</span>
-        </div>
-        <a href="/marketing_assets/app_icon_512.png" download="app_icon_512.png" class="btn-secondary">Download</a>
+      <div class="policy-clause">
+        <h3>2. Information We Collect & Why</h3>
+        <p>
+          <strong>Balasore 360 does not collect, harvest, store, or sell any personally identifiable information (PII)</strong> such as names, passwords, phone numbers, or national identification numbers.
+        </p>
+        <ul>
+          <li><strong>Local Preferences & Cache:</strong> Bookmarks, selected language (English/Odia), and offline viewing caches are stored locally on your device using Android Room Database. This data never leaves your device.</li>
+          <li><strong>Diagnostics & Crash Data:</strong> Standard anonymous operating system diagnostic logs may be generated by the Android runtime to monitor stability and prevent application crashes.</li>
+        </ul>
       </div>
 
-      <div class="asset-item">
-        <div class="asset-info">
-          <span class="asset-title">Feature Graphic (1024 &times; 500 px)</span>
-          <span class="asset-sub">PNG/JPEG &bull; Google Play Featured Banner</span>
-        </div>
-        <a href="/marketing_assets/feature_graphic.png" download="feature_graphic.png" class="btn-secondary">Download</a>
+      <div class="policy-clause">
+        <h3>3. Device Permissions & Purpose</h3>
+        <p>We declare and request only the minimum necessary permissions strictly required to provide core hyper-local utility functions:</p>
+        <ul>
+          <li><strong>INTERNET:</strong> Required to retrieve updated tide tables, weather telemetries, river water levels, and local district news feeds.</li>
+          <li><strong>ACCESS_NETWORK_STATE:</strong> Used to check internet connectivity and smoothly toggle offline caching modes.</li>
+          <li><strong>CALL_PHONE:</strong> Used strictly for user-initiated 1-tap dialing to emergency services (e.g., Balasore Police 112, DHH Ambulance, Fire Control, and Cyclone Shelter in-charges). The app never initiates calls automatically without direct user interaction.</li>
+        </ul>
       </div>
 
-      <div class="asset-item">
-        <div class="asset-info">
-          <span class="asset-title">Release Keystore (my-upload-key.jks)</span>
-          <span class="asset-sub">Alias: upload &bull; Backup for signing updates</span>
-        </div>
-        <a href="/my-upload-key.jks" download="my-upload-key.jks" class="btn-secondary">Download</a>
-      </div>
-
-      <div class="asset-item">
-        <div class="asset-info">
-          <span class="asset-title">AdMob app-ads.txt (Authorized Digital Sellers)</span>
-          <span class="asset-sub">pub-4880243637225183 &bull; Hosted live at root /app-ads.txt</span>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <a href="/app-ads.txt" target="_blank" class="btn-secondary">View</a>
-          <a href="/app-ads.txt" download="app-ads.txt" class="btn-secondary">Download</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- AdMob app-ads.txt Card -->
-    <div class="card" id="admobSection">
-      <div class="section-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-          <line x1="8" y1="21" x2="16" y2="21"></line>
-          <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-        AdMob app-ads.txt Verification
-      </div>
-      <p style="font-size: 13.5px; color: var(--slate); margin-bottom: 14px; line-height: 1.5;">
-        Google AdMob requires this record to be hosted on your developer website root (<code>/app-ads.txt</code>) to verify app ownership and protect your ad revenue.
-      </p>
-
-      <div style="background: #0f172a; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-        <code id="appAdsTxtSnippet" style="font-family: monospace; font-size: 13px; color: #38bdf8; font-weight: 600; word-break: break-all;">google.com, pub-4880243637225183, DIRECT, f08c47fec0942fa0</code>
-        <button type="button" onclick="copyAppAdsTxt()" id="copyAppAdsBtn" style="padding: 7px 14px; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;">
-          Copy Record
-        </button>
-      </div>
-
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-        <a href="/app-ads.txt" target="_blank" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12.5px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-          Open Live /app-ads.txt
-        </a>
-        <a href="/app-ads.txt" download="app-ads.txt" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12.5px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Download app-ads.txt
-        </a>
-      </div>
-
-      <div class="note-box" style="margin-top: 0;">
-        <strong>How to complete AdMob crawler verification:</strong>
-        <ol style="margin-left: 18px; margin-top: 6px; font-size: 12.5px; line-height: 1.6;">
-          <li>In <strong>Google Play Console</strong> &rarr; <strong>Store presence</strong> &rarr; <strong>Store settings</strong>, ensure your <strong>Website</strong> is set to your hosting URL (e.g. this portal).</li>
-          <li>Google's crawler automatically looks up <code>[your-website-domain]/app-ads.txt</code> within 24 hours.</li>
-          <li>In <strong>Google AdMob</strong> &rarr; <strong>Apps</strong> &rarr; <strong>app-ads.txt</strong>, check that the status displays a green checkmark (<strong>Authorized</strong>).</li>
-        </ol>
-      </div>
-    </div>
-
-    <!-- Version History Section -->
-    <div class="card" id="versionHistory">
-      <div class="section-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        Version History &amp; Release Archive
-      </div>
-      <p style="font-size: 13.5px; color: var(--slate); margin-bottom: 16px; line-height: 1.5;">
-        Browse change logs, inspect version codes, and download past release bundles (AAB/APK) to rollback or test older revisions.
-      </p>
-
-      <div class="version-timeline">
-        <!-- Version 1.0.2 -->
-        <div class="version-card active-version">
-          <div class="version-header">
-            <div class="version-title-wrap">
-              <span class="version-tag">Version 1.0.2</span>
-              <span class="version-badge badge-current">Current Active Release</span>
-            </div>
-            <span class="version-date">Build Code: 3 &bull; Sep 14, 2026</span>
-          </div>
-          <div class="version-meta-bar">
-            <span class="version-meta-item">🎯 Target: Android 15 (API 36)</span>
-            <span class="version-meta-item">🔑 Upload Key: Verified (SHA-256)</span>
-            <span class="version-meta-item">📦 Format: AAB &amp; APK</span>
-          </div>
-
-          <div class="version-notes-title">Release Highlights &amp; Changelog</div>
-          <ul class="version-notes-list">
-            <li><strong>Play Store Icon Alignment</strong>: Synchronized all launcher icon mipmaps, XML vector adaptive foregrounds, and drawables with the 512&times;512 store listing badge to resolve Google Play policy review.</li>
-            <li><strong>Quick Mobile QR Scanner</strong>: Integrated instant QR code modal generator and Floating Action Button (FAB) for 1-scan APK installation on Android devices.</li>
-            <li><strong>Version Code Bump</strong>: Incremented version code to 3 (name: 1.0.2) for direct Google Play Console release acceptance.</li>
-            <li><strong>Signing &amp; Performance</strong>: Built and signed using upload keystore (<code>my-upload-key.jks</code>) with optimized asset compression.</li>
-          </ul>
-
-          <div class="version-actions-row">
-            <a href="/Balasore360-v1.0.2-release.aab" download="Balasore360-v1.0.2-release.aab" class="btn-version-dl btn-version-primary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Download AAB (v1.0.2 &bull; 23.9 MB)
-            </a>
-            <a href="/Balasore360-v1.0.2-release.apk" download="Balasore360-v1.0.2-release.apk" class="btn-version-dl">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Download APK (v1.0.2 &bull; 24.5 MB)
-            </a>
-            <button type="button" class="btn-version-dl" onclick="openQrModal()" style="cursor: pointer; background: #eff6ff; color: var(--primary); border-color: #bfdbfe;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
-              Scan Mobile QR
-            </button>
-          </div>
-        </div>
-
-        <!-- Version 1.0.1 -->
-        <div class="version-card">
-          <div class="version-header">
-            <div class="version-title-wrap">
-              <span class="version-tag">Version 1.0.1</span>
-              <span class="version-badge badge-archive">Previous Stable Archive</span>
-            </div>
-            <span class="version-date">Build Code: 2 &bull; Sep 14, 2026</span>
-          </div>
-          <div class="version-meta-bar">
-            <span class="version-meta-item">🎯 Target: Android 15 (API 36)</span>
-            <span class="version-meta-item">🔑 Upload Key: Verified</span>
-            <span class="version-meta-item">📦 Format: AAB Bundle</span>
-          </div>
-
-          <div class="version-notes-title">Release Highlights &amp; Changelog</div>
-          <ul class="version-notes-list">
-            <li><strong>Production Keystore Launch</strong>: First official release signed with dedicated production keystore (<code>my-upload-key.jks</code>).</li>
-            <li><strong>Chandipur Tide &amp; Weather Engine</strong>: Integrated live high/low tide predictions, ambient temperature, and weather alerts for coastal Balasore.</li>
-            <li><strong>Balasore Breaking News Feed</strong>: Real-time regional news aggregation for local happenings and district notifications.</li>
-            <li><strong>Tourism &amp; Heritage Directory</strong>: Comprehensive guides and photos for Chandipur Beach, Emami Jagannath Temple, Kuldiha Sanctuary, Remuna Khirachora Gopinath, and Panchalingeswar.</li>
-            <li><strong>District Helplines Directory</strong>: One-touch quick call buttons for Police, Medical, Fire, and Cyclone relief lines.</li>
-          </ul>
-
-          <div class="version-actions-row">
-            <a href="/Balasore360-v1.0.1-release.aab" download="Balasore360-v1.0.1-release.aab" class="btn-version-dl">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Download Archived AAB (v1.0.1 &bull; 23.9 MB)
-            </a>
-            <span style="font-size: 12px; color: var(--slate); font-style: italic;">
-              Ready for Play Console rollback or internal track verification
-            </span>
-          </div>
-        </div>
-
-        <!-- Version 1.0.0 -->
-        <div class="version-card">
-          <div class="version-header">
-            <div class="version-title-wrap">
-              <span class="version-tag">Version 1.0.0</span>
-              <span class="version-badge badge-initial">Initial Foundation Release</span>
-            </div>
-            <span class="version-date">Build Code: 1 &bull; Sep 2026</span>
-          </div>
-          <div class="version-meta-bar">
-            <span class="version-meta-item">🎯 Framework: Jetpack Compose</span>
-            <span class="version-meta-item">💾 Storage: Room SQLite Database</span>
-          </div>
-
-          <div class="version-notes-title">Release Highlights &amp; Changelog</div>
-          <ul class="version-notes-list">
-            <li><strong>Core Foundation</strong>: Built using modern Jetpack Compose Material 3 architecture with dynamic color schemes.</li>
-            <li><strong>Offline Storage</strong>: Integrated local Room database for caching favorites and offline landmark listings.</li>
-            <li><strong>Edge-to-Edge Navigation</strong>: Implemented system bar padding and gesture navigation compliance for Android 14 and 15.</li>
-          </ul>
-
-          <div class="version-actions-row">
-            <span style="font-size: 12px; color: var(--slate);">
-              Superseded by production releases v1.0.1 and v1.0.2.
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rollback Guidance Tip -->
-      <div class="revert-callout">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <div>
-          <strong>How to Rollback / Revert in Google Play Console:</strong>
+      <div class="policy-clause">
+        <h3>4. Third-Party Services & Advertising (Google AdMob)</h3>
+        <p>
+          The application integrates <strong>Google AdMob</strong> (Google Mobile Ads SDK) to support free community services through non-intrusive banner advertisements. Google AdMob may process non-sensitive device identifiers (such as the Google Advertising ID / AAID) and coarse diagnostics to serve personalized or non-personalized advertisements, subject to user consent and Google's policies.
+        </p>
+        <p style="margin-top: 8px;">
+          For more information on how Google manages advertising data, please review:
           <br>
-          To revert a release in Google Play Console, go to <strong>Release &gt; Production</strong>, click <strong>Manage release</strong>, and select <strong>Halt rollout</strong>. In testing tracks (Internal or Closed), you can create a new release and drop in the archived <code>Balasore360-v1.0.1-release.aab</code> bundle directly. For physical device testing, simply uninstall the current build and install any older APK version.
-        </div>
+          &bull; <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="policy-link">Google Privacy &amp; Terms</a><br>
+          &bull; <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" class="policy-link">How Google uses information from sites or apps that use our services</a>
+        </p>
       </div>
-    </div>
 
-    <!-- Play Console Steps -->
-    <div class="card">
-      <div class="section-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-        How to Upload to Google Play Console
+      <div class="policy-clause">
+        <h3>5. Children's Privacy (COPPA Compliance)</h3>
+        <p>
+          Balasore 360 is a general audience community reference utility and does not knowingly solicit or collect information from children under the age of 13. If you believe any data has inadvertently been collected from a child, please contact us immediately for prompt removal.
+        </p>
       </div>
-      <ol class="steps-list">
-        <li>Click the <strong>Download Balasore360-v1.0.2-release.aab</strong> button above to save the file to your computer.</li>
-        <li>Open <a href="https://play.google.com/console" target="_blank" style="color: var(--primary); font-weight: 600;">Google Play Console</a> and select your <strong>Balasore 360°</strong> application.</li>
-        <li>Navigate to <strong>Release &gt; Production</strong> (or <strong>Testing &gt; Internal testing</strong>) in the left menu.</li>
-        <li>Click <strong>Create new release</strong> and drag & drop the downloaded <code>Balasore360-v1.0.2-release.aab</code> file into the App bundles section.</li>
-        <li>Under <strong>Store presence &gt; Main store listing</strong>, upload the <strong>512&times;512 App Icon</strong> and <strong>1024&times;500 Feature Graphic</strong>.</li>
-        <li>Review your release notes and submit the release!</li>
-      </ol>
-      <div class="code-box">
-Package: com.niharsales.balasore360<br>
-Version Name: 1.0.2<br>
-Version Code: 3<br>
-Signing: SHA1 / SHA256 (Upload Key)
+
+      <div class="policy-clause">
+        <h3>6. Data Retention & Deletion</h3>
+        <p>
+          Because Balasore 360 does not store personal user data on external servers, you have full control over your local app data. You can erase all bookmarks and local caches at any time simply by clearing app data in your device settings (<em>Settings &gt; Apps &gt; Balasore 360 &gt; Storage &gt; Clear Data</em>) or by uninstalling the application.
+        </p>
+      </div>
+
+      <div class="policy-clause">
+        <h3>7. Developer & Grievance Contact</h3>
+        <p>
+          If you have questions, feedback, or inquiries regarding this Privacy Policy or app compliance, please contact the developer:
+        </p>
+        <p style="margin-top: 6px;">
+          <strong>Developer:</strong> Nihar Bhuyan<br>
+          <strong>Email:</strong> <a href="mailto:niharbhuyan@gmail.com" class="policy-link">niharbhuyan@gmail.com</a><br>
+          <strong>Location:</strong> Balasore, Odisha, India
+        </p>
       </div>
     </div>
+  </section>
+
+  <!-- AdMob Verification Status -->
+  <div id="compliance" class="admob-status">
+    <div><span class="status-dot"></span><strong>Google AdMob Integration:</strong> Verified &amp; Compliant</div>
+    <div>App ID: <code>ca-app-pub-4880243637225183~4956380952</code></div>
+    <div>Publisher: <code>pub-4880243637225183</code></div>
   </div>
 
-  <!-- Floating Action Button (FAB) for Instant Mobile QR Code -->
-  <button class="fab-qr" id="fabQrBtn" onclick="openQrModal()" aria-label="Scan QR Code to Download APK on Mobile">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7"></rect>
-      <rect x="14" y="3" width="7" height="7"></rect>
-      <rect x="14" y="14" width="7" height="7"></rect>
-      <rect x="3" y="14" width="7" height="7"></rect>
-      <line x1="7" y1="7" x2="7.01" y2="7"></line>
-      <line x1="17" y1="7" x2="17.01" y2="7"></line>
-      <line x1="7" y1="17" x2="7.01" y2="17"></line>
-      <line x1="17" y1="17" x2="17.01" y2="17"></line>
-    </svg>
-    <span>Scan QR Code</span>
-  </button>
-
-  <!-- QR Code Modal Dialog -->
-  <div id="qrModal" class="modal-overlay" onclick="handleBackdropClick(event)">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
-      <button class="modal-close" onclick="closeQrModal()" aria-label="Close dialog">&times;</button>
-      
-      <div class="modal-header">
-        <img src="/marketing_assets/app_icon_512.png" alt="Balasore 360 Icon" class="modal-icon" onerror="this.src='/app/src/main/res/drawable/ic_app_icon_circle.png'">
-        <div>
-          <h3 id="qrModalTitle" class="modal-title">Scan to Install APK</h3>
-          <p class="modal-subtitle">Balasore 360° &bull; v1.0.2 (Build Code 3)</p>
-        </div>
-      </div>
-
-      <div class="qr-container">
-        <div id="qrCodeWrapper" class="qr-box">
-          <div id="qrcode"></div>
-          <img id="qrFallback" src="/qr_code_apk.png" alt="Download QR Code" style="display: none; width: 220px; height: 220px; border-radius: 8px;" />
-        </div>
-        <p class="qr-hint">Scan with phone Camera or Google Lens</p>
-      </div>
-
-      <div class="copy-url-group">
-        <input type="text" id="apkUrlInput" readonly class="url-input" value="" />
-        <button type="button" id="copyUrlBtn" class="btn-copy" onclick="copyApkUrl()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span id="copyBtnText">Copy</span>
-        </button>
-      </div>
-
-      <div class="modal-instructions">
-        <div class="step-item">
-          <span class="step-num">1</span>
-          <span>Open camera or QR scanner on your Android phone and point it at the QR code.</span>
-        </div>
-        <div class="step-item">
-          <span class="step-num">2</span>
-          <span>Tap the link banner to download <strong>Balasore360-v1.0.2-release.apk</strong>.</span>
-        </div>
-        <div class="step-item">
-          <span class="step-num">3</span>
-          <span>Tap <strong>Open</strong> and allow "Install unknown apps" if prompted to install.</span>
-        </div>
-      </div>
-
-      <div style="margin-top: 18px; text-align: center;">
-        <a id="directModalApkLink" href="/Balasore360-v1.0.2-release.apk" download="Balasore360-v1.0.2-release.apk" class="btn-direct-modal">
-          Or download directly to this device
-        </a>
-      </div>
+  <!-- Footer -->
+  <footer>
+    <div>&copy; 2026 Balasore 360. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#privacy-policy" class="footer-link">Privacy Policy</a>
+      <a href="/privacy" class="footer-link">Direct Policy Link</a>
+      <a href="/app-ads.txt" class="footer-link">app-ads.txt</a>
+      <a href="mailto:niharbhuyan@gmail.com" class="footer-link">Contact</a>
     </div>
-  </div>
+  </footer>
 
-  <script src="/qrcode.min.js"></script>
   <script>
-    let qrGenerated = false;
-
-    function getFullApkUrl() {
-      // Dynamic absolute URL so it always points to the exact active host
-      return window.location.origin + '/Balasore360-v1.0.2-release.apk';
-    }
-
-    function generateQrCode() {
-      const url = getFullApkUrl();
-      const qrEl = document.getElementById('qrcode');
-      const inputEl = document.getElementById('apkUrlInput');
-      if (inputEl) inputEl.value = url;
-
-      if (qrGenerated) return;
-
-      try {
-        if (typeof QRCode !== 'undefined') {
-          qrEl.innerHTML = '';
-          new QRCode(qrEl, {
-            text: url,
-            width: 220,
-            height: 220,
-            colorDark: '#0f172a',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
-          });
-          qrGenerated = true;
-        } else {
-          showFallbackQr();
-        }
-      } catch (err) {
-        console.warn('QRCode library error, using fallback:', err);
-        showFallbackQr();
-      }
-    }
-
-    function showFallbackQr() {
-      const qrEl = document.getElementById('qrcode');
-      const fallbackEl = document.getElementById('qrFallback');
-      if (qrEl) qrEl.style.display = 'none';
-      if (fallbackEl) fallbackEl.style.display = 'block';
-    }
-
-    function openQrModal() {
-      const modal = document.getElementById('qrModal');
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      generateQrCode();
-    }
-
-    function closeQrModal() {
-      const modal = document.getElementById('qrModal');
-      modal.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-
-    function handleBackdropClick(e) {
-      if (e.target && e.target.id === 'qrModal') {
-        closeQrModal();
-      }
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeQrModal();
-      }
-    });
-
-    function copyApkUrl() {
-      const inputEl = document.getElementById('apkUrlInput');
-      const btnText = document.getElementById('copyBtnText');
-      if (!inputEl) return;
-
-      inputEl.select();
-      inputEl.setSelectionRange(0, 99999);
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(inputEl.value).then(() => {
-          showCopiedStatus(btnText);
-        }).catch(() => {
-          document.execCommand('copy');
-          showCopiedStatus(btnText);
-        });
-      } else {
-        document.execCommand('copy');
-        showCopiedStatus(btnText);
-      }
-    }
-
-    function showCopiedStatus(btnText) {
-      if (!btnText) return;
-      const old = btnText.innerText;
-      btnText.innerText = 'Copied!';
-      setTimeout(() => {
-        btnText.innerText = old;
-      }, 2000);
-    }
-
-    function copyAppAdsTxt() {
-      const text = 'google.com, pub-4880243637225183, DIRECT, f08c47fec0942fa0';
-      const btn = document.getElementById('copyAppAdsBtn');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          showCopiedStatus(btn);
-        }).catch(() => {
-          showCopiedStatus(btn);
-        });
-      } else {
-        showCopiedStatus(btn);
-      }
+    function copyPolicyUrl() {
+      const url = document.getElementById('policyUrlText').innerText;
+      navigator.clipboard.writeText(url).then(() => {
+        const btnText = document.getElementById('copyBtnText');
+        btnText.innerText = 'Copied!';
+        setTimeout(() => {
+          btnText.innerText = 'Copy Link';
+        }, 2500);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
     }
   </script>
 </body>

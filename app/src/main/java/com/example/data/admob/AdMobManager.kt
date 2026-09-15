@@ -1,8 +1,16 @@
 package com.example.data.admob
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object AdMobManager {
     private const val TAG = "AdMobManager"
@@ -27,18 +35,67 @@ object AdMobManager {
     fun initialize(context: Context) {
         if (isInitialized) return
 
-        try {
-            val appContext = context.applicationContext ?: context
-            MobileAds.initialize(appContext) { status ->
-                isInitialized = true
-                isAvailable = true
-                Log.d(TAG, "AdMob MobileAds initialized successfully: $status")
-            }
-            isAvailable = true
-        } catch (t: Throwable) {
-            Log.w(TAG, "AdMob initialization encountered error (running in safe offline/fallback mode): ${t.message}")
-            isInitialized = false
+        val appContext = context.applicationContext ?: context
+
+        // Detect emulator environment to prevent measurement service and Mesa rendernode errors
+        val isEmulator = (
+            Build.FINGERPRINT.startsWith("generic")
+            || Build.FINGERPRINT.startsWith("unknown")
+            || Build.MODEL.contains("google_sdk")
+            || Build.MODEL.contains("Emulator")
+            || Build.MODEL.contains("Android SDK built for x86")
+            || Build.MANUFACTURER.contains("Genymotion")
+            || Build.HARDWARE.contains("goldfish")
+            || Build.HARDWARE.contains("ranchu")
+            || Build.PRODUCT.contains("sdk_gphone")
+            || Build.PRODUCT.contains("google_sdk")
+            || Build.PRODUCT.contains("emulator")
+            || Build.PRODUCT.contains("simulator")
+            || Build.BOARD.lowercase().contains("goldfish")
+            || Build.BOARD.lowercase().contains("ranchu")
+        )
+
+        if (isEmulator) {
+            Log.i(TAG, "Running in emulator environment. AdMob Live View paused to prevent adservices binding and Mesa rendernode logs.")
             isAvailable = false
+            isInitialized = true
+            return
+        }
+
+        // Verify Google Play Services is available on physical devices
+        try {
+            val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(appContext)
+            if (availability != ConnectionResult.SUCCESS) {
+                Log.i(TAG, "Google Play Services not ready ($availability). Operating in safe sponsor fallback mode.")
+                isAvailable = false
+                isInitialized = true
+                return
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "Play Services check caught: ${t.message}. Safe fallback active.")
+            isAvailable = false
+            isInitialized = true
+            return
+        }
+
+        // Initialize asynchronously on IO dispatcher to prevent main thread blocking
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val reqConfig = RequestConfiguration.Builder()
+                    .setTestDeviceIds(listOf(AdRequest.DEVICE_ID_EMULATOR))
+                    .build()
+                MobileAds.setRequestConfiguration(reqConfig)
+
+                MobileAds.initialize(appContext) { status ->
+                    isInitialized = true
+                    isAvailable = true
+                    Log.d(TAG, "AdMob MobileAds initialized successfully: $status")
+                }
+            } catch (t: Throwable) {
+                Log.w(TAG, "AdMob init error: ${t.message}. Falling back gracefully.")
+                isAvailable = false
+                isInitialized = true
+            }
         }
     }
 }

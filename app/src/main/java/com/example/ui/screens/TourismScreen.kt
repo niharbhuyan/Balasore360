@@ -2,8 +2,10 @@ package com.example.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +25,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -41,6 +47,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,22 +62,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.AppLanguage
+import com.example.data.model.DailyBalasoreIdiom
 import com.example.data.model.Hotspot
+import com.example.data.model.LiteraryTrailPoint
+import com.example.data.model.TempleRitualInfo
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
 import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
+import com.example.ui.theme.BentoSlate600
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate800
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 
 @Composable
 fun TourismScreen(
     hotspots: List<Hotspot>,
+    templeRitualInfo: TempleRitualInfo,
+    literaryTrailPoints: List<LiteraryTrailPoint>,
+    dailyIdiom: DailyBalasoreIdiom,
     selectedCategory: String,
     searchQuery: String,
     language: AppLanguage,
@@ -123,6 +141,243 @@ fun TourismScreen(
                             color = Color.White.copy(alpha = 0.9f)
                         )
                     )
+                }
+            }
+        }
+
+        // FEATURE 3: Remuna Khirachora Bhog & Darshan Tracker
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("remuna_darshan_tracker_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFED7AA))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFFF7ED)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("🛕", fontSize = 18.sp)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) templeRitualInfo.odiaTempleName else templeRitualInfo.templeName,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = templeRitualInfo.currentDarshanStatus,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = EmeraldGreen,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFFEF3C7))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "LIVE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFFB45309),
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Bhog Availability Highlight
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFFFFBEB))
+                            .border(BorderStroke(1.dp, Color(0xFFFDE68A)), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Restaurant,
+                                    contentDescription = "Bhog",
+                                    tint = Color(0xFFD97706),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = templeRitualInfo.bhogName,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF92400E)
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Next distribution: ${templeRitualInfo.nextBhogDistribution}",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color(0xFFB45309),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                            Text(
+                                text = templeRitualInfo.bhogAvailabilityNote,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = BentoSlate600,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Timings Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Mangala Alati", style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500))
+                            Text(templeRitualInfo.mangalaAlati, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate800))
+                        }
+                        Column {
+                            Text("Pahada Rest", style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500))
+                            Text(templeRitualInfo.pahadaTime, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate800))
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("Sandhya Arati", style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500))
+                            Text(templeRitualInfo.sandhyaArati, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate800))
+                        }
+                    }
+                }
+            }
+        }
+
+        // FEATURE 6: Fakir Mohan Literary Trail & Balasore Dialect Idiom
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("fakir_mohan_literary_trail_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFEDE9FE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoStories,
+                                    contentDescription = "Literature",
+                                    tint = Color(0xFF7C3AED),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ବ୍ୟାସକବି ଫକୀର ମୋହନ ସାହିତ୍ୟ ପରିକ୍ରମା" else "Fakir Mohan Literary Trail",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Father of Modern Odia Literature",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7C3AED), fontWeight = FontWeight.SemiBold)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Daily Balasore Idiom Card
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF5F3FF))
+                            .border(BorderStroke(1.dp, Color(0xFFDDD6FE)), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "ଦିନର ବାଲେଶ୍ୱରୀ ଶବ୍ଦ (Dialect of the Day)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6D28D9)
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = dailyIdiom.wordOrIdiom,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+                            )
+                            Text(
+                                text = dailyIdiom.meaning,
+                                style = MaterialTheme.typography.bodySmall.copy(color = BentoSlate700)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = dailyIdiom.funContext,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = BentoSlate500,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Trail Locations
+                    literaryTrailPoints.forEach { point ->
+                        LiteraryTrailItemView(point = point, language = language)
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
                 }
             }
         }
@@ -351,6 +606,67 @@ fun HotspotCard(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = OceanBlue
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LiteraryTrailItemView(
+    point: LiteraryTrailPoint,
+    language: AppLanguage
+) {
+    var showHistory by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFFF8FAFC))
+            .clickable { showHistory = !showHistory }
+            .padding(10.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (language == AppLanguage.ODIA) point.odiaTitle else point.title,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = BentoSlate900
+                        )
+                    )
+                    Text(
+                        text = point.location,
+                        style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                    )
+                }
+                Icon(
+                    imageVector = if (showHistory) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Details",
+                    tint = BentoSlate400,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = point.excerpt,
+                style = MaterialTheme.typography.bodySmall.copy(color = BentoSlate600, fontSize = 12.sp)
+            )
+            AnimatedVisibility(visible = showHistory) {
+                Column(modifier = Modifier.padding(top = 6.dp)) {
+                    Text(
+                        text = point.historicalContext,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color(0xFF4C1D95),
+                            fontWeight = FontWeight.Medium
                         )
                     )
                 }

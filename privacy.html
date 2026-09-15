@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Balasore 360</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Oriya:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8fafc;
+      color: var(--slate-900);
+      line-height: 1.7;
+      padding: 32px 16px 64px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--slate-200);
+    }
+    .back-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      margin-bottom: 24px;
+    }
+    .back-nav:hover {
+      text-decoration: underline;
+    }
+    h1 {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin-bottom: 6px;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    p {
+      margin-bottom: 14px;
+      color: var(--slate-700);
+      font-size: 14.5px;
+    }
+    ul {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      color: var(--slate-700);
+      font-size: 14.5px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .badge {
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    .contact-box {
+      background: var(--slate-50);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--slate-200);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-nav">&larr; Back to Balasore 360 App Overview</a>
+    <div class="badge">Google Play Developer Policy Compliant</div>
+    <h1>Privacy Policy</h1>
+    <div class="meta">
+      <strong>Application:</strong> Balasore 360 &bull; <strong>Package ID:</strong> com.aistudio.balasore360.vxknrt &bull; <strong>Effective Date:</strong> September 15, 2026
+    </div>
+
+    <h2>1. Introduction</h2>
+    <p>
+      This Privacy Policy applies to the <strong>Balasore 360</strong> mobile application developed by <strong>Nihar Bhuyan</strong> (<a href="mailto:niharbhuyan@gmail.com">niharbhuyan@gmail.com</a>). This policy describes how we handle information in compliance with Google Play Store Developer Policies, GDPR, and Indian Information Technology laws.
+    </p>
+
+    <h2>2. Information Collection and Usage</h2>
+    <p>
+      Balasore 360 is built with a privacy-first, offline-capable architecture:
+    </p>
+    <ul>
+      <li><strong>No Account Required:</strong> You are not required to create an account, register, or provide your personal identity, email, or telephone number to use any features of this app.</li>
+      <li><strong>Local Storage (Room Database):</strong> All saved bookmarks, preferred language setting (Odia / English), and offline news/weather entries are stored entirely locally on your device storage. We do not transmit or upload your saved bookmarks to any remote server.</li>
+      <li><strong>Location Privacy:</strong> The app does not track background GPS location. All tidal telemetry and weather measurements are pre-mapped to publicly available Balasore district monitoring stations (Chandipur Beach, Remuna, Rajghat, Mathani).</li>
+    </ul>
+
+    <h2>3. Device Permissions &amp; Justifications</h2>
+    <p>The application declares only standard, minimal permissions necessary for its primary utility purposes:</p>
+    <ul>
+      <li><code>android.permission.INTERNET</code>: Enables downloading real-time weather telemetries, tidal tables, river flood levels, and news feeds.</li>
+      <li><code>android.permission.ACCESS_NETWORK_STATE</code>: Enables checking connection status to switch seamlessly between live telemetries and cached offline mode.</li>
+      <li><code>android.permission.CALL_PHONE</code>: Strictly utilized for explicit user-initiated 1-tap phone calls to emergency numbers (Balasore Police 112, DHH Hospital, Fire Control, Cyclone Shelter managers). The app never initiates calls autonomously without user touch interaction.</li>
+    </ul>
+
+    <h2>4. Advertising &amp; Third-Party SDKs (Google AdMob)</h2>
+    <p>
+      Balasore 360 integrates the <strong>Google Mobile Ads SDK (AdMob)</strong> to serve advertisements that help maintain and update the application free of charge.
+    </p>
+    <p>
+      Google AdMob and its partners may collect and process pseudonymous identifiers (such as the Google Advertising ID), IP addresses, and diagnostic information to serve ads and prevent fraud in accordance with Google's Privacy Policy.
+    </p>
+    <p>
+      Users can opt out of personalized advertising by adjusting their Android device settings: <em>Settings &gt; Google &gt; Ads &gt; Reset or Delete Advertising ID</em>.
+    </p>
+    <p>
+      Read Google's privacy policies here: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google Ads Privacy</a>.
+    </p>
+
+    <h2>5. Children's Privacy</h2>
+    <p>
+      Balasore 360 does not target or knowingly collect data from children under 13 years of age. If you believe child data has been inadvertently collected, please contact us immediately.
+    </p>
+
+    <h2>6. Data Security and Deletion</h2>
+    <p>
+      Because no personal data is stored on remote servers, users retain complete autonomy over their data. Clearing the application data or uninstalling the app permanently purges all local bookmarks, cached telemetries, and settings.
+    </p>
+
+    <div class="contact-box">
+      <h2 style="margin-top: 0;">7. Contact Information</h2>
+      <p style="margin-bottom: 0;">
+        For privacy inquiries, questions, or compliance notices, please contact:<br><br>
+        <strong>Developer:</strong> Nihar Bhuyan<br>
+        <strong>Email:</strong> <a href="mailto:niharbhuyan@gmail.com">niharbhuyan@gmail.com</a><br>
+        <strong>App Name:</strong> Balasore 360<br>
+        <strong>Jurisdiction:</strong> Balasore, Odisha, India
+      </p>
+    </div>
+  </div>
+</body>
+</html>

@@ -40,6 +40,104 @@ data class WeatherInfo(
     val cycloneAlert: String? = null
 )
 
+// 1. Chandipur Tidal Clock & Biodiversity
+data class TidalClockData(
+    val currentPhase: String = "Receding Sea (Low Tide)",
+    val odiaPhase: String = "ଭଟ୍ଟା ସମୟ (ସମୁଦ୍ର ଅପସାରିତ)",
+    val distanceRecededKm: Double = 4.6,
+    val safeWalkMinutesRemaining: Int = 145, // Minutes until water starts rushing back
+    val highTideTime: String = "08:15 PM",
+    val lowTideTime: String = "02:30 PM",
+    val tidalCoefficient: String = "Spring Tide (Extreme range)",
+    val biodiversitySightings: List<String> = listOf(
+        "Rare Horseshoe Crabs (Tachypleus gigas) active on outer sandbar",
+        "Red Ghost Crabs near casuarina dunes",
+        "Golden conch shells exposed at 3.5 km mark"
+    )
+)
+
+// 2. DRDO ITR Coastal Advisories & Heritage
+data class DrdoAdvisory(
+    val id: String,
+    val title: String,
+    val odiaTitle: String,
+    val dateOrTime: String,
+    val status: String, // "CLEARED FOR FISHING", "COASTAL RESTRICTION", "UPCOMING TRIAL"
+    val seaZone: String,
+    val fishermenAdvisory: String,
+    val sonicBoomWarning: Boolean = false,
+    val heritageMilestone: String? = null
+)
+
+// 3. Remuna Khirachora Bhog & Darshan
+data class TempleRitualInfo(
+    val templeName: String = "Khirachora Gopinatha Temple, Remuna",
+    val odiaTempleName: String = "କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ମନ୍ଦିର, ରେମୁଣା",
+    val nextBhogDistribution: String = "12:15 PM & 07:30 PM",
+    val bhogName: String = "Sacred Amruta Keli (କ୍ଷୀର ଭୋଗ)",
+    val bhogAvailabilityNote: String = "Fresh earthen pots (Kudua) prepared twice daily by temple servitors",
+    val currentDarshanStatus: String = "Open for Devotees",
+    val mangalaAlati: String = "05:30 AM",
+    val sandhyaArati: String = "06:45 PM",
+    val pahadaTime: String = "01:00 PM - 04:00 PM",
+    val pilgrimageCircuit: List<String> = listOf(
+        "Remuna Gopinatha (9 km)",
+        "Panchalingeswar Spring (30 km)",
+        "Emami Jagannath Temple (6 km)",
+        "Bhusandeswar Shiva (82 km)"
+    )
+)
+
+// 4. River Gauge & Flood Warning Telemetry
+data class RiverGauge(
+    val riverName: String,
+    val odiaRiverName: String,
+    val stationName: String,
+    val currentLevelMeters: Double,
+    val warningLevelMeters: Double,
+    val dangerLevelMeters: Double,
+    val status: String, // "NORMAL", "ALERT", "DANGER"
+    val trend: String // "Rising", "Falling", "Steady"
+)
+
+data class CycloneShelter(
+    val name: String,
+    val block: String,
+    val capacityPeople: Int,
+    val nodalContact: String,
+    val phone: String
+)
+
+// 5. Seafood Catch & Harbor Wholesale Rates
+data class SeafoodCatch(
+    val id: String,
+    val name: String,
+    val odiaName: String,
+    val harbor: String,
+    val priceRangeKg: String,
+    val qualityGrade: String,
+    val freshness: String = "Morning Harbor Landed",
+    val peakSeason: String
+)
+
+// 6. Fakir Mohan Literary Trail & Daily Idiom
+data class LiteraryTrailPoint(
+    val id: String,
+    val title: String,
+    val odiaTitle: String,
+    val location: String,
+    val excerpt: String,
+    val historicalContext: String
+)
+
+data class DailyBalasoreIdiom(
+    val wordOrIdiom: String,
+    val odiaScript: String,
+    val meaning: String,
+    val literaryWork: String,
+    val funContext: String
+)
+
 data class EmergencyContact(
     val id: String,
     val name: String,

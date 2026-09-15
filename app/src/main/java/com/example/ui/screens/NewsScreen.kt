@@ -1,8 +1,12 @@
 package com.example.ui.screens
 
 import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,17 +27,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Water
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,20 +58,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.AppLanguage
+import com.example.data.model.CycloneShelter
 import com.example.data.model.NewsArticle
+import com.example.data.model.RiverGauge
 import com.example.ui.components.AdMobBannerCard
+import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate600
 import com.example.ui.theme.BentoSlate700
+import com.example.ui.theme.BentoSlate800
 import com.example.ui.theme.BentoSlate900
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 
 @Composable
 fun NewsScreen(
     articles: List<NewsArticle>,
+    riverGauges: List<RiverGauge>,
+    cycloneShelters: List<CycloneShelter>,
     selectedCategory: String,
     language: AppLanguage,
     bookmarkedIds: Set<String>,
@@ -116,6 +137,87 @@ fun NewsScreen(
                         contentDescription = "Refresh",
                         tint = OceanBlue
                     )
+                }
+            }
+        }
+
+        // FEATURE 4: River Water Level & Monsoon Flood Early Warning Telemetry Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("river_flood_telemetry_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE0F2FE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Water,
+                                    contentDescription = "River Gauge",
+                                    tint = OceanBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ନଦୀ ଜଳସ୍ତର ଓ ବନ୍ୟା ସତର୍କତା" else "River Levels & Flood Early Warning",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Central Water Commission & SRC Odisha",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFDCFCE7))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "MONITORED",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF166534),
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    riverGauges.forEach { gauge ->
+                        RiverGaugeItemView(gauge = gauge, language = language)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Cyclone Shelter Directory
+                    CycloneSheltersView(shelters = cycloneShelters, language = language)
                 }
             }
         }
@@ -292,6 +394,211 @@ fun NewsCard(
                             tint = if (isBookmarked) OceanBlue else BentoSlate400,
                             modifier = Modifier.size(18.dp)
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RiverGaugeItemView(
+    gauge: RiverGauge,
+    language: AppLanguage
+) {
+    val progress = (gauge.currentLevelMeters / gauge.dangerLevelMeters).coerceIn(0.0, 1.0).toFloat()
+    val statusColor = when (gauge.status.uppercase()) {
+        "DANGER" -> Color(0xFFDC2626)
+        "ALERT" -> Color(0xFFD97706)
+        else -> Color(0xFF16A34A)
+    }
+    val statusBg = when (gauge.status.uppercase()) {
+        "DANGER" -> Color(0xFFFEE2E2)
+        "ALERT" -> Color(0xFFFEF3C7)
+        else -> Color(0xFFDCFCE7)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFF8FAFC))
+            .border(BorderStroke(1.dp, BentoSlate100), RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = if (language == AppLanguage.ODIA) gauge.odiaRiverName else gauge.riverName,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = BentoSlate900
+                        )
+                    )
+                    Text(
+                        text = "Station: ${gauge.stationName}",
+                        style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(statusBg)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = gauge.status,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = statusColor,
+                            fontSize = 10.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Progress bar
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = statusColor,
+                trackColor = BentoSlate100
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Current: ${gauge.currentLevelMeters}m",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = BentoSlate800
+                    )
+                )
+                Text(
+                    text = "Warning: ${gauge.warningLevelMeters}m",
+                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                )
+                Text(
+                    text = "Danger: ${gauge.dangerLevelMeters}m",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFDC2626)
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Upstream Flow: ${gauge.trend}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = OceanBlueDark,
+                    fontSize = 10.sp
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun CycloneSheltersView(
+    shelters: List<CycloneShelter>,
+    language: AppLanguage
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFEFF6FF))
+            .clickable { expanded = !expanded }
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Shield,
+                    contentDescription = "Shelters",
+                    tint = OceanBlue,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (language == AppLanguage.ODIA) "ବାତ୍ୟା ଓ ବନ୍ୟା ଆଶ୍ରୟସ୍ଥଳୀ (Cyclone Shelters)" else "District Cyclone & Flood Shelters",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = OceanBlueDark
+                    )
+                )
+            }
+
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = "Expand",
+                tint = OceanBlue,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            Column(modifier = Modifier.padding(top = 10.dp)) {
+                shelters.forEach { shelter ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = shelter.name,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+                            )
+                            Text(
+                                text = "${shelter.block} • Cap: ${shelter.capacityPeople} people",
+                                style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate600)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${shelter.phone}"))
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Call,
+                                contentDescription = "Call Shelter",
+                                tint = EmeraldGreen,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }

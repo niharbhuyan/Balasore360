@@ -32,4 +32,35 @@ class ExampleUnitTest {
         val police = contacts.find { it.number == "112" }
         assertNotNull(police)
     }
+
+    @Test
+    fun verifyNewUniqueFeaturesData() {
+        // 1. Tidal Clock & DRDO
+        val tidalClock = BalasoreRepository.tidalClock
+        assertNotNull(tidalClock)
+        assertEquals(4.8, tidalClock.distanceRecededKm, 0.01)
+        assertTrue(tidalClock.safeWalkMinutesRemaining > 0)
+
+        val drdo = BalasoreRepository.drdoAdvisories
+        assertTrue(drdo.isNotEmpty())
+
+        // 2. Remuna Khirachora Bhog
+        val remuna = BalasoreRepository.templeRitualInfo
+        assertNotNull(remuna)
+        assertEquals("12:30 PM (Mid-day) & 07:30 PM (Sandhya)", remuna.nextBhogDistribution)
+
+        // 3. Literary Trail
+        val trail = BalasoreRepository.literaryTrailPoints
+        assertTrue(trail.isNotEmpty())
+
+        // 4. River Gauges & Cyclone Shelters
+        val gauges = BalasoreRepository.riverGauges
+        assertTrue(gauges.isNotEmpty())
+        val shelters = BalasoreRepository.cycloneShelters
+        assertTrue(shelters.isNotEmpty())
+
+        // 5. Seafood Catch
+        val seafood = BalasoreRepository.seafoodCatches
+        assertTrue(seafood.isNotEmpty())
+    }
 }

@@ -1,5 +1,6 @@
 package com.example
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Emergency
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -70,13 +72,25 @@ import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.BalasoreViewModel
 
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import com.example.util.PlayStoreUpdateManager
+import com.example.util.UpdateUIState
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: BalasoreViewModel by viewModels()
+    private lateinit var updateManager: PlayStoreUpdateManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        updateManager = PlayStoreUpdateManager(this)
 
         // Crash-proof AdMob initialization
         try {
@@ -87,16 +101,51 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Balasore360Theme {
-                BalasoreApp(viewModel = viewModel)
+                BalasoreApp(
+                    viewModel = viewModel,
+                    updateManager = updateManager
+                )
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::updateManager.isInitialized) {
+            updateManager.checkPendingUpdateCompletion()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::updateManager.isInitialized) {
+            updateManager.cleanup()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BalasoreApp(viewModel: BalasoreViewModel) {
+fun BalasoreApp(
+    viewModel: BalasoreViewModel,
+    updateManager: PlayStoreUpdateManager
+) {
     val uiState by viewModel.uiState.collectAsState()
+    val updateState by updateManager.updateState.collectAsState()
+
+    // Activity Result Launcher for Google Play In-App Updates
+    val updateLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            Log.w("BalasoreApp", "Update flow failed or cancelled: ${result.resultCode}")
+        }
+    }
+
+    // Auto-check for updates on app launch
+    LaunchedEffect(Unit) {
+        updateManager.checkForUpdates(launcher = updateLauncher, autoStartFlexible = true)
+    }
 
     Scaffold(
         modifier = Modifier
@@ -263,42 +312,115 @@ fun BalasoreApp(viewModel: BalasoreViewModel) {
             }
         }
     ) { innerPadding ->
-        Surface(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            color = BentoSlate50
+                .padding(innerPadding)
         ) {
-            when (uiState.selectedTab) {
-                0 -> TourismScreen(
-                    hotspots = uiState.hotspots,
-                    selectedCategory = uiState.selectedHotspotCategory,
-                    searchQuery = uiState.hotspotSearchQuery,
-                    language = uiState.language,
-                    favoriteIds = uiState.favoriteHotspotIds,
-                    onCategorySelected = { viewModel.setHotspotCategory(it) },
-                    onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
-                    onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) }
-                )
-                1 -> NewsScreen(
-                    articles = uiState.newsArticles,
-                    selectedCategory = uiState.selectedNewsCategory,
-                    language = uiState.language,
-                    bookmarkedIds = uiState.bookmarkedIds,
-                    isRefreshing = uiState.isRefreshing,
-                    onCategorySelected = { viewModel.setNewsCategory(it) },
-                    onToggleBookmark = { viewModel.toggleBookmark(it) },
-                    onRefresh = { viewModel.refreshAll() }
-                )
-                2 -> WeatherScreen(
-                    weather = uiState.weather,
-                    language = uiState.language
-                )
-                3 -> EssentialsScreen(
-                    emergencyContacts = uiState.emergencyContacts,
-                    transitList = uiState.transitList,
-                    language = uiState.language
-                )
+            // Prominent banner when flexible background update has finished downloading
+            if (updateState is UpdateUIState.Downloaded) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFFDCFCE7)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF86EFAC))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = null,
+                                tint = Color(0xFF166534),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = "Update Ready to Install",
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF166534)
+                                    )
+                                )
+                                Text(
+                                    text = "Restart app to apply the newest features.",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = Color(0xFF15803D),
+                                        fontSize = 11.sp
+                                    )
+                                )
+                            }
+                        }
+                        Button(
+                            onClick = { updateManager.completeUpdate() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF166534)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text("Restart", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = BentoSlate50
+            ) {
+                when (uiState.selectedTab) {
+                    0 -> TourismScreen(
+                        hotspots = uiState.hotspots,
+                        templeRitualInfo = uiState.templeRitualInfo,
+                        literaryTrailPoints = uiState.literaryTrailPoints,
+                        dailyIdiom = uiState.dailyIdiom,
+                        selectedCategory = uiState.selectedHotspotCategory,
+                        searchQuery = uiState.hotspotSearchQuery,
+                        language = uiState.language,
+                        favoriteIds = uiState.favoriteHotspotIds,
+                        onCategorySelected = { viewModel.setHotspotCategory(it) },
+                        onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
+                        onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) }
+                    )
+                    1 -> NewsScreen(
+                        articles = uiState.newsArticles,
+                        riverGauges = uiState.riverGauges,
+                        cycloneShelters = uiState.cycloneShelters,
+                        selectedCategory = uiState.selectedNewsCategory,
+                        language = uiState.language,
+                        bookmarkedIds = uiState.bookmarkedIds,
+                        isRefreshing = uiState.isRefreshing,
+                        onCategorySelected = { viewModel.setNewsCategory(it) },
+                        onToggleBookmark = { viewModel.toggleBookmark(it) },
+                        onRefresh = { viewModel.refreshAll() }
+                    )
+                    2 -> WeatherScreen(
+                        weather = uiState.weather,
+                        tidalClock = uiState.tidalClock,
+                        drdoAdvisories = uiState.drdoAdvisories,
+                        language = uiState.language
+                    )
+                    3 -> EssentialsScreen(
+                        emergencyContacts = uiState.emergencyContacts,
+                        transitList = uiState.transitList,
+                        seafoodCatches = uiState.seafoodCatches,
+                        language = uiState.language,
+                        updateState = updateState,
+                        onCheckForUpdates = { updateManager.checkForUpdates(updateLauncher, autoStartFlexible = false) },
+                        onTriggerUpdate = { updateManager.startUpdate(updateLauncher) },
+                        onCompleteUpdate = { updateManager.completeUpdate() }
+                    )
+                }
             }
         }
     }
