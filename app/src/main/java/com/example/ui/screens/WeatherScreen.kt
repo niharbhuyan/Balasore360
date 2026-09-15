@@ -1,9 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,1320 +15,302 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Water
-import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import com.example.ui.components.RealtimeWeatherWidget
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.local.DailyForecastEntity
-import com.example.data.local.ReviewEntity
-import com.example.data.local.UserEntity
-import com.example.data.local.WeatherCacheEntity
-import com.example.data.model.BalasoreWeatherAlert
-import com.example.ui.components.FriendlyEmptyStateCard
-import com.example.ui.components.FriendlyEmptyStateType
-import com.example.ui.components.ReviewsSection
-import com.example.ui.components.SearchEmptyStateCard
-import com.example.ui.components.TimeSensitiveWeatherAlertCard
-import com.example.ui.components.OfflineConnectionBanner
-import com.example.ui.theme.AlertCyclone
-import com.example.ui.theme.AlertNormal
-import com.example.ui.theme.AlertWarning
-import com.example.ui.theme.BentoBlueLight
-import com.example.ui.theme.BentoBlueLight
-import com.example.ui.theme.BentoBluePill
-import com.example.ui.theme.BentoBlueText
-import com.example.ui.theme.BentoBorder
-import com.example.ui.theme.BentoCardWhite
-import com.example.ui.theme.BentoGreenBg
-import com.example.ui.theme.BentoGreenText
-import com.example.ui.theme.BentoPrimaryBlue
-import com.example.ui.theme.BentoRedBg
-import com.example.ui.theme.BentoRedText
-import com.example.ui.theme.BentoSlate400
+import com.example.data.model.AppLanguage
+import com.example.data.model.WeatherInfo
+import com.example.ui.components.AdMobBannerCard
+import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
+import com.example.ui.theme.BentoSlate800
 import com.example.ui.theme.BentoSlate900
-import com.example.ui.theme.TideIncoming
-import com.example.ui.theme.TideReceding
-import kotlinx.coroutines.flow.Flow
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.ui.theme.EmeraldGreen
+import com.example.ui.theme.OceanBlue
+import com.example.ui.theme.OceanBlueDark
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherScreen(
-    weather: WeatherCacheEntity?,
-    dailyForecasts: List<DailyForecastEntity> = emptyList(),
-    timeSensitiveAlerts: List<BalasoreWeatherAlert> = emptyList(),
-    currentUser: UserEntity? = null,
-    isRefreshing: Boolean = false,
-    onRefresh: () -> Unit = {},
-    onOpenAuth: () -> Unit = {},
-    getReviewsForWeather: (String) -> Flow<List<ReviewEntity>> = { kotlinx.coroutines.flow.emptyFlow() },
-    onSubmitWeatherReview: (weatherId: String, alertTitle: String, rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _, _, _ -> },
-    searchQuery: String = "",
-    onClearSearch: () -> Unit = {},
-    onSearchQueryChange: (String) -> Unit = {},
-    onEmergencyCallClick: ((String) -> Unit)? = null,
-    onCheckTideSearch: (String) -> Unit = {},
-    isOnline: Boolean = true,
+    weather: WeatherInfo,
+    language: AppLanguage,
     modifier: Modifier = Modifier
 ) {
-    val pullToRefreshState = rememberPullToRefreshState()
-    val query = searchQuery.trim()
-    val isSearching = query.isNotBlank()
-
-    // Determine whether current atmospheric and marine conditions match the search keyword
-    val weatherMatchesCurrent = remember(weather, query) {
-        if (!isSearching || weather == null) true
-        else {
-            weather.weatherDescription.contains(query, ignoreCase = true) ||
-            weather.alertTitle.contains(query, ignoreCase = true) ||
-            weather.alertMessage.contains(query, ignoreCase = true) ||
-            weather.tideState.contains(query, ignoreCase = true) ||
-            weather.tideDescription.contains(query, ignoreCase = true) ||
-            "${weather.temperature.toInt()}".contains(query) ||
-            "${weather.windSpeed.toInt()}".contains(query) ||
-            "${weather.humidity}".contains(query) ||
-            weather.sunrise.contains(query, ignoreCase = true) ||
-            weather.sunset.contains(query, ignoreCase = true)
-        }
-    }
-
-    // Filter 7-day daily forecasts matching day of week, conditions, or temperature
-    val matchingDailyForecasts = remember(dailyForecasts, query) {
-        if (!isSearching) dailyForecasts
-        else {
-            dailyForecasts.filter { forecast ->
-                forecast.dayOfWeek.contains(query, ignoreCase = true) ||
-                forecast.weatherDescription.contains(query, ignoreCase = true) ||
-                forecast.date.contains(query, ignoreCase = true) ||
-                "${forecast.maxTemp.toInt()}".contains(query) ||
-                "${forecast.minTemp.toInt()}".contains(query) ||
-                "${forecast.uvIndex.toInt()}".contains(query)
-            }
-        }
-    }
-
-    // Filter time-sensitive weather alerts matching search query
-    val matchingAlerts = remember(timeSensitiveAlerts, query) {
-        if (!isSearching) timeSensitiveAlerts
-        else {
-            timeSensitiveAlerts.filter { alert ->
-                alert.title.contains(query, ignoreCase = true) ||
-                alert.odiaTitle.contains(query, ignoreCase = true) ||
-                alert.summary.contains(query, ignoreCase = true) ||
-                alert.detailedDescription.contains(query, ignoreCase = true) ||
-                alert.category.name.contains(query, ignoreCase = true) ||
-                alert.severity.name.contains(query, ignoreCase = true) ||
-                alert.affectedZones.any { it.zoneName.contains(query, ignoreCase = true) || it.odiaName.contains(query, ignoreCase = true) }
-            }
-        }
-    }
-
-    val hasAnyWeatherMatch = weatherMatchesCurrent || matchingDailyForecasts.isNotEmpty() || matchingAlerts.isNotEmpty()
-
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        state = pullToRefreshState,
-        indicator = {
-            PullToRefreshDefaults.Indicator(
-                state = pullToRefreshState,
-                isRefreshing = isRefreshing,
-                modifier = Modifier.align(Alignment.TopCenter),
-                containerColor = BentoCardWhite,
-                color = BentoPrimaryBlue
-            )
-        },
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .testTag("weather_pull_to_refresh")
+            .testTag("weather_screen_list"),
+        contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        if (weather == null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp, 40.dp, 16.dp, 90.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    FriendlyEmptyStateCard(
-                        type = if (!isOnline) FriendlyEmptyStateType.OFFLINE_NO_INTERNET else FriendlyEmptyStateType.WEATHER_LOADING,
-                        title = if (!isOnline) "Weather Radar Offline" else "Retrieving Balasore Weather",
-                        odiaTitle = if (!isOnline) "ପାଣିପାଗ ତଥ୍ୟ ଅଫଲାଇନ ଅଛି" else "ବାଲେଶ୍ୱର ପାଣିପାଗ ରାଡାର ସଂଯୋଗ ହେଉଛି",
-                        subtitle = if (!isOnline) {
-                            "Unable to reach the Indian Meteorological satellite feed without network. Connect to the internet to load real-time coastal radar."
-                        } else {
-                            "Connecting to Chandipur coastal observatory & Bay of Bengal radar feeds. Pull down anytime to re-sync."
-                        },
-                        actionButtonText = if (!isOnline) "Retry Connection" else "Fetch Radar Feed",
-                        isActionLoading = isRefreshing,
-                        onActionClick = onRefresh,
-                        tipsList = listOf(
-                            "Chandipur tidal predictions and cyclone protocols are cached in Room for offline access.",
-                            "District disaster control numbers remain accessible even when disconnected."
+        // Hero Weather Card
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF0284C7), Color(0xFF0369A1))
                         )
                     )
-                }
-            }
-        } else if (isSearching && !hasAnyWeatherMatch) {
-            // Search Empty State for Weather tab
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 90.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                item {
-                    SearchEmptyStateCard(
-                        searchQuery = searchQuery,
-                        category = "Balasore Weather & Marine",
-                        feedType = "weather conditions or forecasts",
-                        onClearSearch = onClearSearch,
-                        onResetCategory = onClearSearch,
-                        onSuggestionClick = onSearchQueryChange,
-                        suggestions = listOf("Rain", "Thunderstorm", "Cyclone", "Tide", "Chandipur", "Sunny", "Wind")
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 90.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                // Header row with pull-to-refresh prompt
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp, vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = if (isSearching) "Weather Search Results" else "Meteorological Radar & Marine Alert",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = BentoSlate700
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Pull to refresh weather",
-                                tint = BentoSlate400,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = if (isRefreshing) "Refreshing satellite data..." else "Pull down to refresh",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                color = BentoSlate400
-                            )
-                        }
-                    }
-                }
-
-                // Offline Notice Banner with working Retry Button
-                if (!isOnline) {
-                    item {
-                        OfflineConnectionBanner(
-                            isOnline = false,
-                            isRetrying = isRefreshing,
-                            onRetry = onRefresh,
-                            modifier = Modifier.padding(horizontal = 2.dp)
-                        )
-                    }
-                }
-
-                // Active search banner when filtering weather feed
-                if (isSearching) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = BentoBlueLight,
-                            border = BorderStroke(1.dp, BentoBorder),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("weather_search_filter_banner")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = null,
-                                        tint = BentoPrimaryBlue,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Text(
-                                        text = "Filtering weather for \"$searchQuery\"",
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-                                Text(
-                                    text = "${if (weatherMatchesCurrent) 1 else 0} live • ${matchingDailyForecasts.size} forecasts",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoSlate700
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Bento Weather Primary Real-time Widget Component
-                if (weatherMatchesCurrent) {
-                    item {
-                        RealtimeWeatherWidget(
-                            weather = weather,
-                            dailyForecasts = dailyForecasts,
-                            onRefresh = onRefresh,
-                            isRefreshing = isRefreshing
-                        )
-                    }
-
-                    // Time-Sensitive Weather Alerts for Balasore Region
-                    if (matchingAlerts.isNotEmpty()) {
-                        item {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Text(
-                                            text = "TIME-SENSITIVE WEATHER ALERTS",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.ExtraBold,
-                                                letterSpacing = 1.sp
-                                            ),
-                                            color = BentoSlate700
-                                        )
-                                    }
-                                    Text(
-                                        text = "${matchingAlerts.size} Active Bulletin${if (matchingAlerts.size > 1) "s" else ""}",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 11.sp
-                                        ),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-
-                                matchingAlerts.forEach { alertItem ->
-                                    TimeSensitiveWeatherAlertCard(
-                                        alert = alertItem,
-                                        initialExpanded = alertItem.severity.isUrgent,
-                                        onEmergencyCallClick = onEmergencyCallClick
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Coastal Alert Bento Card
-                    item {
-                        BentoCoastalAlertCard(weather = weather)
-                    }
-
-                    // Chandipur Vanishing Sea Tide Bento Card
-                    item {
-                        BentoChandipurTideCard(
-                            weather = weather,
-                            onCheckTideSearch = { onCheckTideSearch(weather.tideState) }
-                        )
-                    }
-
-                    // Atmospheric & Marine Parameters Grid
-                    item {
-                        BentoAtmosphericMetricsCard(weather = weather)
-                    }
-                }
-
-                // 7-Day Weather Forecast cached in Room (filtered according to keyword)
-                if (matchingDailyForecasts.isNotEmpty()) {
-                    item {
-                        BentoDailyForecastCard(forecasts = matchingDailyForecasts)
-                    }
-                }
-
-                // Tourism Weather Advisory Card (show when not searching or when current matches)
-                if (!isSearching) {
-                    item {
-                        BentoTourismAdvisoryCard(weather = weather)
-                    }
-
-                    // Community Weather Reports & Alert Feedback
-                    item {
-                        ReviewsSection(
-                            targetType = "WEATHER",
-                            targetId = "balasore_weather_today",
-                            targetTitle = "Live Weather Alerts & Ground Reports",
-                            reviewsFlow = getReviewsForWeather("balasore_weather_today"),
-                            currentUser = currentUser,
-                            onOpenAuth = onOpenAuth,
-                            onSubmitReview = { rating, comment, guestName ->
-                                onSubmitWeatherReview("balasore_weather_today", "Balasore Weather Alerts", rating, comment, guestName)
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Bento Primary Weather Tile: Vibrant Royal Blue with rounded-3xl (28.dp)
- */
-@Composable
-fun BentoWeatherHeroCard(
-    weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoPrimaryBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("current_weather_card")
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                    .padding(24.dp)
             ) {
                 Column {
-                    Text(
-                        text = "Balasore City & Coast",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "North Bay of Bengal • 21.49°N 86.91°E",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.White.copy(alpha = 0.2f),
-                    border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.3f))
-                ) {
-                    Text(
-                        text = "LIVE RADAR",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
-                            fontSize = 10.sp
-                        ),
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = "${weather.temperature.toInt()}°",
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontWeight = FontWeight.Light,
-                            fontSize = 58.sp
-                        ),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "C",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White.copy(alpha = 0.9f),
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = weather.weatherDescription,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Feels like ${weather.apparentTemperature.toInt()}°C",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
-                    Text(
-                        text = "H: ${weather.maxTemp.toInt()}°  L: ${weather.minTemp.toInt()}°",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            val timeStr = SimpleDateFormat("h:mm a, dd MMM", Locale.getDefault()).format(Date(weather.lastUpdated))
-            Text(
-                text = "Last updated: $timeStr",
-                style = MaterialTheme.typography.bodySmall,
-                fontSize = 11.sp,
-                color = Color.White.copy(alpha = 0.7f)
-            )
-        }
-    }
-}
-
-/**
- * Coastal Alert Bento Card
- */
-@Composable
-fun BentoCoastalAlertCard(
-    weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier
-) {
-    val isAlert = weather.alertLevel != "NORMAL"
-    val badgeBg = if (isAlert) BentoRedBg else BentoGreenBg
-    val borderCol = if (isAlert) BentoRedBg else BentoBorder
-    val iconCol = if (isAlert) BentoRedText else BentoGreenText
-    val iconSymbol = if (isAlert) "⚠️" else "✅"
-
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, borderCol),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("coastal_alert_card")
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = badgeBg,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(iconSymbol, fontSize = 18.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = weather.alertTitle,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = BentoSlate900
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = weather.alertMessage,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = BentoSlate500
-                )
-            }
-        }
-    }
-}
-
-/**
- * Chandipur Tide Bento Card
- */
-@Composable
-fun BentoChandipurTideCard(
-    weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier,
-    onCheckTideSearch: () -> Unit = {}
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("chandipur_tide_card")
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = BentoBlueLight,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("🌊", fontSize = 16.sp)
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Chandipur Vanishing Sea",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = BentoSlate900
-                    )
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (weather.tideState == "LOW_TIDE") BentoBlueLight else BentoRedBg
-                ) {
-                    Text(
-                        text = weather.tideState.replace("_", " "),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = if (weather.tideState == "LOW_TIDE") BentoPrimaryBlue else BentoRedText,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = weather.tideDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = BentoSlate500
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = BentoBlueLight,
-                border = BorderStroke(1.dp, BentoBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
-                        contentDescription = null,
-                        tint = BentoPrimaryBlue,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (weather.tideState == "LOW_TIDE") {
-                            "Safe Seabed Walking: Ideal window to stroll out 1-4 km towards vanishing horizon."
-                        } else {
-                            "Lifeguard Alert: Watch water line; return towards beach promenade."
-                        },
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = BentoSlate700
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Live Marine Tide Grounding Button
-            Surface(
-                onClick = onCheckTideSearch,
-                shape = RoundedCornerShape(14.dp),
-                color = Color(0xFF4285F4).copy(alpha = 0.08f),
-                border = BorderStroke(1.5.dp, Color(0xFF4285F4).copy(alpha = 0.4f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .testTag("chandipur_tide_grounding_button")
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = Color(0xFF1A73E8),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Search Live Tide & Sea Conditions (Google Search)",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color(0xFF1A73E8)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Atmospheric & Marine Parameters Grid: 6 Bento Tiles
- */
-@Composable
-fun BentoAtmosphericMetricsCard(
-    weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = "Atmospheric & Marine Parameters",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                BentoMetricItem(
-                    icon = Icons.Default.Air,
-                    label = "Wind Speed",
-                    value = "${weather.windSpeed.toInt()} km/h",
-                    sub = "Gusts: ${weather.windGusts.toInt()} km/h",
-                    modifier = Modifier.weight(1f)
-                )
-                BentoMetricItem(
-                    icon = Icons.Default.WaterDrop,
-                    label = "Humidity",
-                    value = "${weather.humidity}%",
-                    sub = "Coastal air",
-                    modifier = Modifier.weight(1f)
-                )
-                BentoMetricItem(
-                    icon = Icons.Default.WbSunny,
-                    label = "UV Index",
-                    value = "${weather.uvIndex.toInt()}",
-                    sub = if (weather.uvIndex > 7) "Very High" else "Moderate",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                BentoMetricItem(
-                    icon = Icons.Default.WbSunny,
-                    label = "Sunrise",
-                    value = weather.sunrise,
-                    sub = "Bay horizon",
-                    modifier = Modifier.weight(1f)
-                )
-                BentoMetricItem(
-                    icon = Icons.Default.WbTwilight,
-                    label = "Sunset",
-                    value = weather.sunset,
-                    sub = "Golden hour",
-                    modifier = Modifier.weight(1f)
-                )
-                BentoMetricItem(
-                    icon = Icons.Default.Thermostat,
-                    label = "Max / Min",
-                    value = "${weather.maxTemp.toInt()}° / ${weather.minTemp.toInt()}°",
-                    sub = "Today",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun BentoMetricItem(
-    icon: ImageVector,
-    label: String,
-    value: String,
-    sub: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = BentoBlueLight,
-        border = BorderStroke(1.dp, BentoBorder),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(10.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Icon(imageVector = icon, contentDescription = null, tint = BentoPrimaryBlue, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = label, style = MaterialTheme.typography.bodySmall, fontSize = 10.sp, color = BentoSlate500)
-            Text(text = value, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = BentoSlate900)
-            Text(text = sub, style = MaterialTheme.typography.bodySmall, fontSize = 10.sp, color = BentoSlate400)
-        }
-    }
-}
-
-@Composable
-fun BentoTourismAdvisoryCard(
-    weather: WeatherCacheEntity,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = BentoBlueLight,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text("🏖️", fontSize = 16.sp)
-                    }
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "Balasore Traveler Weather Guide",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = BentoSlate900
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            BentoTravelTip(
-                spot = "Chandipur & Talasari Beach",
-                tip = "Best visiting time: 6:00 AM - 9:30 AM and after 4:00 PM when solar heat subsides."
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            BentoTravelTip(
-                spot = "Panchalingeswar & Nilagiri Hills",
-                tip = "Mountain stream has pleasant cool water. Wear sturdy non-slip footwear on forest steps."
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            BentoTravelTip(
-                spot = "Remuna & Emami Jagannath",
-                tip = "Evening aarti hours (6:00 PM – 8:00 PM) offer beautiful illuminations and cooler temperatures."
-            )
-        }
-    }
-}
-
-@Composable
-fun BentoTravelTip(spot: String, tip: String) {
-    Column {
-        Text(text = spot, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = BentoPrimaryBlue)
-        Text(text = tip, style = MaterialTheme.typography.bodySmall, color = BentoSlate500)
-    }
-}
-
-@Composable
-fun BentoDailyForecastCard(
-    forecasts: List<DailyForecastEntity>,
-    modifier: Modifier = Modifier
-) {
-    if (forecasts.isEmpty()) return
-
-    val fiveDayForecasts = remember(forecasts) { forecasts.take(5) }
-    var selectedDayIndex by remember { mutableStateOf(0) }
-    val activeItem = fiveDayForecasts.getOrNull(selectedDayIndex) ?: fiveDayForecasts.firstOrNull()
-
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("daily_forecast_card")
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = BentoBlueLight,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ShowChart,
-                                contentDescription = null,
-                                tint = BentoPrimaryBlue,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            text = "5-Day Weather Forecast",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoSlate900
-                        )
-                        Text(
-                            text = "Interactive temperature curve & activity planner",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 11.sp,
-                            color = BentoSlate500
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = BentoGreenBg
-                ) {
-                    Text(
-                        text = "5-DAY TREND",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp,
-                            fontSize = 9.sp
-                        ),
-                        color = BentoGreenText,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Chart Visualization
-            WeatherForecastChart(
-                forecasts = fiveDayForecasts,
-                selectedIndex = selectedDayIndex,
-                onSelectDay = { selectedDayIndex = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(170.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(BentoBlueLight.copy(alpha = 0.4f))
-                    .padding(horizontal = 8.dp, vertical = 10.dp)
-            )
-
-            // Selected Day Planner Detail Pill
-            if (activeItem != null) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = BentoCardWhite,
-                    border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.25f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${activeItem.dayOfWeek} Activity Planning:",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoSlate900
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = activeItem.weatherDescription,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = BentoPrimaryBlue,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                            val recommendation = when {
-                                activeItem.weatherCode in 51..67 || activeItem.weatherCode in 80..82 || activeItem.weatherCode >= 95 ->
-                                    "🌧️ Rain expected. Indoor day recommended: Visit Remuna Khirachora Gopinath or Emami Jagannath temple."
-                                activeItem.maxTemp >= 34.0 ->
-                                    "☀️ Hot afternoon (${activeItem.maxTemp.toInt()}°C). Best visiting Chandipur / Talasari beach early morning or after 4 PM."
-                                else ->
-                                    "🌤️ Pleasant coastal weather (${activeItem.maxTemp.toInt()}°C)! Ideal for Panchalingeswar hill trek or beach strolls."
-                            }
-                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = recommendation,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 11.sp,
-                                color = BentoSlate700
+                                text = "Balasore City & Coast",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପାଣିପାଗ ସୂଚନା" else "Bay of Bengal Coastal Zone",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.Cloud,
+                            contentDescription = "Weather",
+                            tint = Color.White,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = "${weather.tempCelsius}°",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 56.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White,
+                                lineHeight = 56.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                            Text(
+                                text = weather.condition,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "H: ${weather.highLow}",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
                             )
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 5-Day Horizontal Selection Cards
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(fiveDayForecasts.size) { index ->
-                    val item = fiveDayForecasts[index]
-                    DailyForecastItem(
-                        item = item,
-                        isSelected = index == selectedDayIndex,
-                        onClick = { selectedDayIndex = index }
-                    )
-                }
-            }
         }
-    }
-}
 
-/**
- * Clean visual line and area chart showing 5-day Max and Min temperatures
- * with smooth bezier curves, gradient fills, and data points.
- */
-@Composable
-fun WeatherForecastChart(
-    forecasts: List<DailyForecastEntity>,
-    selectedIndex: Int,
-    onSelectDay: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (forecasts.isEmpty()) return
-
-    val maxTemps = remember(forecasts) { forecasts.map { it.maxTemp.toFloat() } }
-    val minTemps = remember(forecasts) { forecasts.map { it.minTemp.toFloat() } }
-
-    val highest = remember(maxTemps) { (maxTemps.maxOrNull() ?: 35f) + 2f }
-    val lowest = remember(minTemps) { (minTemps.minOrNull() ?: 20f) - 2f }
-    val tempRange = (highest - lowest).coerceAtLeast(1f)
-
-    Box(
-        modifier = modifier.testTag("forecast_temperature_chart")
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
-            val n = forecasts.size
-            if (n < 2) return@Canvas
-
-            val stepX = width / (n - 1)
-            val paddingY = 24.dp.toPx()
-            val availableHeight = height - (paddingY * 2)
-
-            fun getY(temp: Float): Float {
-                val ratio = (temp - lowest) / tempRange
-                return height - paddingY - (ratio * availableHeight)
-            }
-
-            // Draw horizontal subtle grid guidelines
-            val gridLines = 3
-            for (i in 0..gridLines) {
-                val lineY = paddingY + (i * availableHeight / gridLines)
-                drawLine(
-                    color = Color.Black.copy(alpha = 0.05f),
-                    start = Offset(0f, lineY),
-                    end = Offset(width, lineY),
-                    strokeWidth = 1.dp.toPx()
-                )
-            }
-
-            // Generate Path for Max Temps Area and Line
-            val maxPath = Path()
-            val maxAreaPath = Path()
-            val maxPoints = mutableListOf<Offset>()
-
-            for (i in 0 until n) {
-                val x = i * stepX
-                val y = getY(maxTemps[i])
-                val pt = Offset(x, y)
-                maxPoints.add(pt)
-
-                if (i == 0) {
-                    maxPath.moveTo(pt.x, pt.y)
-                    maxAreaPath.moveTo(pt.x, height)
-                    maxAreaPath.lineTo(pt.x, pt.y)
-                } else {
-                    val prev = maxPoints[i - 1]
-                    val cx = (prev.x + pt.x) / 2f
-                    maxPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
-                    maxAreaPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
-                }
-            }
-            maxAreaPath.lineTo(maxPoints.last().x, height)
-            maxAreaPath.close()
-
-            // Draw Max Temp subtle gradient fill
-            drawPath(
-                path = maxAreaPath,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        BentoPrimaryBlue.copy(alpha = 0.28f),
-                        BentoPrimaryBlue.copy(alpha = 0.02f)
-                    )
-                ),
-                style = Fill
-            )
-
-            // Draw Max Temp Line
-            drawPath(
-                path = maxPath,
-                color = BentoPrimaryBlue,
-                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-            )
-
-            // Generate Path for Min Temps Line
-            val minPath = Path()
-            val minPoints = mutableListOf<Offset>()
-
-            for (i in 0 until n) {
-                val x = i * stepX
-                val y = getY(minTemps[i])
-                val pt = Offset(x, y)
-                minPoints.add(pt)
-
-                if (i == 0) {
-                    minPath.moveTo(pt.x, pt.y)
-                } else {
-                    val prev = minPoints[i - 1]
-                    val cx = (prev.x + pt.x) / 2f
-                    minPath.cubicTo(cx, prev.y, cx, pt.y, pt.x, pt.y)
-                }
-            }
-
-            // Draw Min Temp Line (Cool Cyan)
-            drawPath(
-                path = minPath,
-                color = Color(0xFF0284C7),
-                style = Stroke(
-                    width = 2.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-            )
-
-            // Draw points and labels
-            for (i in 0 until n) {
-                val maxPt = maxPoints[i]
-                val minPt = minPoints[i]
-                val isSelected = i == selectedIndex
-
-                // Highlight selected column indicator
-                if (isSelected) {
-                    drawLine(
-                        color = BentoPrimaryBlue.copy(alpha = 0.35f),
-                        start = Offset(maxPt.x, 0f),
-                        end = Offset(maxPt.x, height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-
-                // Max Temp Point
-                drawCircle(
-                    color = if (isSelected) Color(0xFFEA580C) else BentoPrimaryBlue,
-                    radius = if (isSelected) 6.dp.toPx() else 4.dp.toPx(),
-                    center = maxPt
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = if (isSelected) 3.dp.toPx() else 2.dp.toPx(),
-                    center = maxPt
-                )
-
-                // Min Temp Point
-                drawCircle(
-                    color = Color(0xFF0284C7),
-                    radius = if (isSelected) 5.dp.toPx() else 3.5.dp.toPx(),
-                    center = minPt
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = if (isSelected) 2.5.dp.toPx() else 1.8.dp.toPx(),
-                    center = minPt
-                )
-
-                // Draw Text labels via nativeCanvas
-                drawContext.canvas.nativeCanvas.apply {
-                    val textPaint = android.graphics.Paint().apply {
-                        color = android.graphics.Color.DKGRAY
-                        textSize = 28f
-                        textAlign = android.graphics.Paint.Align.CENTER
-                        isAntiAlias = true
-                        typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+        // Chandipur Vanishing Tide Telemetry Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("tide_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFDCFCE7)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Water,
+                            contentDescription = "Tide",
+                            tint = EmeraldGreen,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
 
-                    // Max temp text above point
-                    textPaint.color = if (isSelected) android.graphics.Color.parseColor("#EA580C") else android.graphics.Color.parseColor("#1D4ED8")
-                    drawText("${maxTemps[i].toInt()}°", maxPt.x, maxPt.y - 12f, textPaint)
+                    Spacer(modifier = Modifier.width(14.dp))
 
-                    // Min temp text below point
-                    textPaint.textSize = 24f
-                    textPaint.color = android.graphics.Color.parseColor("#0284C7")
-                    drawText("${minTemps[i].toInt()}°", minPt.x, minPt.y + 30f, textPaint)
+                    Column {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ଜୁଆର-ଭଟ୍ଟା ସ୍ଥିତି" else "Chandipur Tide Telemetry",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF166534)
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = weather.tideStatus,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color(0xFF15803D),
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                        Text(
+                            text = "Walk safe on the sea bed while the water recedes up to 5 km",
+                            style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFF16A34A))
+                        )
+                    }
                 }
             }
         }
 
-        // Invisible touch targets for selecting days on the chart
-        Row(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            for (i in 0 until forecasts.size) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .clickable { onSelectDay(i) }
-                )
+        // Marine Safety & Cyclone Watch
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, BentoSlate100)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସମୁଦ୍ର କୂଳ ନିରାପତ୍ତା ସୂଚନା" else "Coastal Sea Conditions",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFDCFCE7))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Safe",
+                                tint = EmeraldGreen,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "NORMAL",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = weather.seaCondition,
+                        style = MaterialTheme.typography.bodyMedium.copy(color = BentoSlate700)
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        WeatherMetricItem(
+                            icon = Icons.Default.Air,
+                            label = "Wind",
+                            value = weather.windSpeedKmh
+                        )
+                        WeatherMetricItem(
+                            icon = Icons.Default.Water,
+                            label = "Humidity",
+                            value = weather.humidity
+                        )
+                        WeatherMetricItem(
+                            icon = Icons.Default.WbSunny,
+                            label = "UV Index",
+                            value = "Moderate (5)"
+                        )
+                    }
+                }
             }
+        }
+
+        // AdMob Banner Placement in Weather
+        item {
+            AdMobBannerCard(
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
 
 @Composable
-private fun DailyForecastItem(
-    item: DailyForecastEntity,
-    isSelected: Boolean = false,
-    onClick: () -> Unit = {}
+fun WeatherMetricItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
 ) {
-    val iconEmoji = when {
-        item.weatherCode in 0..1 -> "☀️"
-        item.weatherCode in 2..3 -> "⛅"
-        item.weatherCode in 45..48 -> "🌫️"
-        item.weatherCode in 51..67 -> "🌧️"
-        item.weatherCode in 80..82 -> "🌦️"
-        item.weatherCode >= 95 -> "⛈️"
-        else -> "🌤️"
-    }
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) BentoPrimaryBlue.copy(alpha = 0.12f) else BentoBlueLight.copy(alpha = 0.6f),
-        border = BorderStroke(
-            if (isSelected) 1.5.dp else 1.dp,
-            if (isSelected) BentoPrimaryBlue else BentoBorder
-        ),
-        modifier = Modifier
-            .width(96.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() }
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = item.dayOfWeek,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = if (isSelected) BentoPrimaryBlue else BentoSlate900
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = OceanBlue,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = BentoSlate800
             )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = iconEmoji,
-                fontSize = 24.sp
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "${item.maxTemp.toInt()}° / ${item.minTemp.toInt()}°",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = BentoPrimaryBlue
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = item.weatherDescription,
-                style = MaterialTheme.typography.bodySmall,
-                fontSize = 9.sp,
-                color = BentoSlate500,
-                maxLines = 1
-            )
-        }
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+        )
     }
 }

@@ -3,16 +3,11 @@ package com.example.ui.screens
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,1109 +18,226 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.BeachAccess
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DirectionsBoat
-import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Museum
-import androidx.compose.material.icons.filled.NearMe
-import androidx.compose.material.icons.filled.Park
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ViewAgenda
-import androidx.compose.material.icons.filled.WbSunny
-import com.example.ui.components.FilterChipGroup
-import com.example.ui.components.FilterChipItem
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.ui.components.SearchEmptyStateCard
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.R
-import com.example.data.local.HotspotEntity
-import com.example.data.local.ReviewEntity
-import com.example.data.local.UserEntity
-import com.example.data.local.WeatherCacheEntity
-import com.example.ui.components.CategoryChip
-import com.example.ui.components.ReviewsSection
-import com.example.ui.util.AppLanguage
-import kotlinx.coroutines.flow.Flow
-import com.example.ui.theme.BentoAmberBg
-import com.example.ui.theme.BentoAmberText
-import com.example.ui.theme.BentoBlueLight
-import com.example.ui.theme.BentoBluePill
-import com.example.ui.theme.BentoBorder
-import com.example.ui.theme.BentoCardWhite
-import com.example.ui.theme.BentoDarkTile
-import com.example.ui.theme.BentoPrimaryBlue
-import com.example.ui.theme.BentoRedBg
-import com.example.ui.theme.BentoRedText
+import com.example.data.model.AppLanguage
+import com.example.data.model.Hotspot
+import com.example.ui.components.AdMobBannerCard
+import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BentoSlate100
+import com.example.ui.theme.BentoSlate200
 import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate700
+import com.example.ui.theme.BentoSlate800
 import com.example.ui.theme.BentoSlate900
-import com.example.ui.components.BalasoreSocialHubCard
-import com.example.ui.components.FriendlyEmptyStateCard
-import com.example.ui.components.FriendlyEmptyStateType
-import com.example.ui.components.SearchEmptyStateCard
-import com.example.ui.components.HotspotGridCardSkeleton
-import com.example.ui.components.HotspotListCardSkeleton
-import com.example.ui.components.BentoTopGridSkeleton
-import com.example.ui.components.BentoHeroSkeleton
-import com.example.ui.components.ShimmerSyncBanner
-import com.example.ui.components.OfflineConnectionBanner
+import com.example.ui.theme.OceanBlue
+import com.example.ui.theme.OceanBlueDark
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TourismScreen(
-    hotspots: List<HotspotEntity>,
-    weather: WeatherCacheEntity? = null,
+    hotspots: List<Hotspot>,
     selectedCategory: String,
-    selectedHotspot: HotspotEntity?,
-    isMapMode: Boolean = false,
-    currentUser: UserEntity? = null,
-    isRefreshing: Boolean = false,
-    onRefresh: () -> Unit = {},
-    onToggleMapMode: () -> Unit = {},
-    onOpenAuth: () -> Unit = {},
-    getReviewsForHotspot: (String) -> Flow<List<ReviewEntity>> = { kotlinx.coroutines.flow.emptyFlow() },
-    onSubmitHotspotReview: (hotspotId: String, hotspotName: String, rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _, _, _ -> },
-    onCategorySelect: (String) -> Unit,
-    onHotspotSelect: (HotspotEntity?) -> Unit,
-    onToggleFavorite: (HotspotEntity) -> Unit,
-    onExploreWithMaps: (HotspotEntity) -> Unit = {},
-    searchQuery: String = "",
-    onSearchQueryChange: (String) -> Unit = {},
-    isOnline: Boolean = true,
-    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    searchQuery: String,
+    language: AppLanguage,
+    favoriteIds: Set<String>,
+    onCategorySelected: (String) -> Unit,
+    onSearchChanged: (String) -> Unit,
+    onToggleFavorite: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port", "Favorites")
-    val tourismFilterChips = remember(selectedLanguage) {
-        listOf(
-            FilterChipItem(id = "All", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ସମସ୍ତ"
-                AppLanguage.HINDI -> "सभी"
-                AppLanguage.ENGLISH -> "All"
-            }, icon = Icons.Default.Explore),
-            FilterChipItem(id = "Beach", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ବେଳାଭୂମି"
-                AppLanguage.HINDI -> "समुद्र तट"
-                AppLanguage.ENGLISH -> "Beach"
-            }, icon = Icons.Default.BeachAccess),
-            FilterChipItem(id = "Temple", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ମନ୍ଦିର"
-                AppLanguage.HINDI -> "मंदिर"
-                AppLanguage.ENGLISH -> "Temple"
-            }, icon = Icons.Default.Place),
-            FilterChipItem(id = "Wildlife", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ବନ୍ୟପ୍ରାଣୀ"
-                AppLanguage.HINDI -> "वन्यजीव"
-                AppLanguage.ENGLISH -> "Wildlife"
-            }, icon = Icons.Default.Park),
-            FilterChipItem(id = "Heritage", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ଐତିହ୍ୟ"
-                AppLanguage.HINDI -> "धरोहर"
-                AppLanguage.ENGLISH -> "Heritage"
-            }, icon = Icons.Default.Museum),
-            FilterChipItem(id = "Port", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ବନ୍ଦର"
-                AppLanguage.HINDI -> "बंदरगाह"
-                AppLanguage.ENGLISH -> "Port"
-            }, icon = Icons.Default.DirectionsBoat),
-            FilterChipItem(id = "Favorites", label = when (selectedLanguage) {
-                AppLanguage.ODIA -> "ପସନ୍ଦିତା"
-                AppLanguage.HINDI -> "पसंदीदा"
-                AppLanguage.ENGLISH -> "Favorites"
-            }, icon = Icons.Default.Favorite)
-        )
+    val context = LocalContext.current
+    val categories = listOf("All", "Beach & Coast", "Heritage & Spiritual", "Nature & Pilgrimage", "Eco-Tourism")
+
+    val filteredHotspots = hotspots.filter { hotspot ->
+        (selectedCategory == "All" || hotspot.category == selectedCategory) &&
+        (searchQuery.isBlank() || hotspot.name.contains(searchQuery, ignoreCase = true) || hotspot.odiaName.contains(searchQuery, ignoreCase = true))
     }
-    var isGridView by remember { mutableStateOf(true) }
-    var mapPreviewHotspot by remember { mutableStateOf<HotspotEntity?>(null) }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        if (isMapMode) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Top switcher bar for Map Mode
-                Surface(
-                    color = BentoCardWhite,
-                    border = BorderStroke(1.dp, BentoBorder),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Interactive Hotspots Map",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BentoSlate900
-                            )
-                            Text(
-                                text = "Tap markers to explore & navigate",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BentoSlate500
-                            )
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = BentoBlueLight,
-                            border = BorderStroke(1.dp, BentoBorder),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable(onClick = onToggleMapMode)
-                                .testTag("toggle_list_view_button")
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ViewAgenda,
-                                    contentDescription = "List View",
-                                    tint = BentoPrimaryBlue,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "List View",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoPrimaryBlue
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Interactive Filter Chip Group for Map Mode
-                FilterChipGroup(
-                    chips = tourismFilterChips,
-                    selectedId = selectedCategory,
-                    onSelect = onCategorySelect,
-                    testTagPrefix = "map_tourism_filter_chip",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("tourism_category_chips_map")
-                )
-
-                HotspotsMapView(
-                    hotspots = hotspots,
-                    selectedHotspot = mapPreviewHotspot,
-                    onSelectHotspot = { mapPreviewHotspot = it },
-                    onViewHotspotDetails = { onHotspotSelect(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-            }
-        } else if (isGridView) {
-            // Interactive Tourism Hotspot Gallery using LazyVerticalGrid with descriptive text overlays
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag("tourism_hotspot_gallery_grid"),
-                contentPadding = PaddingValues(bottom = 90.dp)
-            ) {
-                // If searching, show an active search status banner; otherwise show Bento Hero cluster
-                if (searchQuery.isNotBlank()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = BentoBlueLight,
-                            border = BorderStroke(1.dp, BentoBorder),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Filtering spots for \"$searchQuery\"",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoPrimaryBlue
-                                )
-                                Text(
-                                    text = "${hotspots.size} spots found",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoSlate700
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (weather == null && isRefreshing) {
-                            BentoTopGridSkeleton()
-                        } else {
-                            BentoTopGrid(
-                                weather = weather,
-                                onAlertClick = {
-                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                    if (chandipur != null) onHotspotSelect(chandipur)
-                                }
-                            )
-                        }
-                    }
-
-                    // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (isRefreshing && hotspots.isEmpty()) {
-                            BentoHeroSkeleton()
-                        } else {
-                            BentoTourismHeroTile(
-                                onExplore = {
-                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                    if (chandipur != null) onHotspotSelect(chandipur)
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Category Filter Chips
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    FilterChipGroup(
-                        chips = tourismFilterChips,
-                        selectedId = selectedCategory,
-                        onSelect = onCategorySelect,
-                        testTagPrefix = "tourism_filter_chip",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("tourism_category_chips")
-                    )
-                }
-
-                // Section Title with View Switcher (Grid / List / Map)
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = if (selectedCategory == "All") "Scenic Hotspots Gallery" else "$selectedCategory Hotspots",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = BentoSlate900
-                                )
-                            )
-                            Text(
-                                text = "${hotspots.size} destinations in Balasore",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BentoSlate500
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            // Grid / List Toggle Button
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = BentoBlueLight,
-                                border = BorderStroke(1.dp, BentoBorder),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { isGridView = false }
-                                    .testTag("hotspot_view_mode_toggle")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ViewAgenda,
-                                        contentDescription = "Switch to List View",
-                                        tint = BentoPrimaryBlue,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "List",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-                            }
-
-                            // Map View Switcher Button
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = BentoBlueLight,
-                                border = BorderStroke(1.dp, BentoBorder),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable(onClick = onToggleMapMode)
-                                    .testTag("hotspot_map_view_toggle")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Map,
-                                        contentDescription = "Interactive Map",
-                                        tint = BentoPrimaryBlue,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Map",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Hotspots in LazyVerticalGrid
-                if (isRefreshing && hotspots.isEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        ShimmerSyncBanner(
-                            message = "Fetching Balasore coastal destinations & tides...",
-                            odiaMessage = "ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
-                        )
-                    }
-                    items(6) {
-                        Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
-                            HotspotGridCardSkeleton()
-                        }
-                    }
-                } else if (hotspots.isEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (!isOnline) {
-                            FriendlyEmptyStateCard(
-                                type = FriendlyEmptyStateType.OFFLINE_NO_INTERNET,
-                                title = "You're Browsing Offline",
-                                odiaTitle = "ଆପଣ ଅଫଲାଇନ ଅଛନ୍ତି (ଇଣ୍ଟରନେଟ ସଂଯୋଗ ନାହିଁ)",
-                                subtitle = "Tourism destinations have not yet downloaded to your device. Connect to Wi-Fi or mobile data to fetch the latest Balasore hotspots.",
-                                actionButtonText = "Retry Connection",
-                                isActionLoading = isRefreshing,
-                                onActionClick = onRefresh,
-                                tipsList = listOf(
-                                    "Chandipur beach coordinates and emergency contacts are cached in Room for offline access.",
-                                    "Once loaded, all Balasore hotspots remain accessible without internet."
-                                ),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        } else if (searchQuery.isNotBlank()) {
-                            SearchEmptyStateCard(
-                                searchQuery = searchQuery,
-                                category = selectedCategory,
-                                feedType = "Tourism Hotspots",
-                                onClearSearch = { onSearchQueryChange("") },
-                                onResetCategory = { onCategorySelect("All") },
-                                onSuggestionClick = { onSearchQueryChange(it) },
-                                suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
-                            )
-                        } else {
-                            FriendlyEmptyStateCard(
-                                type = FriendlyEmptyStateType.TOURISM_EMPTY,
-                                title = if (selectedCategory == "Favorites") "No Favorite Spots Yet" else "No Hotspots Found",
-                                odiaTitle = if (selectedCategory == "Favorites") "କୌଣସି ପ୍ରିୟ ସ୍ଥାନ ସାଇତା ହୋଇନାହିଁ" else "କୌଣସି ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ମିଳିଲା ନାହିଁ",
-                                subtitle = if (selectedCategory == "Favorites") {
-                                    "Tap the heart icon on any scenic Balasore attraction to keep it in your personal travel wishlist."
-                                } else {
-                                    "No destinations listed under \"$selectedCategory\". Tap Show All to explore all Balasore coastal and temple sites."
-                                },
-                                actionButtonText = if (selectedCategory != "All") "Show All Hotspots" else null,
-                                onActionClick = { onCategorySelect("All") },
-                                tipsList = listOf(
-                                    "Balasore boasts unique receding tide beaches and 10th-century historical monuments.",
-                                    "Hotspot GPS coordinates and visiting tips are saved locally for offline exploring."
-                                ),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                } else {
-                    if (!isOnline) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                OfflineConnectionBanner(
-                                    isOnline = false,
-                                    isRetrying = isRefreshing,
-                                    onRetry = onRefresh
-                                )
-                            }
-                        }
-                    }
-                    if (isRefreshing) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            ShimmerSyncBanner(
-                                message = "Syncing latest Balasore destinations & marine data...",
-                                odiaMessage = "ସର୍ବଶେଷ ପର୍ଯ୍ୟଟନ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
-                            )
-                        }
-                    }
-                    items(hotspots, key = { it.id }) { hotspot ->
-                        Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
-                            HotspotBentoGridCard(
-                                hotspot = hotspot,
-                                onClick = { onHotspotSelect(hotspot) },
-                                onToggleFavorite = { onToggleFavorite(hotspot) },
-                                selectedLanguage = selectedLanguage
-                            )
-                        }
-                    }
-
-                    // Official Balasore 360 Social Media Hub
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        BalasoreSocialHubCard(
-                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
-                        )
-                    }
-                }
-            }
-        } else {
-            // List View using LazyColumn
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 90.dp)
-            ) {
-                // If searching, show an active search status banner; otherwise show Bento Hero cluster
-                if (searchQuery.isNotBlank()) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = BentoBlueLight,
-                            border = BorderStroke(1.dp, BentoBorder),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Filtering spots for \"$searchQuery\"",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoPrimaryBlue
-                                )
-                                Text(
-                                    text = "${hotspots.size} spots found",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = BentoSlate700
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    // Bento Grid Top Cluster (Weather Card + Alert + Petrol/Tide Cards)
-                    item {
-                        if (weather == null && isRefreshing) {
-                            BentoTopGridSkeleton()
-                        } else {
-                            BentoTopGrid(
-                                weather = weather,
-                                onAlertClick = {
-                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                    if (chandipur != null) onHotspotSelect(chandipur)
-                                }
-                            )
-                        }
-                    }
-
-                    // Hero Bento Tile (Dark #1A1C1E card with Chandipur Beach)
-                    item {
-                        if (isRefreshing && hotspots.isEmpty()) {
-                            BentoHeroSkeleton()
-                        } else {
-                            BentoTourismHeroTile(
-                                onExplore = {
-                                    val chandipur = hotspots.find { it.id == "chandipur_beach" }
-                                    if (chandipur != null) onHotspotSelect(chandipur)
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Category Filter Chips
-                item {
-                    FilterChipGroup(
-                        chips = tourismFilterChips,
-                        selectedId = selectedCategory,
-                        onSelect = onCategorySelect,
-                        testTagPrefix = "tourism_filter_chip",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("tourism_category_chips")
-                    )
-                }
-
-                // Section Title with View Switcher (Grid / List / Map)
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = if (selectedCategory == "All") "Popular Destinations" else "$selectedCategory Hotspots",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = BentoSlate900
-                                )
-                            )
-                            Text(
-                                text = "${hotspots.size} locations",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BentoSlate500
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            // Grid / List Toggle Button
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = BentoCardWhite,
-                                border = BorderStroke(1.dp, BentoBorder),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { isGridView = true }
-                                    .testTag("hotspot_view_mode_toggle")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.GridView,
-                                        contentDescription = "Switch to Grid View",
-                                        tint = BentoPrimaryBlue,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Grid",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-                            }
-
-                            // Map View Switcher Button
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = BentoBlueLight,
-                                border = BorderStroke(1.dp, BentoBorder),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable(onClick = onToggleMapMode)
-                                    .testTag("hotspot_map_view_toggle")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Map,
-                                        contentDescription = "Interactive Map",
-                                        tint = BentoPrimaryBlue,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Map",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = BentoPrimaryBlue
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Hotspots Bento Cards List
-                if (isRefreshing && hotspots.isEmpty()) {
-                    item {
-                        ShimmerSyncBanner(
-                            message = "Fetching Balasore coastal destinations & tides...",
-                            odiaMessage = "ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
-                        )
-                    }
-                    items(5) {
-                        HotspotListCardSkeleton()
-                    }
-                } else if (hotspots.isEmpty()) {
-                    item {
-                        if (!isOnline) {
-                            FriendlyEmptyStateCard(
-                                type = FriendlyEmptyStateType.OFFLINE_NO_INTERNET,
-                                title = "You're Browsing Offline",
-                                odiaTitle = "ଆପଣ ଅଫଲାଇନ ଅଛନ୍ତି (ଇଣ୍ଟରନେଟ ସଂଯୋଗ ନାହିଁ)",
-                                subtitle = "Tourism destinations have not yet downloaded to your device. Connect to Wi-Fi or mobile data to fetch the latest Balasore hotspots.",
-                                actionButtonText = "Retry Connection",
-                                isActionLoading = isRefreshing,
-                                onActionClick = onRefresh,
-                                tipsList = listOf(
-                                    "Chandipur beach coordinates and emergency contacts are cached in Room for offline access.",
-                                    "Once loaded, all Balasore hotspots remain accessible without internet."
-                                ),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        } else if (searchQuery.isNotBlank()) {
-                            SearchEmptyStateCard(
-                                searchQuery = searchQuery,
-                                category = selectedCategory,
-                                feedType = "Tourism Hotspots",
-                                onClearSearch = { onSearchQueryChange("") },
-                                onResetCategory = { onCategorySelect("All") },
-                                onSuggestionClick = { onSearchQueryChange(it) },
-                                suggestions = listOf("Chandipur", "Khirachora", "Kuldiha", "Talasari", "Panchalingeswar")
-                            )
-                        } else {
-                            FriendlyEmptyStateCard(
-                                type = FriendlyEmptyStateType.TOURISM_EMPTY,
-                                title = if (selectedCategory == "Favorites") "No Favorite Spots Yet" else "No Hotspots Found",
-                                odiaTitle = if (selectedCategory == "Favorites") "କୌଣସି ପ୍ରିୟ ସ୍ଥାନ ସାଇତା ହୋଇନାହିଁ" else "କୌଣସି ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ମିଳିଲା ନାହିଁ",
-                                subtitle = if (selectedCategory == "Favorites") {
-                                    "Tap the heart icon on any scenic Balasore attraction to keep it in your personal travel wishlist."
-                                } else {
-                                    "No destinations listed under \"$selectedCategory\". Tap Show All to explore all Balasore coastal and temple sites."
-                                },
-                                actionButtonText = if (selectedCategory != "All") "Show All Hotspots" else null,
-                                onActionClick = { onCategorySelect("All") },
-                                tipsList = listOf(
-                                    "Balasore boasts unique receding tide beaches and 10th-century historical monuments.",
-                                    "Hotspot GPS coordinates and visiting tips are saved locally for offline exploring."
-                                ),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                } else {
-                    if (!isOnline) {
-                        item {
-                            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                                OfflineConnectionBanner(
-                                    isOnline = false,
-                                    isRetrying = isRefreshing,
-                                    onRetry = onRefresh
-                                )
-                            }
-                        }
-                    }
-                    if (isRefreshing) {
-                        item {
-                            ShimmerSyncBanner(
-                                message = "Syncing latest Balasore destinations & marine data...",
-                                odiaMessage = "ସର୍ବଶେଷ ପର୍ଯ୍ୟଟନ ତଥ୍ୟ ଅଦ୍ୟତନ ହେଉଛି..."
-                            )
-                        }
-                    }
-                    items(hotspots, key = { it.id }) { hotspot ->
-                        HotspotBentoCard(
-                            hotspot = hotspot,
-                            onClick = { onHotspotSelect(hotspot) },
-                            onToggleFavorite = { onToggleFavorite(hotspot) },
-                            selectedLanguage = selectedLanguage
-                        )
-                    }
-
-                    // Official Balasore 360 Social Media Hub
-                    item {
-                        BalasoreSocialHubCard(
-                            modifier = Modifier.padding(top = 10.dp, bottom = 20.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Detail Bottom Sheet
-        if (selectedHotspot != null) {
-            HotspotDetailSheet(
-                hotspot = selectedHotspot,
-                currentUser = currentUser,
-                reviewsFlow = getReviewsForHotspot(selectedHotspot.id),
-                onOpenAuth = onOpenAuth,
-                onSubmitReview = { rating, comment, guestName ->
-                    onSubmitHotspotReview(selectedHotspot.id, selectedHotspot.name, rating, comment, guestName)
-                },
-                onDismiss = { onHotspotSelect(null) },
-                onToggleFavorite = { onToggleFavorite(selectedHotspot) },
-                onExploreWithMaps = { onExploreWithMaps(selectedHotspot) },
-                selectedLanguage = selectedLanguage
-            )
-        }
-    }
-}
-
-/**
- * Bento Grid Top Row: Asymmetric 2-column layout matching the design HTML
- * Left: Blue Weather Card
- * Right: Stack of Alert Card and Petrol/Tide Card
- */
-@Composable
-fun BentoTopGrid(
-    weather: WeatherCacheEntity?,
-    onAlertClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
+    LazyColumn(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .height(IntrinsicSize.Min),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+            .fillMaxSize()
+            .testTag("tourism_screen_list"),
+        contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        // Left Bento Tile: Blue Weather Card (row-span-2)
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = BentoPrimaryBlue),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxSize()
-                .testTag("bento_weather_card")
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(
-                        text = "☀️",
-                        fontSize = 28.sp
-                    )
-                    Text(
-                        text = "WEATHER",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
-                            fontSize = 10.sp
-                        ),
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = if (weather != null) "${weather.temperature.toInt()}°" else "32°",
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontWeight = FontWeight.Light,
-                            fontSize = 38.sp
-                        ),
-                        color = Color.White
-                    )
-                    Text(
-                        text = if (weather != null) "${weather.weatherDescription} • ${weather.humidity}% hum" else "Clear Skies • 14:00",
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                        color = Color.White.copy(alpha = 0.9f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-
-        // Right Column: Stack of 2 Bento mini cards
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            // Alert Mini Tile
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-                border = BorderStroke(1.dp, BentoBorder),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clickable(onClick = onAlertClick)
-                    .testTag("bento_alert_card")
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = BentoRedBg,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("⚠️", fontSize = 16.sp)
-                        }
-                    }
-                    Column {
-                        Text(
-                            text = "Alert",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoSlate900
-                        )
-                        Text(
-                            text = if (weather != null && weather.alertLevel != "NORMAL") "Coastal Alert" else "Tide Warning",
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                            color = BentoSlate500,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-
-            // Petrol / District Indicator Mini Tile
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-                border = BorderStroke(1.dp, BentoBorder),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .testTag("bento_petrol_card")
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = BentoAmberBg,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("⛽", fontSize = 16.sp)
-                        }
-                    }
-                    Column {
-                        Text(
-                            text = "Petrol",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoSlate900
-                        )
-                        Text(
-                            text = "₹103.4/L",
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                            color = BentoSlate500
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Hero Bento Tile (col-span-2 row-span-2 bg-[#1A1C1E] rounded-3xl)
- */
-@Composable
-fun BentoTourismHeroTile(
-    onExplore: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoDarkTile),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .height(210.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = R.drawable.img_chandipur_beach),
-                contentDescription = "Chandipur Beach",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // Gradient from-black/80 to-transparent
+        // Hero Header Card
+        item {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(20.dp))
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.2f),
-                                Color.Black.copy(alpha = 0.85f)
-                            )
+                            listOf(OceanBlueDark, OceanBlue)
                         )
                     )
-            )
-
-            // Top Right Glassmorphic Pill Badge
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = Color.White.copy(alpha = 0.15f),
-                border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.25f)),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(14.dp)
+                    .padding(20.dp)
             ) {
-                Text(
-                    text = "TOURISM",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        fontSize = 10.sp
-                    ),
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
-
-            // Bottom Content
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(18.dp)
-            ) {
-                Text(
-                    text = "Chandipur Beach",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
-                    color = Color.White
-                )
-                Text(
-                    text = "The Vanishing Sea • 16 km from Balasore",
-                    style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-                    color = Color(0xFFCBD5E1)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Button(
-                    onClick = onExplore,
-                    colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                    modifier = Modifier.height(34.dp)
-                ) {
+                Column {
                     Text(
-                        text = "Explore Hub",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପରିଦର୍ଶନ" else "Discover Balasore",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (language == AppLanguage.ODIA)
+                            "ଚାନ୍ଦିପୁର ବେଳାଭୂମି, କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ଓ କୁଲଡିହା ଅଭୟାରଣ୍ୟ"
+                        else
+                            "From vanishing sea tides to 12th-century Kalinga temples & wildlife reserves",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
                     )
                 }
             }
         }
+
+        // Search Bar
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchChanged,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .testTag("tourism_search_input"),
+                placeholder = {
+                    Text(
+                        text = if (language == AppLanguage.ODIA) "ସ୍ଥାନ ଖୋଜନ୍ତୁ..." else "Search attractions, temples, beaches...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BentoSlate400
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = OceanBlue
+                    )
+                },
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = OceanBlue,
+                    unfocusedBorderColor = BentoSlate200,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                singleLine = true
+            )
+        }
+
+        // Category Filter Chips
+        item {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories) { category ->
+                    val isSelected = category == selectedCategory
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onCategorySelected(category) },
+                        label = {
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OceanBlue,
+                            selectedLabelColor = Color.White,
+                            containerColor = BentoSlate100,
+                            labelColor = BentoSlate700
+                        ),
+                        border = null,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                }
+            }
+        }
+
+        // Hotspots List
+        items(filteredHotspots, key = { it.id }) { spot ->
+            HotspotCard(
+                hotspot = spot,
+                language = language,
+                isFavorite = favoriteIds.contains(spot.id),
+                onToggleFavorite = { onToggleFavorite(spot.id) },
+                onGetDirections = {
+                    val uri = Uri.parse("geo:0,0?q=${Uri.encode("${spot.name}, Balasore, Odisha")}")
+                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+                    context.startActivity(mapIntent)
+                }
+            )
+        }
+
+        // AdMob Banner Placement inside tourism feed
+        item {
+            AdMobBannerCard(
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }
 
-/**
- * Hotspot Card in Bento Grid Styling: rounded-3xl, subtle border, white surface
- */
 @Composable
-fun HotspotBentoCard(
-    hotspot: HotspotEntity,
-    onClick: () -> Unit,
+fun HotspotCard(
+    hotspot: Hotspot,
+    language: AppLanguage,
+    isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
-    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    onGetDirections: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val primaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
-        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
-        AppLanguage.ENGLISH -> hotspot.name
-    }
-    val secondaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> hotspot.name
-        AppLanguage.HINDI -> hotspot.name
-        AppLanguage.ENGLISH -> hotspot.odiaName
-    }
     Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable(onClick = onClick)
-            .testTag("hotspot_card_${hotspot.id}")
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .testTag("hotspot_card_${hotspot.id}"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BentoSlate100)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -1135,24 +247,27 @@ fun HotspotBentoCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = primaryName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = BentoSlate900
+                        text = if (language == AppLanguage.ODIA) hotspot.odiaName else hotspot.name,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = BentoSlate900
+                        )
                     )
-                    Text(
-                        text = secondaryName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = BentoPrimaryBlue
-                    )
+                    if (language != AppLanguage.ODIA) {
+                        Text(
+                            text = hotspot.odiaName,
+                            style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                        )
+                    }
                 }
                 IconButton(
                     onClick = onToggleFavorite,
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
-                        imageVector = if (hotspot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (hotspot.isFavorite) BentoRedText else BentoSlate400
+                        tint = if (isFavorite) Color.Red else BentoSlate400
                     )
                 }
             }
@@ -1160,635 +275,86 @@ fun HotspotBentoCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = hotspot.shortDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = BentoSlate500,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                text = hotspot.description,
+                style = MaterialTheme.typography.bodyMedium.copy(color = BentoSlate700, lineHeight = 20.sp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = BentoBlueLight
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Rating Badge
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(AmberGold.copy(alpha = 0.15f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "Distance",
-                            tint = BentoPrimaryBlue,
-                            modifier = Modifier.size(13.dp)
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Rating",
+                            tint = AmberGold,
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${hotspot.distanceKmFromBls} km from BLS Stn",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = BentoSlate700
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = BentoBlueLight
-                ) {
-                    Text(
-                        text = hotspot.category.uppercase(),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = BentoPrimaryBlue,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Returns a themed drawable resource ID for hotspots with custom photography, or null
- */
-fun getHotspotImageRes(hotspotId: String): Int? {
-    return when (hotspotId) {
-        "chandipur_beach", "drdo_missile_heritage" -> R.drawable.img_chandipur_beach
-        "khirachora_gopinatha", "emami_jagannath", "panchalingeswar", "chandaneswar_temple" -> R.drawable.img_temple_balasore
-        else -> null
-    }
-}
-
-/**
- * Returns an appropriate icon for hotspots
- */
-fun getHotspotCategoryIcon(category: String): ImageVector {
-    return when (category.lowercase()) {
-        "beach" -> Icons.Default.WbSunny
-        "temple" -> Icons.Default.Place
-        "wildlife" -> Icons.Default.Star
-        "heritage" -> Icons.Default.LocationOn
-        "port" -> Icons.Default.NearMe
-        else -> Icons.Default.Place
-    }
-}
-
-/**
- * Grid View card for Hotspots: displays attractions in a 2-column bento grid layout
- * with images, odia/english names, category badges, and descriptions.
- */
-@Composable
-fun HotspotBentoGridCard(
-    hotspot: HotspotEntity,
-    onClick: () -> Unit,
-    onToggleFavorite: () -> Unit,
-    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
-    modifier: Modifier = Modifier
-) {
-    val primaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
-        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
-        AppLanguage.ENGLISH -> hotspot.name
-    }
-    val secondaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> hotspot.name
-        AppLanguage.HINDI -> hotspot.name
-        AppLanguage.ENGLISH -> hotspot.odiaName
-    }
-    val imageRes = getHotspotImageRes(hotspot.id)
-
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .testTag("hotspot_grid_card_${hotspot.id}")
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Visual Image / Header Banner
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(118.dp)
-            ) {
-                if (imageRes != null) {
-                    Image(
-                        painter = painterResource(id = imageRes),
-                        contentDescription = hotspot.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    // Gradient scrim
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Black.copy(alpha = 0.15f),
-                                        Color.Black.copy(alpha = 0.65f)
-                                    )
-                                )
+                            text = hotspot.rating.toString(),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate800
                             )
-                    )
-                } else {
-                    // Modern abstract stylized gradient placeholder
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.linearGradient(
-                                    colors = when (hotspot.category.lowercase()) {
-                                        "beach" -> listOf(Color(0xFF0284C7), Color(0xFF0369A1))
-                                        "wildlife" -> listOf(Color(0xFF059669), Color(0xFF047857))
-                                        "port" -> listOf(Color(0xFF0D9488), Color(0xFF0F766E))
-                                        "heritage" -> listOf(Color(0xFF7C3AED), Color(0xFF6D28D9))
-                                        else -> listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
-                                    }
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = getHotspotCategoryIcon(hotspot.category),
-                            contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.35f),
-                            modifier = Modifier.size(48.dp)
                         )
                     }
-                }
 
-                // Category pill on top start
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.Black.copy(alpha = 0.55f),
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = hotspot.category.uppercase(),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 9.sp,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                    )
-                }
-
-                // Favorite button on top end
-                Surface(
-                    shape = CircleShape,
-                    color = Color.Black.copy(alpha = 0.45f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = onToggleFavorite)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (hotspot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint = if (hotspot.isFavorite) Color(0xFFEF4444) else Color.White,
-                            modifier = Modifier.size(15.dp)
-                        )
-                    }
-                }
-
-                // Distance badge on bottom start
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.White.copy(alpha = 0.9f),
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
+                    // Distance
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = BentoPrimaryBlue,
-                            modifier = Modifier.size(11.dp)
+                            contentDescription = "Location",
+                            tint = BentoSlate400,
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
-                            text = "${hotspot.distanceKmFromBls} km",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 9.5.sp
-                            ),
-                            color = BentoSlate900
+                            text = "${hotspot.distanceKm} km",
+                            style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
                         )
                     }
                 }
-            }
 
-            // Text Content Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-            ) {
-                Text(
-                    text = primaryName,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        lineHeight = 17.sp
-                    ),
-                    color = BentoSlate900,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Text(
-                    text = secondaryName,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.5.sp),
-                    color = BentoPrimaryBlue,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = hotspot.shortDescription,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
-                        lineHeight = 14.5.sp
-                    ),
-                    color = BentoSlate500,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Composable
-fun HotspotDetailSheet(
-    hotspot: HotspotEntity,
-    currentUser: UserEntity? = null,
-    reviewsFlow: Flow<List<ReviewEntity>> = kotlinx.coroutines.flow.emptyFlow(),
-    onOpenAuth: () -> Unit = {},
-    onSubmitReview: (rating: Int, comment: String, guestName: String?) -> Unit = { _, _, _ -> },
-    onDismiss: () -> Unit,
-    onToggleFavorite: () -> Unit,
-    onExploreWithMaps: () -> Unit = {},
-    selectedLanguage: AppLanguage = AppLanguage.ENGLISH
-) {
-    val primaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> if (hotspot.odiaName.isNotBlank()) hotspot.odiaName else hotspot.name
-        AppLanguage.HINDI -> if (hotspot.hindiName.isNotBlank()) hotspot.hindiName else hotspot.name
-        AppLanguage.ENGLISH -> hotspot.name
-    }
-    val secondaryName = when (selectedLanguage) {
-        AppLanguage.ODIA -> hotspot.name
-        AppLanguage.HINDI -> hotspot.name
-        AppLanguage.ENGLISH -> hotspot.odiaName
-    }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val context = LocalContext.current
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = BentoCardWhite,
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 32.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = primaryName,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        color = BentoSlate900
-                    )
-                    Text(
-                        text = secondaryName,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = BentoPrimaryBlue
-                    )
-                }
-                IconButton(onClick = onDismiss) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = BentoSlate500)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Quick Info Bento Tiles
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                BentoInfoTag(icon = Icons.Default.LocationOn, label = "${hotspot.distanceKmFromBls} km", sub = "from BLS Stn", modifier = Modifier.weight(1f))
-                BentoInfoTag(icon = Icons.Default.Payments, label = hotspot.entryFee, sub = "Entry", modifier = Modifier.weight(1f))
-                BentoInfoTag(icon = Icons.Default.Star, label = hotspot.category, sub = "Type", modifier = Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "About this Destination",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = hotspot.fullDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = BentoSlate700
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Highlights",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                hotspot.highlights.split(",").forEach { highlight ->
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = BentoBlueLight
-                    ) {
-                        Text(
-                            text = highlight.trim(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = BentoPrimaryBlue,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Default.AccessTime, contentDescription = "Time", tint = BentoPrimaryBlue, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Timings: ${hotspot.timings}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                    color = BentoSlate700
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Local Tip Bento Box
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = BentoAmberBg,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-                    Icon(imageVector = Icons.Default.Info, contentDescription = "Tip", tint = BentoAmberText, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = "Local Insider Tip",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = BentoAmberText
-                        )
-                        Text(
-                            text = hotspot.localTip,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = BentoSlate900
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, "Visit ${hotspot.name} in Balasore")
-                            putExtra(Intent.EXTRA_TEXT, "Check out ${hotspot.name} in Balasore, Odisha!\n\n${hotspot.shortDescription}\n\nTip: ${hotspot.localTip}\n\n- Shared via Balasore 360 (Nihar Sales)")
-                        }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Hotspot"))
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, BentoBorder),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = BentoSlate700, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Share", color = BentoSlate700)
-                }
-
-                Button(
-                    onClick = onToggleFavorite,
-                    colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = if (hotspot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (hotspot.isFavorite) "Saved" else "Save")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Get Directions Button
-            Button(
-                onClick = {
-                    val uri = Uri.parse("geo:${hotspot.latitude},${hotspot.longitude}?q=${hotspot.latitude},${hotspot.longitude}(${Uri.encode(hotspot.name)})")
-                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
-                    context.startActivity(Intent.createChooser(mapIntent, "Navigate to ${hotspot.name}"))
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = BentoDarkTile),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("hotspot_get_directions_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.NearMe,
-                    contentDescription = "Directions",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Get Directions in Navigation App",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // AI Maps Grounding Guide Button
-            Surface(
-                onClick = onExploreWithMaps,
-                shape = RoundedCornerShape(16.dp),
-                color = Color(0xFF0F9D58).copy(alpha = 0.09f),
-                border = BorderStroke(1.5.dp, Color(0xFF0F9D58).copy(alpha = 0.5f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .testTag("hotspot_ai_maps_grounding_button")
-            ) {
+                // Directions Button
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(OceanBlue.copy(alpha = 0.1f))
+                        .clickable { onGetDirections() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = Color(0xFF0F9D58),
-                        modifier = Modifier.size(18.dp)
+                        imageVector = Icons.Default.Directions,
+                        contentDescription = "Directions",
+                        tint = OceanBlue,
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Explore Spot with Google Maps Grounding",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color(0xFF0F9D58)
+                        text = "Map",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlue
+                        )
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Community Feedback & Reviews Section
-            ReviewsSection(
-                targetType = "HOTSPOT",
-                targetId = hotspot.id,
-                targetTitle = hotspot.name,
-                reviewsFlow = reviewsFlow,
-                currentUser = currentUser,
-                onOpenAuth = onOpenAuth,
-                onSubmitReview = onSubmitReview
-            )
-        }
-    }
-}
-
-@Composable
-fun BentoInfoTag(
-    icon: ImageVector,
-    label: String,
-    sub: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = BentoBlueLight,
-        border = BorderStroke(1.dp, BentoBorder),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(imageVector = icon, contentDescription = null, tint = BentoPrimaryBlue, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = BentoSlate900, maxLines = 1)
-            Text(text = sub, style = MaterialTheme.typography.bodySmall, fontSize = 10.sp, color = BentoSlate500)
-        }
-    }
-}
-
-@Composable
-fun BentoEmptyStateCard(message: String) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
-        border = BorderStroke(1.dp, BentoBorder),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = BentoBlueLight,
-                border = BorderStroke(1.dp, BentoBorder),
-                modifier = Modifier.size(130.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Image(
-                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.img_empty_search),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-            Text(
-                text = "No Results Found",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = BentoSlate500,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
         }
     }
 }

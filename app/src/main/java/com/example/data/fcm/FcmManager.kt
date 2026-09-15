@@ -88,6 +88,7 @@ object FcmManager {
 
         try {
             FirebaseMessaging.getInstance().isAutoInitEnabled = true
+            @Suppress("DEPRECATION")
             FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
                     Log.d(TAG, "FCM registration token obtained: $token")
@@ -118,6 +119,7 @@ object FcmManager {
             return
         }
         try {
+            @Suppress("DEPRECATION")
             FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
                     Log.d(TAG, "FCM registration token refreshed: $token")

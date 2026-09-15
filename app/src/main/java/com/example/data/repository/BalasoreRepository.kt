@@ -1,948 +1,234 @@
 package com.example.data.repository
 
-import android.content.Context
-import android.content.SharedPreferences
-import com.example.data.local.AppDatabase
-import com.example.data.local.CacheSyncMetadataEntity
-import com.example.data.local.DailyForecastEntity
-import com.example.data.local.HotspotEntity
-import com.example.data.local.NewsArticleEntity
-import com.example.data.local.ReviewEntity
-import com.example.data.local.UserEntity
-import com.example.data.local.WeatherCacheEntity
-import com.example.data.firebase.FirebaseAuthManager
-import com.example.data.firebase.FirestoreService
-import com.example.data.remote.BalasoreApiService
-import com.example.data.remote.GeminiGroundingService
-import com.example.data.remote.GroundingResponse
-import com.example.data.remote.GroundingToolMode
-import com.example.data.remote.WeatherApiService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import com.example.data.model.EmergencyContact
+import com.example.data.model.Hotspot
+import com.example.data.model.NewsArticle
+import com.example.data.model.TransitSchedule
+import com.example.data.model.WeatherInfo
 
-data class SyncResult(
-    val isSuccess: Boolean,
-    val weatherUpdated: Boolean,
-    val newsArticlesCount: Int,
-    val hotspotsCount: Int,
-    val timestamp: Long,
-    val isOfflineServed: Boolean = false,
-    val message: String = "Cache synchronized"
-)
+object BalasoreRepository {
 
-class BalasoreRepository(
-    private val database: AppDatabase,
-    private val context: Context? = null,
-    private val weatherApi: WeatherApiService = WeatherApiService.create(),
-    private val balasoreApi: BalasoreApiService = BalasoreApiService.create()
-) {
-    private val prefs: SharedPreferences? =
-        context?.getSharedPreferences("balasore_user_prefs", Context.MODE_PRIVATE)
-
-    val firebaseAuthManager: FirebaseAuthManager? = context?.let { FirebaseAuthManager(it) }
-    val firestoreService: FirestoreService? = context?.let { FirestoreService(it) }
-    val geminiGroundingService: GeminiGroundingService = GeminiGroundingService.getInstance()
-
-    val newsRepository: NewsRepository = NewsRepository(
-        newsDao = database.newsDao(),
-        cacheMetadataDao = database.cacheMetadataDao(),
-        apiService = balasoreApi
+    val hotspots = listOf(
+        Hotspot(
+            id = "chandipur",
+            name = "Chandipur Beach",
+            odiaName = "ଚାନ୍ଦିପୁର ବେଳାଭୂମି",
+            category = "Beach & Coast",
+            description = "Famous vanishing sea phenomenon where the sea recedes up to 5 kilometers during low tide, revealing horseshoe crabs and shells. Near the Integrated Test Range (ITR).",
+            location = "Chandipur, 16 km from Balasore Station",
+            rating = 4.8,
+            isFeatured = true,
+            timing = "Open 24 hours (Best during sunrise/sunset)",
+            distanceKm = 16.0
+        ),
+        Hotspot(
+            id = "khirachora",
+            name = "Khirachora Gopinatha Temple",
+            odiaName = "କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ମନ୍ଦିର",
+            category = "Heritage & Spiritual",
+            description = "Historic 12th-century temple in Remuna known for the divine 'Amruta Keli' (condensed milk bhog) offering and visit by Sri Chaitanya Mahaprabhu.",
+            location = "Remuna, 9 km from Balasore City",
+            rating = 4.9,
+            isFeatured = true,
+            timing = "06:00 AM - 12:30 PM, 04:00 PM - 08:30 PM",
+            distanceKm = 9.2
+        ),
+        Hotspot(
+            id = "panchalingeswar",
+            name = "Panchalingeswar Temple",
+            odiaName = "ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ମନ୍ଦିର",
+            category = "Nature & Pilgrimage",
+            description = "Nestled on Devagiri hill in Nilagiri, five Shiva lingas are constantly bathed by a pristine mountain perennial spring water stream.",
+            location = "Devagiri Hill, Nilagiri, Balasore",
+            rating = 4.7,
+            isFeatured = true,
+            timing = "05:30 AM - 06:30 PM",
+            distanceKm = 30.5
+        ),
+        Hotspot(
+            id = "talasari",
+            name = "Talasari & Udaipur Beach",
+            odiaName = "ତାଳସାରୀ ଏବଂ ଉଦୟପୁର ବେଳାଭୂମି",
+            category = "Beach & Coast",
+            description = "Serene, palm-fringed coast with red crabs and calm Subarnarekha river mouth confluence at the Odisha-Bengal border.",
+            location = "Bhograi Block, 88 km from Balasore",
+            rating = 4.6,
+            isFeatured = false,
+            timing = "Open 24 hours",
+            distanceKm = 88.0
+        ),
+        Hotspot(
+            id = "kuldiha",
+            name = "Kuldiha Wildlife Sanctuary",
+            odiaName = "କୁଲଡିହା ବନ୍ୟପ୍ରାଣୀ ଅଭୟାରଣ୍ୟ",
+            category = "Eco-Tourism",
+            description = "Dense sal forest habitat home to Asian elephants, leopards, giant squirrels, and diverse bird species near Rissia nature camp.",
+            location = "Nilagiri range, Balasore",
+            rating = 4.7,
+            isFeatured = false,
+            timing = "06:00 AM - 05:00 PM (Winter permit required)",
+            distanceKm = 35.0
+        ),
+        Hotspot(
+            id = "emami_jagannath",
+            name = "Emami Jagannath Temple",
+            odiaName = "ଇମାମି ଜଗନ୍ନାଥ ମନ୍ଦିର",
+            category = "Spiritual Architecture",
+            description = "Magnificent modern Kalinga-style stone temple complex built with intricate carvings, manicured gardens, and peaceful courtyard.",
+            location = "Remuna Januganj Road, Balasore",
+            rating = 4.8,
+            isFeatured = false,
+            timing = "06:00 AM - 08:30 PM",
+            distanceKm = 6.5
+        )
     )
 
-    val tourismRepository: TourismRepository = TourismRepository(
-        tourismDao = database.tourismDao(),
-        cacheMetadataDao = database.cacheMetadataDao()
+    val newsArticles = listOf(
+        NewsArticle(
+            id = "news_1",
+            title = "Balasore Railway Station Redevelopment Under Amrit Bharat Enters Final Phase",
+            odiaTitle = "ଅମୃତ ଭାରତ ଯୋଜନାରେ ବାଲେଶ୍ୱର ରେଳ ଷ୍ଟେସନ ନବୀକରଣ ଅନ୍ତିମ ପର୍ଯ୍ୟାୟରେ",
+            snippet = "Modern passenger concourse, skywalk connectivity, and regional Odishan terracotta aesthetic facades are scheduled for unveiling next month.",
+            odiaSnippet = "ବାଲେଶ୍ୱର ଷ୍ଟେସନରେ ଆଧୁନିକ ୱେଟିଂ ହଲ୍, ସ୍କାଏୱାକ୍ ଓ ଟେରାକୋଟା କଳାକୃତି ସହ ନୂତନ ସୁବିଧା ସୁଯୋଗ ସମ୍ପନ୍ନ ହେବାକୁ ଯାଉଛି।",
+            category = "Infrastructure",
+            timeAgo = "10 mins ago",
+            source = "Balasore Express News"
+        ),
+        NewsArticle(
+            id = "news_2",
+            title = "Chandipur DRDO Facility Successfully Tests Advanced Coastal Defense System",
+            odiaTitle = "ଚାନ୍ଦିପୁର କ୍ଷେପଣାସ୍ତ୍ର ଘାଟିରୁ ଅତ୍ୟାଧୁନିକ ପ୍ରତିରକ୍ଷା ପ୍ରଣାଳୀର ସଫଳ ପରୀକ୍ଷଣ",
+            snippet = "The Integrated Test Range at Chandipur reported mission success with precise radar tracking across the Bay of Bengal coastline.",
+            odiaSnippet = "ଆଇଟିଆର ଚାନ୍ଦିପୁର କ୍ଷେପଣାସ୍ତ୍ର ଘାଟିରୁ ସ୍ୱଦେଶୀ ଜ୍ଞାନକୌଶଳରେ ନିର୍ମିତ ପ୍ରତିରକ୍ଷା ପ୍ରଣାଳୀ ଲକ୍ଷ୍ୟଭେଦ କରିଛି।",
+            category = "Defense",
+            timeAgo = "1 hour ago",
+            source = "Defense Updates Odisha"
+        ),
+        NewsArticle(
+            id = "news_3",
+            title = "Annual Remuna Khirachora Gopinath Mahotsav Dates Announced",
+            odiaTitle = "ପ୍ରସିଦ୍ଧ ରେମୁଣା କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ମହୋତ୍ସବ ତାରିଖ ଘୋଷଣା",
+            snippet = "Cultural troops, traditional Sankirtan singers, and craft artisans from across Odisha will gather for the 5-day spiritual celebration.",
+            odiaSnippet = "ପାରମ୍ପରିକ ସଂକୀର୍ତ୍ତନ ଏବଂ ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ ସହ ପାଞ୍ଚ ଦିନ ଧରି ଚାଲିବ ରେମୁଣା ବାର୍ଷିକ ଉତ୍ସବ।",
+            category = "Culture",
+            timeAgo = "3 hours ago",
+            source = "Odisha Sambad"
+        ),
+        NewsArticle(
+            id = "news_4",
+            title = "Subarnarekha River Basin Flood Monitoring Sensors Deployed by District Disaster Authority",
+            odiaTitle = "ସୁବର୍ଣ୍ଣରେଖା ଅବବାହିକାରେ ବନ୍ୟା ନିୟନ୍ତ୍ରଣ ପାଇଁ ସ୍ୱୟଂକ୍ରିୟ ସେନ୍ସର ସ୍ଥାପନ",
+            snippet = "Real-time water level telemetry alerts will be transmitted to coastal Bhograi and Jaleswar panchayats for early monsoon preparedness.",
+            odiaSnippet = "ଜଳସ୍ତର ଉପରେ ନଜର ରଖିବାକୁ ଭୋଗରାଇ ଏବଂ ଜଳେଶ୍ୱର ବ୍ଲକରେ ସେନ୍ସର ସ୍ଥାପିତ ହୋଇଛି।",
+            category = "Civic Alert",
+            timeAgo = "5 hours ago",
+            source = "Balasore District Admin"
+        )
     )
 
-    private val _currentUserId = MutableStateFlow<String?>(
-        prefs?.getString("logged_in_user_id", "niharbhuyan@gmail.com") ?: "niharbhuyan@gmail.com"
+    val emergencyContacts = listOf(
+        EmergencyContact(
+            id = "em_1",
+            name = "Balasore Police Control Room",
+            odiaName = "ବାଲେଶ୍ୱର ପୋଲିସ ନିୟନ୍ତ୍ରଣ କକ୍ଷ",
+            number = "112",
+            category = "Police & Safety",
+            is24x7 = true,
+            description = "Central emergency response for Balasore town & district"
+        ),
+        EmergencyContact(
+            id = "em_2",
+            name = "Fakir Mohan Medical College (DHH Balasore)",
+            odiaName = "ଫକୀର ମୋହନ ମେଡିକାଲ କଲେଜ ଓ ହସ୍ପିଟାଲ",
+            number = "06782-262024",
+            category = "Hospitals & Medical",
+            is24x7 = true,
+            description = "Emergency trauma ward, ICU, and Outpatient emergency"
+        ),
+        EmergencyContact(
+            id = "em_3",
+            name = "Balasore Fire & Disaster Response",
+            odiaName = "ବାଲେଶ୍ୱର ଅଗ୍ନିଶମ ଓ ବିପର୍ଯ୍ୟୟ ସେବା",
+            number = "101",
+            category = "Fire & Rescue",
+            is24x7 = true,
+            description = "Fire brigade, tree clearance & flood rescue"
+        ),
+        EmergencyContact(
+            id = "em_4",
+            name = "Balasore Red Cross Blood Bank",
+            odiaName = "ରେଡ କ୍ରସ୍ ରକ୍ତ ଭଣ୍ଡାର (ବାଲେଶ୍ୱର)",
+            number = "06782-262143",
+            category = "Hospitals & Medical",
+            is24x7 = true,
+            description = "24/7 blood availability and emergency donor network"
+        ),
+        EmergencyContact(
+            id = "em_5",
+            name = "Women Helpline Balasore",
+            odiaName = "ମହିଳା ହେଲ୍ପଲାଇନ",
+            number = "181",
+            category = "Police & Safety",
+            is24x7 = true,
+            description = "Confidential crisis intervention & legal aid"
+        ),
+        EmergencyContact(
+            id = "em_6",
+            name = "Balasore Railway Helpline (BLS Station)",
+            odiaName = "ବାଲେଶ୍ୱର ରେଳବାଇ ସହାୟତା",
+            number = "139",
+            category = "Transport & Transit",
+            is24x7 = true,
+            description = "Live train running status, PNR & platform assistance"
+        )
     )
-    val currentUserId: Flow<String?> = _currentUserId.asStateFlow()
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    val currentUser: Flow<UserEntity?> = _currentUserId.flatMapLatest { id ->
-        if (id == null) flowOf(null) else database.userDao().getUserById(id)
-    }
+    val weather = WeatherInfo(
+        tempCelsius = 29,
+        condition = "Partly Cloudy • Gentle Breeze",
+        highLow = "32° / 25°",
+        humidity = "72%",
+        windSpeedKmh = "16 km/h (SE)",
+        tideStatus = "Low Tide: 02:30 PM (Receded ~4.5 km at Chandipur)",
+        seaCondition = "Calm • Excellent for beach excursions"
+    )
 
-    val allNews: Flow<List<NewsArticleEntity>> = newsRepository.allNews
-    val breakingNews: Flow<List<NewsArticleEntity>> = newsRepository.breakingNews
-    val allHotspots: Flow<List<HotspotEntity>> = tourismRepository.allHotspots
-    val weatherCache: Flow<WeatherCacheEntity?> = database.weatherDao().getWeatherCache()
-    val dailyForecasts: Flow<List<DailyForecastEntity>> = database.weatherDao().getDailyForecasts()
-    val cacheMetadataList: Flow<List<CacheSyncMetadataEntity>> = database.cacheMetadataDao().getAllMetadata()
-    val allReviews: Flow<List<ReviewEntity>> = database.reviewDao().getAllReviews()
-
-    /**
-     * Unified Flow providing a single observable stream of News for UI components.
-     * Smoothly blends Room cache and network updates via [Resource].
-     */
-    fun getUnifiedNewsFlow(forceRefresh: Boolean = false): Flow<Resource<List<NewsArticleEntity>>> =
-        newsRepository.getUnifiedNewsFlow(forceRefresh)
-
-    /**
-     * Unified Flow providing a single observable stream of Tourism Destinations for UI components.
-     * Smoothly blends Room cache and network verification via [Resource].
-     */
-    fun getUnifiedTourismFlow(forceRefresh: Boolean = false): Flow<Resource<List<HotspotEntity>>> =
-        tourismRepository.getUnifiedTourismFlow(forceRefresh)
-
-    suspend fun initializeIfNeeded() = withContext(Dispatchers.IO) {
-        if (database.hotspotDao().getCount() == 0) {
-            database.hotspotDao().insertHotspots(DefaultData.getInitialHotspots())
-        }
-        if (database.newsDao().getCount() == 0) {
-            database.newsDao().insertArticles(DefaultData.getInitialNews())
-        } else {
-            val existingTitles = database.newsDao().getAllArticlesSync().map { it.title }.toSet()
-            val missing = DefaultData.getInitialNews().filter { it.title !in existingTitles }
-            if (missing.isNotEmpty()) {
-                database.newsDao().insertArticles(missing)
-            }
-        }
-        if (database.userDao().getCount() == 0) {
-            for (user in DefaultData.getInitialUsers()) {
-                database.userDao().insertUser(user)
-            }
-        }
-        if (database.reviewDao().getCount() == 0) {
-            database.reviewDao().insertReviews(DefaultData.getInitialReviews())
-        }
-        // If weather is empty, insert initial default
-        if (database.weatherDao().getWeatherCacheSync() == null) {
-            database.weatherDao().insertOrUpdateWeather(
-                WeatherCacheEntity(
-                    id = 1,
-                    temperature = 29.5,
-                    apparentTemperature = 32.0,
-                    weatherCode = 1,
-                    weatherDescription = "Mainly Clear Coastal Sky",
-                    windSpeed = 14.5,
-                    windGusts = 22.0,
-                    humidity = 72,
-                    alertLevel = "NORMAL",
-                    alertTitle = "Normal Marine & Coastal Conditions",
-                    alertMessage = "Calm to moderate sea breeze along Chandipur and Talasari. Ideal for sightseeing and low-tide beach walking.",
-                    tideState = calculateTideState().first,
-                    tideDescription = calculateTideState().second,
-                    sunrise = "05:32 AM",
-                    sunset = "06:14 PM",
-                    uvIndex = 6.8,
-                    maxTemp = 32.0,
-                    minTemp = 24.5,
-                    lastUpdated = System.currentTimeMillis()
-                )
-            )
-        }
-        // If daily forecast is empty in Room, initialize 7-day forecast
-        if (database.weatherDao().getDailyForecastsSync().isEmpty()) {
-            database.weatherDao().insertDailyForecasts(createInitialDailyForecasts())
-        }
-        // If cache metadata is empty, seed Room metadata table
-        if (database.cacheMetadataDao().getCount() == 0) {
-            val now = System.currentTimeMillis()
-            val newsCount = database.newsDao().getCount()
-            val hotspotCount = database.hotspotDao().getCount()
-            database.cacheMetadataDao().insertOrUpdate(
-                CacheSyncMetadataEntity(
-                    cacheKey = "WEATHER",
-                    lastSyncedAt = now,
-                    itemCount = 8,
-                    status = "FRESH",
-                    cacheLabel = "Current + 7-Day Room Forecast",
-                    details = "Persisted locally in Room SQLite database."
-                )
-            )
-            database.cacheMetadataDao().insertOrUpdate(
-                CacheSyncMetadataEntity(
-                    cacheKey = "NEWS",
-                    lastSyncedAt = now,
-                    itemCount = newsCount,
-                    status = "FRESH",
-                    cacheLabel = "$newsCount News Articles Cached",
-                    details = "Full articles, bookmarks, and summaries saved in Room."
-                )
-            )
-            database.cacheMetadataDao().insertOrUpdate(
-                CacheSyncMetadataEntity(
-                    cacheKey = "TOURISM",
-                    lastSyncedAt = now,
-                    itemCount = hotspotCount,
-                    status = "FRESH",
-                    cacheLabel = "$hotspotCount Tourism Hotspots Cached",
-                    details = "Complete beach, temple, and heritage directory cached in Room."
-                )
-            )
-        }
-    }
-
-    // --- Authentication & Profile Methods (Firebase Auth + Room + Firestore) ---
-    suspend fun login(email: String, password: String): Result<UserEntity> = withContext(Dispatchers.IO) {
-        val trimmedEmail = email.trim().lowercase()
-
-        // 1. Attempt Firebase Auth if available
-        val fbResult = firebaseAuthManager?.signInWithEmail(trimmedEmail, password)
-        if (fbResult != null && fbResult.isSuccess) {
-            val fbUser = fbResult.getOrThrow()
-            // Sync with local Room database
-            val existing = database.userDao().getUserByEmail(trimmedEmail)
-            val mergedUser = (existing ?: fbUser).copy(
-                id = trimmedEmail,
-                email = trimmedEmail,
-                fullName = if (fbUser.fullName.isNotBlank()) fbUser.fullName else (existing?.fullName ?: "Balasore Resident")
-            )
-            database.userDao().insertUser(mergedUser)
-            firestoreService?.saveUserProfile(mergedUser)
-            _currentUserId.value = mergedUser.id
-            prefs?.edit()?.putString("logged_in_user_id", mergedUser.id)?.apply()
-            return@withContext Result.success(mergedUser)
-        }
-
-        // 2. Fallback to local Room credentials (for demo account / offline access)
-        val user = database.userDao().getUserByEmail(trimmedEmail)
-        if (user == null) {
-            Result.failure(Exception("No account found with $email. Please sign up."))
-        } else if (user.passwordHash != password && user.passwordHash != "FIREBASE_OAUTH_TOKEN") {
-            Result.failure(Exception("Incorrect password. Please check and try again."))
-        } else {
-            _currentUserId.value = user.id
-            prefs?.edit()?.putString("logged_in_user_id", user.id)?.apply()
-            Result.success(user)
-        }
-    }
-
-    suspend fun signInWithGoogle(context: Context, serverClientId: String? = null): Result<UserEntity> = withContext(Dispatchers.IO) {
-        val manager = firebaseAuthManager
-            ?: return@withContext Result.failure(Exception("Firebase Auth is initializing. Please try again in a moment."))
-
-        val result = manager.signInWithGoogle(context, serverClientId)
-        result.onSuccess { fbUser ->
-            // Insert or update in local Room database
-            database.userDao().insertUser(fbUser)
-            // Persist to Cloud Firestore
-            firestoreService?.saveUserProfile(fbUser)
-            _currentUserId.value = fbUser.id
-            prefs?.edit()?.putString("logged_in_user_id", fbUser.id)?.apply()
-
-            // Fetch any existing bookmarks saved in Firestore for this user
-            try {
-                val bookmarkedIds = firestoreService?.fetchBookmarkedIds(fbUser.id)?.getOrNull().orEmpty()
-                for (id in bookmarkedIds) {
-                    database.hotspotDao().updateFavorite(id, true)
-                }
-            } catch (_: Exception) {}
-        }
-        result
-    }
-
-    suspend fun signUp(
-        fullName: String,
-        email: String,
-        password: String,
-        phoneNumber: String,
-        locality: String,
-        securityAnswer: String
-    ): Result<UserEntity> = withContext(Dispatchers.IO) {
-        val trimmedEmail = email.trim().lowercase()
-        if (trimmedEmail.isBlank() || !trimmedEmail.contains("@")) {
-            return@withContext Result.failure(Exception("Please enter a valid email address"))
-        }
-        if (password.length < 4) {
-            return@withContext Result.failure(Exception("Password must be at least 4 characters"))
-        }
-
-        val newUser = UserEntity(
-            id = trimmedEmail,
-            fullName = fullName.ifBlank { "Balasore Explorer" },
-            email = trimmedEmail,
-            passwordHash = password,
-            phoneNumber = phoneNumber,
-            locality = locality.ifBlank { "Balasore Town" },
-            bio = "Active resident & traveler in Balasore district",
-            avatarUri = null,
-            securityAnswer = securityAnswer.trim().ifBlank { "Balasore" }
+    val transitSchedules = listOf(
+        TransitSchedule(
+            id = "tr_1",
+            routeName = "Balasore - Bhubaneswar Vande Bharat Express",
+            origin = "Balasore (BLS)",
+            destination = "Bhubaneswar (BBS)",
+            time = "07:15 AM",
+            type = "Train",
+            status = "On Time"
+        ),
+        TransitSchedule(
+            id = "tr_2",
+            routeName = "Howrah - Puri Superfast Express",
+            origin = "Balasore (BLS)",
+            destination = "Puri (PURI)",
+            time = "11:40 AM",
+            type = "Train",
+            status = "On Time"
+        ),
+        TransitSchedule(
+            id = "tr_3",
+            routeName = "OSRTC Volvo AC Bus: Balasore to Cuttack",
+            origin = "Sahadevkhunta Bus Stand",
+            destination = "Badambadi, Cuttack",
+            time = "08:30 AM",
+            type = "Bus",
+            status = "Scheduled"
+        ),
+        TransitSchedule(
+            id = "tr_4",
+            routeName = "Balasore Local Shuttle: Station to Chandipur",
+            origin = "Balasore Railway Station",
+            destination = "OTDC Panthanivas Chandipur",
+            time = "Every 30 Mins",
+            type = "Bus",
+            status = "Active Frequency"
         )
-
-        // Attempt Firebase Auth sign-up
-        try {
-            firebaseAuthManager?.signUpWithEmail(
-                name = newUser.fullName,
-                email = trimmedEmail,
-                pass = password,
-                phone = phoneNumber,
-                locality = newUser.locality
-            )
-        } catch (_: Exception) {}
-
-        // Persist locally in Room
-        database.userDao().insertUser(newUser)
-        // Persist in Cloud Firestore
-        firestoreService?.saveUserProfile(newUser)
-
-        _currentUserId.value = newUser.id
-        prefs?.edit()?.putString("logged_in_user_id", newUser.id)?.apply()
-        Result.success(newUser)
-    }
-
-    suspend fun resetPassword(
-        email: String,
-        securityAnswer: String,
-        newPassword: String
-    ): Result<Boolean> = withContext(Dispatchers.IO) {
-        val trimmedEmail = email.trim().lowercase()
-
-        // Also trigger Firebase password reset email if configured
-        try {
-            firebaseAuthManager?.sendPasswordResetEmail(trimmedEmail)
-        } catch (_: Exception) {}
-
-        val user = database.userDao().getUserByEmail(trimmedEmail)
-            ?: return@withContext Result.failure(Exception("No account found for $email"))
-
-        if (!user.securityAnswer.equals(securityAnswer.trim(), ignoreCase = true)) {
-            return@withContext Result.failure(Exception("Incorrect answer to security question."))
-        }
-        if (newPassword.length < 4) {
-            return@withContext Result.failure(Exception("Password must be at least 4 characters."))
-        }
-
-        database.userDao().updatePassword(trimmedEmail, newPassword)
-        Result.success(true)
-    }
-
-    suspend fun logout(context: Context? = null) = withContext(Dispatchers.IO) {
-        try {
-            firebaseAuthManager?.signOut(context)
-        } catch (_: Exception) {}
-        _currentUserId.value = null
-        prefs?.edit()?.remove("logged_in_user_id")?.apply()
-    }
-
-    suspend fun updateUserProfile(user: UserEntity): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            database.userDao().updateUser(user)
-            firestoreService?.saveUserProfile(user)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun updateUserAvatar(userId: String, avatarUri: String?): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            database.userDao().updateAvatar(userId, avatarUri)
-            database.userDao().getUserByIdSync(userId)?.let { updated ->
-                firestoreService?.saveUserProfile(updated)
-            }
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    // --- Feedback and Reviews Methods ---
-    fun getReviewsForTarget(targetType: String, targetId: String): Flow<List<ReviewEntity>> {
-        return database.reviewDao().getReviewsForTarget(targetType, targetId)
-    }
-
-    fun getAverageRating(targetType: String, targetId: String): Flow<Double?> {
-        return database.reviewDao().getAverageRating(targetType, targetId)
-    }
-
-    fun getReviewCount(targetType: String, targetId: String): Flow<Int> {
-        return database.reviewDao().getReviewCount(targetType, targetId)
-    }
-
-    suspend fun submitReview(
-        targetType: String,
-        targetId: String,
-        targetTitle: String,
-        rating: Int,
-        comment: String,
-        authorName: String? = null,
-        authorLocality: String? = null,
-        authorAvatarUri: String? = null
-    ): Result<ReviewEntity> = withContext(Dispatchers.IO) {
-        if (comment.isBlank()) {
-            return@withContext Result.failure(Exception("Please write a comment or feedback."))
-        }
-        val currentLoggedIn = _currentUserId.value?.let { database.userDao().getUserByIdSync(it) }
-
-        val review = ReviewEntity(
-            targetType = targetType,
-            targetId = targetId,
-            targetTitle = targetTitle,
-            userId = currentLoggedIn?.id ?: "guest_${System.currentTimeMillis()}",
-            userName = currentLoggedIn?.fullName ?: authorName?.ifBlank { "Balasore Visitor" } ?: "Balasore Visitor",
-            userLocality = currentLoggedIn?.locality ?: authorLocality?.ifBlank { "Balasore" } ?: "Balasore",
-            userAvatarUri = currentLoggedIn?.avatarUri ?: authorAvatarUri,
-            rating = rating.coerceIn(1, 5),
-            comment = comment.trim(),
-            timestamp = System.currentTimeMillis()
-        )
-        val id = database.reviewDao().insertReview(review)
-        val created = review.copy(id = id)
-        try {
-            firestoreService?.submitReview(created)
-        } catch (_: Exception) {}
-        Result.success(created)
-    }
-
-    suspend fun refreshWeatherAndAlerts(): Result<WeatherCacheEntity> = withContext(Dispatchers.IO) {
-        try {
-            val response = weatherApi.getBalasoreForecast()
-            val current = response.current
-            val daily = response.daily
-
-            val temp = current?.temperature ?: 30.0
-            val feelsLike = current?.apparentTemperature ?: temp
-            val code = current?.weatherCode ?: 0
-            val wind = current?.windSpeed ?: 15.0
-            val gusts = current?.windGusts ?: (wind * 1.3)
-            val humidity = current?.relativeHumidity ?: 70
-
-            val desc = parseWeatherCode(code)
-            val (baseAlertLevel, baseAlertTitle, baseAlertMsg) = evaluateCoastalAlert(code, wind, gusts, temp)
-            val (baseTideState, baseTideDesc) = calculateTideState()
-
-            // Fetch live local Chandipur marine observatory & coastal advisory via Balasore API
-            val marineData = try {
-                balasoreApi.getMarineObservatoryData()
-            } catch (_: Exception) {
-                null
-            }
-
-            val finalTideState = marineData?.tideState ?: baseTideState
-            val finalTideDesc = marineData?.tideDescription ?: baseTideDesc
-            val finalAlertLevel = if (!marineData?.alertLevel.isNullOrBlank() && marineData?.alertLevel != "NORMAL") {
-                marineData!!.alertLevel!!
-            } else {
-                baseAlertLevel
-            }
-            val finalAlertTitle = marineData?.alertTitle ?: baseAlertTitle
-            val finalAlertMsg = marineData?.alertMessage ?: baseAlertMsg
-
-            val maxT = daily?.temperatureMax?.firstOrNull() ?: (temp + 2.0)
-            val minT = daily?.temperatureMin?.firstOrNull() ?: (temp - 4.0)
-            val uv = daily?.uvIndexMax?.firstOrNull() ?: 7.0
-
-            val sunriseStr = daily?.sunrise?.firstOrNull()?.let { formatTimeIso(it) } ?: "05:35 AM"
-            val sunsetStr = daily?.sunset?.firstOrNull()?.let { formatTimeIso(it) } ?: "06:12 PM"
-
-            val entity = WeatherCacheEntity(
-                id = 1,
-                temperature = temp,
-                apparentTemperature = feelsLike,
-                weatherCode = code,
-                weatherDescription = desc,
-                windSpeed = wind,
-                windGusts = gusts,
-                humidity = humidity,
-                alertLevel = finalAlertLevel,
-                alertTitle = finalAlertTitle,
-                alertMessage = finalAlertMsg,
-                tideState = finalTideState,
-                tideDescription = finalTideDesc,
-                sunrise = sunriseStr,
-                sunset = sunsetStr,
-                uvIndex = uv,
-                maxTemp = maxT,
-                minTemp = minT,
-                lastUpdated = System.currentTimeMillis()
-            )
-
-            database.weatherDao().insertOrUpdateWeather(entity)
-
-            // Cache 7-Day daily forecast into Room
-            val dailyEntities = mutableListOf<DailyForecastEntity>()
-            val dailyTimes = daily?.time
-            if (!dailyTimes.isNullOrEmpty()) {
-                val inDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val dayOfWeekFormat = SimpleDateFormat("EEE", Locale.getDefault())
-                for (i in dailyTimes.indices) {
-                    val dateStr = dailyTimes[i]
-                    val dayName = try {
-                        val d = inDateFormat.parse(dateStr)
-                        if (d != null) dayOfWeekFormat.format(d) else "Day $i"
-                    } catch (_: Exception) { "Day $i" }
-
-                    val dayCode = daily.weatherCode?.getOrNull(i) ?: code
-                    val dayMax = daily.temperatureMax?.getOrNull(i) ?: maxT
-                    val dayMin = daily.temperatureMin?.getOrNull(i) ?: minT
-                    val daySunrise = daily.sunrise?.getOrNull(i)?.let { formatTimeIso(it) } ?: sunriseStr
-                    val daySunset = daily.sunset?.getOrNull(i)?.let { formatTimeIso(it) } ?: sunsetStr
-                    val dayUv = daily.uvIndexMax?.getOrNull(i) ?: uv
-
-                    dailyEntities.add(
-                        DailyForecastEntity(
-                            date = dateStr,
-                            dayOfWeek = dayName,
-                            weatherCode = dayCode,
-                            weatherDescription = parseWeatherCode(dayCode),
-                            maxTemp = dayMax,
-                            minTemp = dayMin,
-                            sunrise = daySunrise,
-                            sunset = daySunset,
-                            uvIndex = dayUv,
-                            cachedAt = System.currentTimeMillis()
-                        )
-                    )
-                }
-            }
-            if (dailyEntities.isNotEmpty()) {
-                database.weatherDao().clearDailyForecasts()
-                database.weatherDao().insertDailyForecasts(dailyEntities)
-            }
-
-            database.cacheMetadataDao().insertOrUpdate(
-                CacheSyncMetadataEntity(
-                    cacheKey = "WEATHER",
-                    lastSyncedAt = System.currentTimeMillis(),
-                    itemCount = 1 + dailyEntities.size,
-                    status = "FRESH",
-                    cacheLabel = "Current + ${dailyEntities.size}-Day Room Forecast",
-                    details = "Updated live from meteorological satellite feed."
-                )
-            )
-
-            Result.success(entity)
-        } catch (e: Exception) {
-            // In case of network failure, fallback to existing or fallback weather entity
-            val cached = database.weatherDao().getWeatherCacheSync()
-            if (cached != null) {
-                database.cacheMetadataDao().insertOrUpdate(
-                    CacheSyncMetadataEntity(
-                        cacheKey = "WEATHER",
-                        lastSyncedAt = cached.lastUpdated,
-                        itemCount = 1 + database.weatherDao().getDailyForecastsSync().size,
-                        status = "OFFLINE",
-                        cacheLabel = "Offline Room Cache Active",
-                        details = "Serving local cached marine & inland forecast."
-                    )
-                )
-                Result.success(cached)
-            } else {
-                Result.failure(e)
-            }
-        }
-    }
-
-    suspend fun toggleBookmark(articleId: Long, currentBookmarked: Boolean) = withContext(Dispatchers.IO) {
-        database.newsDao().updateBookmark(articleId, !currentBookmarked)
-    }
-
-    suspend fun toggleFavoriteHotspot(hotspotId: String, currentFav: Boolean) = withContext(Dispatchers.IO) {
-        val newFav = !currentFav
-        database.hotspotDao().updateFavorite(hotspotId, newFav)
-        val uid = _currentUserId.value
-        if (uid != null && firestoreService != null) {
-            try {
-                if (newFav) {
-                    database.hotspotDao().getHotspotByIdSync(hotspotId)?.let { spot ->
-                        firestoreService.saveBookmark(uid, spot)
-                    }
-                } else {
-                    firestoreService.removeBookmark(uid, hotspotId)
-                }
-            } catch (_: Exception) {}
-        }
-    }
-
-    suspend fun queryGeminiGrounding(
-        prompt: String,
-        mode: GroundingToolMode = GroundingToolMode.COMBINED
-    ): GroundingResponse = withContext(Dispatchers.IO) {
-        val response = geminiGroundingService.queryWithGrounding(prompt, mode)
-        val uid = _currentUserId.value
-        if (uid != null && response.isSuccess) {
-            try {
-                firestoreService?.logGroundedQuery(uid, prompt, mode.name)
-            } catch (_: Exception) {}
-        }
-        response
-    }
-
-    suspend fun refreshDailyNews(): Result<Int> = withContext(Dispatchers.IO) {
-        try {
-            // Fetch fresh Balasore district articles via Retrofit network layer
-            val newsResponse = balasoreApi.getBalasoreNews()
-            val articleDtos = newsResponse.articles.orEmpty()
-
-            // Preserve existing offline bookmarks
-            val bookmarkedArticles = database.newsDao().getBookmarkedNewsSync()
-            val bookmarkedIds = bookmarkedArticles.map { it.id }.toSet()
-            val bookmarkedTitles = bookmarkedArticles.map { it.title.trim().lowercase() }.toSet()
-
-            val freshArticles = articleDtos.map { dto ->
-                val isBookmarked = (dto.id != null && bookmarkedIds.contains(dto.id)) ||
-                        (dto.title != null && bookmarkedTitles.contains(dto.title.trim().lowercase()))
-                dto.toEntity(isBookmarked = isBookmarked)
-            }
-
-            if (freshArticles.isNotEmpty()) {
-                database.newsDao().insertArticles(freshArticles)
-            }
-
-            val count = database.newsDao().getCount()
-
-            database.cacheMetadataDao().insertOrUpdate(
-                CacheSyncMetadataEntity(
-                    cacheKey = "NEWS",
-                    lastSyncedAt = System.currentTimeMillis(),
-                    itemCount = count,
-                    status = "FRESH",
-                    cacheLabel = "$count Articles from Balasore API",
-                    details = "Fetched via Retrofit news endpoint and persisted to Room cache."
-                )
-            )
-
-            Result.success(freshArticles.size)
-        } catch (e: Exception) {
-            val count = database.newsDao().getCount()
-            if (count > 0) {
-                Result.success(count)
-            } else {
-                Result.failure(e)
-            }
-        }
-    }
-
-    /**
-     * Executes comprehensive synchronization of Weather, News, and Tourism data.
-     * Caches all data into local Room Database so the app remains fully functional offline.
-     */
-    suspend fun syncAllData(forceNetwork: Boolean = false): SyncResult = withContext(Dispatchers.IO) {
-        initializeIfNeeded()
-        var weatherSuccess = false
-        var newsSuccess = false
-
-        // 1. Sync Weather to Room Cache
-        val weatherRes = refreshWeatherAndAlerts()
-        if (weatherRes.isSuccess) {
-            weatherSuccess = true
-        }
-
-        // 2. Sync News to Room Cache
-        try {
-            val newsRes = refreshDailyNews()
-            if (newsRes.isSuccess) {
-                newsSuccess = true
-            }
-        } catch (_: Exception) {
-            // Keep existing cached news in Room
-        }
-
-        val isOffline = !weatherSuccess && !newsSuccess
-
-        // 3. Tourism Hotspots Cache verification & guarantee
-        if (database.hotspotDao().getCount() == 0) {
-            database.hotspotDao().insertHotspots(DefaultData.getInitialHotspots())
-        }
-
-        val currentNewsCount = database.newsDao().getCount()
-        val currentHotspotsCount = database.hotspotDao().getCount()
-        val now = System.currentTimeMillis()
-
-        prefs?.edit()?.putLong("last_sync_timestamp", now)?.apply()
-        prefs?.edit()?.putString("last_sync_status", if (isOffline) "OFFLINE_CACHE" else "SYNCED")?.apply()
-
-        database.cacheMetadataDao().insertOrUpdate(
-            CacheSyncMetadataEntity(
-                cacheKey = "TOURISM",
-                lastSyncedAt = now,
-                itemCount = currentHotspotsCount,
-                status = if (isOffline) "OFFLINE" else "FRESH",
-                cacheLabel = "$currentHotspotsCount Hotspots in Room",
-                details = "Full tourism directory and navigation points available offline."
-            )
-        )
-
-        SyncResult(
-            isSuccess = true,
-            weatherUpdated = weatherSuccess,
-            newsArticlesCount = currentNewsCount,
-            hotspotsCount = currentHotspotsCount,
-            timestamp = now,
-            isOfflineServed = isOffline,
-            message = if (isOffline) {
-                "Offline mode active: Displaying $currentNewsCount news & $currentHotspotsCount hotspots cached in Room."
-            } else {
-                "Background sync complete: Weather, $currentNewsCount news articles, & $currentHotspotsCount tourism hotspots cached in Room."
-            }
-        )
-    }
-
-    fun searchNewsOffline(query: String): Flow<List<NewsArticleEntity>> =
-        if (query.isBlank()) database.newsDao().getAllNews() else database.newsDao().searchNews(query.trim())
-
-    fun searchHotspotsOffline(query: String): Flow<List<HotspotEntity>> =
-        if (query.isBlank()) database.hotspotDao().getAllHotspots() else database.hotspotDao().searchHotspots(query.trim())
-
-    fun getArticleById(id: Long): Flow<NewsArticleEntity?> = database.newsDao().getArticleById(id)
-
-    fun getHotspotById(id: String): Flow<HotspotEntity?> = database.hotspotDao().getHotspotById(id)
-
-    fun getHotspotsByCategory(category: String): Flow<List<HotspotEntity>> =
-        database.hotspotDao().getHotspotsByCategory(category)
-
-    fun getFavoriteHotspots(): Flow<List<HotspotEntity>> =
-        database.hotspotDao().getFavoriteHotspots()
-
-    suspend fun insertNewsArticle(article: NewsArticleEntity): Long = withContext(Dispatchers.IO) {
-        database.newsDao().insertArticle(article)
-    }
-
-    suspend fun updateNewsArticle(article: NewsArticleEntity): Int = withContext(Dispatchers.IO) {
-        database.newsDao().updateArticle(article)
-    }
-
-    suspend fun deleteNewsArticle(article: NewsArticleEntity): Int = withContext(Dispatchers.IO) {
-        database.newsDao().deleteArticle(article)
-    }
-
-    suspend fun deleteNewsArticleById(id: Long): Int = withContext(Dispatchers.IO) {
-        database.newsDao().deleteArticleById(id)
-    }
-
-    suspend fun insertHotspot(hotspot: HotspotEntity) = withContext(Dispatchers.IO) {
-        database.hotspotDao().insertHotspot(hotspot)
-    }
-
-    suspend fun updateHotspot(hotspot: HotspotEntity): Int = withContext(Dispatchers.IO) {
-        database.hotspotDao().updateHotspot(hotspot)
-    }
-
-    suspend fun deleteHotspot(hotspot: HotspotEntity): Int = withContext(Dispatchers.IO) {
-        database.hotspotDao().deleteHotspot(hotspot)
-    }
-
-    suspend fun deleteHotspotById(id: String): Int = withContext(Dispatchers.IO) {
-        database.hotspotDao().deleteHotspotById(id)
-    }
-
-    fun getCacheMetadata(key: String): Flow<CacheSyncMetadataEntity?> = database.cacheMetadataDao().getMetadata(key)
-
-    private fun createInitialDailyForecasts(): List<DailyForecastEntity> {
-        val calendar = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val dayFormat = SimpleDateFormat("EEE", Locale.getDefault())
-        val list = mutableListOf<DailyForecastEntity>()
-
-        val sampleTemps = listOf(
-            Pair(32.0, 25.0) to Pair(1, "Mainly Clear Coastal Sky"),
-            Pair(33.5, 26.0) to Pair(2, "Partly Cloudy Sea Breeze"),
-            Pair(31.0, 24.5) to Pair(61, "Light Coastal Passing Shower"),
-            Pair(30.5, 24.0) to Pair(80, "Scattered Marine Rain Showers"),
-            Pair(32.5, 25.5) to Pair(0, "Clear Sunny Day"),
-            Pair(34.0, 26.5) to Pair(1, "Mainly Clear"),
-            Pair(33.0, 25.0) to Pair(2, "Partly Cloudy")
-        )
-
-        for (i in 0..6) {
-            val dateStr = dateFormat.format(calendar.time)
-            val dayName = if (i == 0) "Today" else dayFormat.format(calendar.time)
-            val (tempPair, weatherPair) = sampleTemps[i % sampleTemps.size]
-
-            list.add(
-                DailyForecastEntity(
-                    date = dateStr,
-                    dayOfWeek = dayName,
-                    weatherCode = weatherPair.first,
-                    weatherDescription = weatherPair.second,
-                    maxTemp = tempPair.first,
-                    minTemp = tempPair.second,
-                    sunrise = "05:33 AM",
-                    sunset = "06:13 PM",
-                    uvIndex = (7.2 - (i * 0.3)).coerceAtLeast(3.0),
-                    cachedAt = System.currentTimeMillis()
-                )
-            )
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-        }
-        return list
-    }
-
-    fun getLastSyncTimestamp(): Long {
-        return prefs?.getLong("last_sync_timestamp", 0L) ?: 0L
-    }
-
-    fun getLastSyncStatus(): String {
-        return prefs?.getString("last_sync_status", "NEVER") ?: "NEVER"
-    }
-
-    private fun parseWeatherCode(code: Int): String {
-        return when (code) {
-            0 -> "Clear Sky & Sunshine"
-            1, 2, 3 -> "Partly Cloudy Coastal Sky"
-            45, 48 -> "Foggy Morning / Coastal Mist"
-            51, 53, 55 -> "Light Coastal Drizzle"
-            61, 63, 65 -> "Moderate to Heavy Rain"
-            71, 73, 75 -> "Overcast & Hail"
-            80, 81, 82 -> "Passing Coastal Showers"
-            95 -> "Thunderstorm & Lightning"
-            96, 99 -> "Severe Thunderstorm with Hail"
-            else -> "Fair Weather"
-        }
-    }
-
-    private fun evaluateCoastalAlert(code: Int, windSpeed: Double, gusts: Double, temp: Double): Triple<String, String, String> {
-        return when {
-            windSpeed > 45 || gusts > 60 || code in listOf(95, 96, 99) -> Triple(
-                "CYCLONE_ALERT",
-                "Severe Weather & High Wind Warning",
-                "High wind gusts and thunderstorm activity detected in North Bay of Bengal. Fishermen advised not to venture into deep sea. Keep clear of Chandipur shoreline."
-            )
-            windSpeed > 30 || gusts > 40 || code in listOf(63, 65, 82) -> Triple(
-                "WARNING",
-                "Coastal Wind & Heavy Shower Advisory",
-                "Choppy sea conditions and gusty coastal breezes reported. Small watercraft and speedboats should exercise caution near Balaramgadi estuary."
-            )
-            temp > 38.0 -> Triple(
-                "ADVISORY",
-                "High Heat & Humidity Alert",
-                "Afternoon temperature and humidity levels are elevated across Balasore district. Stay well hydrated and avoid prolonged outdoor sun exposure between 12 PM - 3 PM."
-            )
-            else -> Triple(
-                "NORMAL",
-                "Favorable Coastal Weather",
-                "Normal sea breeze and clear atmospheric conditions along the Balasore shoreline. Safe for outdoor tourism, heritage visits, and Chandipur beach strolls."
-            )
-        }
-    }
-
-    private fun calculateTideState(): Pair<String, String> {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(Calendar.MINUTE)
-        val totalMinutes = hour * 60 + minute
-
-        // Semi-diurnal cycle simulation for Chandipur (~12.4 hours)
-        // Typical daytime low tide around 10:30 AM and 11:00 PM
-        val morningLow = 10 * 60 + 30
-        val eveningHigh = 16 * 60 + 45
-
-        return when {
-            totalMinutes in (morningLow - 90)..(morningLow + 90) -> Pair(
-                "LOW_TIDE",
-                "Sea has receded up to 4.5 km into the Bay. Safest time for walking on the vast muddy seabed and spotting red crabs."
-            )
-            totalMinutes in (morningLow + 91)..(eveningHigh - 60) -> Pair(
-                "INCOMING",
-                "Sea waters are returning back to shore. Lifeguards advise tourists on the seabed to return towards the seawall."
-            )
-            totalMinutes in (eveningHigh - 59)..(eveningHigh + 120) -> Pair(
-                "HIGH_TIDE",
-                "High Tide: Water levels are high near the shoreline. Beautiful gentle waves lapping the promenade."
-            )
-            else -> Pair(
-                "RECEDING",
-                "Tide is receding outwards into the Bay of Bengal. Vanishing sea phenomenon beginning to unfold."
-            )
-        }
-    }
-
-    private fun formatTimeIso(isoString: String): String {
-        return try {
-            val parts = isoString.split("T")
-            if (parts.size > 1) {
-                val timeParts = parts[1].split(":")
-                val h = timeParts[0].toIntOrNull() ?: 0
-                val m = timeParts[1].toIntOrNull() ?: 0
-                val ampm = if (h >= 12) "PM" else "AM"
-                val h12 = if (h == 0) 12 else if (h > 12) h - 12 else h
-                String.format(Locale.US, "%02d:%02d %s", h12, m, ampm)
-            } else {
-                isoString
-            }
-        } catch (_: Exception) {
-            isoString
-        }
-    }
-
-    suspend fun clearOfflineCache(keepBookmarks: Boolean = true) = withContext(Dispatchers.IO) {
-        if (keepBookmarks) {
-            database.newsDao().clearNonBookmarked()
-        } else {
-            database.newsDao().clearAll()
-        }
-        database.weatherDao().clearDailyForecasts()
-        database.weatherDao().clearWeatherCache()
-        database.cacheMetadataDao().clearAll()
-        // Re-seed essential baseline records so the app is always functional
-        initializeIfNeeded()
-    }
-
-    /**
-     * Checks if cached data (News, Weather, or Tourism) is older than 24 hours or missing.
-     */
-    suspend fun isCacheOlderThan24Hours(cacheKey: String? = null): Boolean = withContext(Dispatchers.IO) {
-        val now = System.currentTimeMillis()
-        if (cacheKey != null) {
-            val meta = database.cacheMetadataDao().getMetadataSync(cacheKey)
-            val ts = meta?.lastSyncedAt ?: 0L
-            return@withContext ts <= 0L || (now - ts) > CACHE_EXPIRATION_DURATION_MS
-        }
-
-        // Check News
-        val newsTimestamp = database.cacheMetadataDao().getMetadataSync("NEWS")?.lastSyncedAt
-            ?: (database.newsDao().getLatestTimestamp() ?: 0L)
-        if (newsTimestamp <= 0L || (now - newsTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
-            return@withContext true
-        }
-
-        // Check Weather
-        val weatherTimestamp = database.cacheMetadataDao().getMetadataSync("WEATHER")?.lastSyncedAt
-            ?: (database.weatherDao().getLatestTimestamp() ?: 0L)
-        if (weatherTimestamp <= 0L || (now - weatherTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
-            return@withContext true
-        }
-
-        // Check Tourism
-        val tourismTimestamp = database.cacheMetadataDao().getMetadataSync("TOURISM")?.lastSyncedAt
-            ?: (database.hotspotDao().getLatestTimestamp() ?: 0L)
-        if (tourismTimestamp <= 0L || (now - tourismTimestamp) > CACHE_EXPIRATION_DURATION_MS) {
-            return@withContext true
-        }
-
-        false
-    }
-
-    /**
-     * Automatically verifies cache freshness and refreshes all data from the network
-     * if the cached records are older than 24 hours.
-     */
-    suspend fun autoRefreshIfStale(maxAgeMs: Long = CACHE_EXPIRATION_DURATION_MS): SyncResult? = withContext(Dispatchers.IO) {
-        initializeIfNeeded()
-        val isStale = isCacheOlderThan24Hours()
-        if (isStale) {
-            android.util.Log.d("BalasoreRepository", "Cache is older than 24 hours. Triggering automatic network refresh...")
-            syncAllData(forceNetwork = true)
-        } else {
-            null
-        }
-    }
-
-    companion object {
-        const val CACHE_EXPIRATION_DURATION_MS = 24 * 60 * 60 * 1000L // 24 Hours
-
-        @Volatile
-        private var INSTANCE: BalasoreRepository? = null
-
-        fun getInstance(context: Context): BalasoreRepository {
-            return INSTANCE ?: synchronized(this) {
-                val db = AppDatabase.getInstance(context)
-                val repo = BalasoreRepository(db, context = context.applicationContext)
-                INSTANCE = repo
-                repo
-            }
-        }
-    }
+    )
 }

@@ -1,161 +1,93 @@
 package com.example
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.outlined.Article
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.ContactPhone
+import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.ContactPhone
+import androidx.compose.material.icons.outlined.Emergency
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.fcm.BalasoreNotificationHelper
-import com.example.data.fcm.FcmManager
-import com.example.ui.components.AppHeader
-import com.example.ui.components.BalasoreGroundingSheet
-import com.example.ui.components.MainScrollableTabRow
-import com.example.ui.screens.AuthBottomSheet
+import com.example.data.admob.AdMobManager
+import com.example.data.model.AppLanguage
 import com.example.ui.screens.EssentialsScreen
-import com.example.ui.screens.HotspotDetailScreen
-import com.example.ui.screens.LocalAlertsBottomSheet
-import com.example.ui.screens.NewsDetailScreen
 import com.example.ui.screens.NewsScreen
-import com.example.ui.screens.OfflineStatusBottomSheet
 import com.example.ui.screens.TourismScreen
 import com.example.ui.screens.WeatherScreen
-import com.example.ui.theme.BentoAmberBg
-import com.example.ui.theme.BentoAmberText
-import com.example.ui.theme.BentoBlueLight
-import com.example.ui.theme.BentoBluePill
-import com.example.ui.theme.BentoBorder
-import com.example.ui.theme.BentoCanvas
-import com.example.ui.theme.BentoCardWhite
-import com.example.ui.theme.BentoPrimaryBlue
+import com.example.ui.theme.Balasore360Theme
+import com.example.ui.theme.BentoSlate100
+import com.example.ui.theme.BentoSlate200
 import com.example.ui.theme.BentoSlate400
+import com.example.ui.theme.BentoSlate50
+import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate800
 import com.example.ui.theme.BentoSlate900
-import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.util.AppLanguage
-import com.example.ui.viewmodel.AppTab
+import com.example.ui.theme.OceanBlue
+import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.BalasoreViewModel
 
 class MainActivity : ComponentActivity() {
+
     private val viewModel: BalasoreViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        BalasoreNotificationHelper.createNotificationChannels(this)
-        FcmManager.initialize(this.applicationContext)
-        handleNotificationIntent(intent)
-        setContent {
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            MyApplicationTheme(themeMode = uiState.themeMode) {
-                BalasoreApp(viewModel = viewModel)
-            }
+
+        // Crash-proof AdMob initialization
+        try {
+            AdMobManager.initialize(applicationContext)
+        } catch (t: Throwable) {
+            Log.e("MainActivity", "Safe AdMob init catch: ${t.message}")
         }
-    }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleNotificationIntent(intent)
-    }
-
-    private fun handleNotificationIntent(intent: Intent?) {
-        if (intent == null) return
-        val targetTab = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
-            ?: intent.getStringExtra("target_tab")
-            ?: intent.getStringExtra("type")
-
-        when {
-            targetTab?.contains("WEATHER", ignoreCase = true) == true -> {
-                viewModel.selectTab(AppTab.WEATHER)
-                if (intent.hasExtra("alert_title")) {
-                    viewModel.openAlertsSheet()
-                }
-            }
-            targetTab?.contains("NEWS", ignoreCase = true) == true ||
-            targetTab?.contains("BREAKING", ignoreCase = true) == true -> {
-                viewModel.selectTab(AppTab.NEWS)
-                val articleId = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_ARTICLE_ID)
-                    ?: intent.getStringExtra("article_id")
-                if (!articleId.isNullOrBlank()) {
-                    val idLong = articleId.toLongOrNull()
-                    if (idLong != null) {
-                        viewModel.selectArticleById(idLong)
-                    }
-                }
+        setContent {
+            Balasore360Theme {
+                BalasoreApp(viewModel = viewModel)
             }
         }
     }
@@ -164,522 +96,235 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BalasoreApp(viewModel: BalasoreViewModel) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
-    val weather by viewModel.weatherState.collectAsStateWithLifecycle()
-    val dailyForecasts by viewModel.dailyForecasts.collectAsStateWithLifecycle()
-    val filteredDailyForecasts by viewModel.filteredDailyForecasts.collectAsStateWithLifecycle()
-    val hotspots by viewModel.filteredHotspots.collectAsStateWithLifecycle()
-    val news by viewModel.filteredNews.collectAsStateWithLifecycle()
-    val weatherMatchesCount by viewModel.weatherMatchesCount.collectAsStateWithLifecycle()
-    val weatherAlertsEnabled by viewModel.weatherAlertsEnabled.collectAsStateWithLifecycle()
-    val breakingNewsEnabled by viewModel.breakingNewsEnabled.collectAsStateWithLifecycle()
-    val fcmToken by viewModel.fcmToken.collectAsStateWithLifecycle()
-    val timeSensitiveAlerts by viewModel.timeSensitiveAlerts.collectAsStateWithLifecycle()
-    val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
-    val groundingState by viewModel.groundingState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsState()
 
-    val breakingNewsList = remember(news) {
-        news.filter {
-            it.category.equals("Emergency", ignoreCase = true) ||
-                    it.title.contains("Breaking", ignoreCase = true) ||
-                    it.title.contains("Cyclone", ignoreCase = true)
-        }
-    }
-    val hasActiveWeatherAlert = weather != null && weather?.alertLevel != "SAFE" && weather?.alertLevel != "NORMAL"
-    val hasActiveAlerts = hasActiveWeatherAlert || breakingNewsList.isNotEmpty()
-
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-    val pullToRefreshState = rememberPullToRefreshState()
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            viewModel.showUserNotice("Notifications enabled for Balasore alerts")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-    }
-
-    LaunchedEffect(uiState.userNotice) {
-        val notice = uiState.userNotice
-        if (notice != null) {
-            val isOfflineOrFailed = notice.contains("Offline", ignoreCase = true) ||
-                    notice.contains("No Connection", ignoreCase = true) ||
-                    notice.contains("Internet", ignoreCase = true) ||
-                    notice.contains("Failed", ignoreCase = true) ||
-                    notice.contains("Error", ignoreCase = true)
-
-            viewModel.dismissNotice()
-            val result = snackbarHostState.showSnackbar(
-                message = notice,
-                actionLabel = if (isOfflineOrFailed) "Retry" else null,
-                duration = if (isOfflineOrFailed) SnackbarDuration.Long else SnackbarDuration.Short
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                // Trigger refresh on the currently selected tab
-                when (uiState.selectedTab) {
-                    AppTab.HOTSPOTS -> viewModel.refreshData()
-                    AppTab.NEWS -> viewModel.refreshNewsFeed()
-                    AppTab.WEATHER -> viewModel.refreshWeatherFeed()
-                    else -> viewModel.refreshData()
-                }
-            }
-        }
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (uiState.selectedHotspot != null) {
-            HotspotDetailScreen(
-                hotspot = uiState.selectedHotspot!!,
-                weather = weather,
-                currentUser = currentUser,
-                reviewsFlow = viewModel.getReviewsForTarget("HOTSPOT", uiState.selectedHotspot!!.id),
-                onOpenAuth = { viewModel.openAuthSheet() },
-                onSubmitReview = { rating, comment, guestName ->
-                    viewModel.submitReview("HOTSPOT", uiState.selectedHotspot!!.id, uiState.selectedHotspot!!.name, rating, comment, guestName)
-                },
-                onNavigateBack = { viewModel.selectHotspot(null) },
-                onToggleFavorite = { viewModel.toggleFavorite(uiState.selectedHotspot!!) },
-                onExploreWithMaps = { viewModel.exploreHotspotWithMaps(uiState.selectedHotspot!!) },
-                selectedLanguage = uiState.selectedLanguage
-            )
-        } else if (uiState.selectedArticle != null) {
-            NewsDetailScreen(
-                article = uiState.selectedArticle!!,
-                currentUser = currentUser,
-                reviewsFlow = viewModel.getReviewsForTarget("NEWS", uiState.selectedArticle!!.id.toString()),
-                onOpenAuth = { viewModel.openAuthSheet() },
-                onSubmitReview = { rating, comment, guestName ->
-                    viewModel.submitReview("NEWS", uiState.selectedArticle!!.id.toString(), uiState.selectedArticle!!.title, rating, comment, guestName)
-                },
-                onNavigateBack = { viewModel.selectArticle(null) },
-                onToggleBookmark = { viewModel.toggleBookmark(uiState.selectedArticle!!) },
-                onVerifyWithSearch = { viewModel.verifyNewsWithSearch(uiState.selectedArticle!!) }
-            )
-        } else {
-            Scaffold(
-        containerColor = BentoCanvas,
-        modifier = Modifier.fillMaxSize(),
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("balasore_main_scaffold"),
         topBar = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                AppHeader(
-                    weather = weather,
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { viewModel.refreshData() },
-                    currentUser = currentUser,
-                    onProfileClick = { viewModel.openAuthSheet() },
-                    isOnline = uiState.isOnline,
-                    isSyncing = uiState.isSyncing,
-                    lastSyncTime = uiState.lastSyncTime,
-                    onOfflineStatusClick = { viewModel.openOfflineSheet() },
-                    searchQuery = uiState.searchQuery,
-                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                    selectedTab = uiState.selectedTab,
-                    hotspotsCount = hotspots.size,
-                    newsCount = news.size,
-                    weatherMatchesCount = weatherMatchesCount,
-                    onSelectTab = { viewModel.selectTab(it) },
-                    onToggleTheme = { viewModel.toggleTheme() },
-                    onAlertsClick = { viewModel.openAlertsSheet() },
-                    hasActiveAlerts = hasActiveAlerts,
-                    selectedLanguage = uiState.selectedLanguage
-                )
+            TopAppBar(
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Balasore 360",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 20.sp,
+                                    color = OceanBlueDark
+                                )
+                            )
+                            Text(
+                                text = "ବାଲେଶ୍ୱର • ଚାନ୍ଦିପୁର ସ୍ପନ୍ଦନ",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 10.sp,
+                                    color = BentoSlate500
+                                )
+                            )
+                        }
 
-                // Horizontal scrollable tab row component to toggle between News, Weather, and Tourism feeds
-                MainScrollableTabRow(
-                    selectedTab = uiState.selectedTab,
-                    onSelectTab = { viewModel.selectTab(it) },
-                    hotspotsCount = hotspots.size,
-                    newsCount = news.size,
-                    weatherTemp = weather?.temperature?.toInt()?.let { "$it°C" },
-                    selectedLanguage = uiState.selectedLanguage
+                        // Language Toggle Pills
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(BentoSlate100)
+                                .padding(2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            LanguagePill(
+                                title = "EN",
+                                isSelected = uiState.language == AppLanguage.ENGLISH,
+                                onClick = { viewModel.setLanguage(AppLanguage.ENGLISH) }
+                            )
+                            LanguagePill(
+                                title = "ଓଡ଼ି",
+                                isSelected = uiState.language == AppLanguage.ODIA,
+                                onClick = { viewModel.setLanguage(AppLanguage.ODIA) }
+                            )
+                            LanguagePill(
+                                title = "HI",
+                                isSelected = uiState.language == AppLanguage.HINDI,
+                                onClick = { viewModel.setLanguage(AppLanguage.HINDI) }
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
                 )
-            }
+            )
         },
         bottomBar = {
-            Surface(
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = BentoCardWhite,
-                shadowElevation = 8.dp,
-                border = BorderStroke(1.dp, BentoBorder),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .testTag("bottom_navigation_bar")
+            NavigationBar(
+                modifier = Modifier.testTag("balasore_bottom_nav"),
+                containerColor = Color.White,
+                tonalElevation = 8.dp
             ) {
-                NavigationBar(
-                    containerColor = BentoCardWhite,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier.height(72.dp)
-                ) {
-                    AppTab.values().forEach { tab ->
-                        val isSelected = uiState.selectedTab == tab
-                        val (iconFilled, iconOutlined) = when (tab) {
-                            AppTab.HOTSPOTS -> Pair(Icons.Default.Explore, Icons.Outlined.Explore)
-                            AppTab.NEWS -> Pair(Icons.AutoMirrored.Filled.Article, Icons.AutoMirrored.Outlined.Article)
-                            AppTab.WEATHER -> Pair(Icons.Default.Cloud, Icons.Outlined.Cloud)
-                            AppTab.ESSENTIALS -> Pair(Icons.Default.ContactPhone, Icons.Outlined.ContactPhone)
-                        }
-
-                        val tabLabel = when (uiState.selectedLanguage) {
-                            AppLanguage.ODIA -> when (tab) {
-                                AppTab.HOTSPOTS -> "ପର୍ଯ୍ୟଟନ"
-                                AppTab.NEWS -> "ଖବର"
-                                AppTab.WEATHER -> "ପାଣିପାଗ"
-                                AppTab.ESSENTIALS -> "ଜରୁରୀ ସେବା"
-                            }
-                            AppLanguage.HINDI -> when (tab) {
-                                AppTab.HOTSPOTS -> "पर्यटन"
-                                AppTab.NEWS -> "समाचार"
-                                AppTab.WEATHER -> "मौसम"
-                                AppTab.ESSENTIALS -> "सेवाएं"
-                            }
-                            AppLanguage.ENGLISH -> tab.title
-                        }
-
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = { viewModel.selectTab(tab) },
-                            icon = {
-                                Icon(
-                                    imageVector = if (isSelected) iconFilled else iconOutlined,
-                                    contentDescription = tabLabel
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = tabLabel.uppercase(),
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp,
-                                        letterSpacing = 0.6.sp
-                                    )
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = BentoPrimaryBlue,
-                                selectedTextColor = BentoPrimaryBlue,
-                                indicatorColor = BentoBluePill,
-                                unselectedIconColor = BentoSlate400,
-                                unselectedTextColor = BentoSlate400
-                            ),
-                            modifier = Modifier.testTag("nav_item_${tab.name.lowercase()}")
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 0,
+                    onClick = { viewModel.selectTab(0) },
+                    icon = {
+                        Icon(
+                            imageVector = if (uiState.selectedTab == 0) Icons.Default.Explore else Icons.Outlined.Explore,
+                            contentDescription = "Hotspots"
                         )
-                    }
-                }
-            }
-        },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .testTag("app_snackbar_host")
-            ) { snackbarData ->
-                val isConnectionError = snackbarData.visuals.actionLabel != null ||
-                        snackbarData.visuals.message.contains("Offline", ignoreCase = true) ||
-                        snackbarData.visuals.message.contains("No Connection", ignoreCase = true) ||
-                        snackbarData.visuals.message.contains("Internet", ignoreCase = true)
-
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = if (isConnectionError) BentoSlate900 else BentoSlate800,
-                    border = BorderStroke(
-                        1.5.dp,
-                        if (isConnectionError) BentoAmberText.copy(alpha = 0.55f) else BentoBorder
-                    ),
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp)
-                        .testTag("custom_snackbar")
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = if (isConnectionError) BentoAmberBg else BentoBlueLight,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = if (isConnectionError) Icons.Default.CloudOff else Icons.Default.Info,
-                                        contentDescription = if (isConnectionError) "No connection" else "Notice",
-                                        tint = if (isConnectionError) BentoAmberText else BentoPrimaryBlue,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-
-                            Column {
-                                Text(
-                                    text = snackbarData.visuals.message,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.White
-                                    ),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                if (isConnectionError) {
-                                    Text(
-                                        text = "ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ • ସାଇତା ତଥ୍ୟ ଉପଲବ୍ଧ",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 11.sp,
-                                            color = BentoAmberText
-                                        )
-                                    )
-                                }
-                            }
-                        }
-
-                        if (snackbarData.visuals.actionLabel != null) {
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Button(
-                                onClick = { snackbarData.performAction() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = BentoPrimaryBlue,
-                                    contentColor = Color.White
-                                ),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-                                modifier = Modifier.testTag("snackbar_retry_button")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Refresh,
-                                        contentDescription = "Retry",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                    Text(
-                                        text = snackbarData.visuals.actionLabel ?: "Retry",
-                                        style = MaterialTheme.typography.labelMedium.copy(
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { viewModel.openGroundingSheet() },
-                containerColor = BentoPrimaryBlue,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = "AI Guide",
-                        modifier = Modifier.size(20.dp)
+                    },
+                    label = {
+                        Text(
+                            text = if (uiState.language == AppLanguage.ODIA) "ସ୍ଥାନ" else "Explore",
+                            fontSize = 11.sp
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = OceanBlue,
+                        selectedTextColor = OceanBlue,
+                        indicatorColor = BentoSlate100,
+                        unselectedIconColor = BentoSlate400,
+                        unselectedTextColor = BentoSlate400
                     )
-                },
-                text = {
-                    Text(
-                        text = "AI Guide",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                )
+
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 1,
+                    onClick = { viewModel.selectTab(1) },
+                    icon = {
+                        Icon(
+                            imageVector = if (uiState.selectedTab == 1) Icons.AutoMirrored.Filled.Article else Icons.AutoMirrored.Outlined.Article,
+                            contentDescription = "News"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = if (uiState.language == AppLanguage.ODIA) "ଖବର" else "News",
+                            fontSize = 11.sp
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = OceanBlue,
+                        selectedTextColor = OceanBlue,
+                        indicatorColor = BentoSlate100,
+                        unselectedIconColor = BentoSlate400,
+                        unselectedTextColor = BentoSlate400
                     )
-                },
-                modifier = Modifier.testTag("ai_assistant_fab")
-            )
+                )
+
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 2,
+                    onClick = { viewModel.selectTab(2) },
+                    icon = {
+                        Icon(
+                            imageVector = if (uiState.selectedTab == 2) Icons.Default.Cloud else Icons.Outlined.Cloud,
+                            contentDescription = "Weather"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = if (uiState.language == AppLanguage.ODIA) "ପାଣିପାଗ" else "Weather",
+                            fontSize = 11.sp
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = OceanBlue,
+                        selectedTextColor = OceanBlue,
+                        indicatorColor = BentoSlate100,
+                        unselectedIconColor = BentoSlate400,
+                        unselectedTextColor = BentoSlate400
+                    )
+                )
+
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 3,
+                    onClick = { viewModel.selectTab(3) },
+                    icon = {
+                        Icon(
+                            imageVector = if (uiState.selectedTab == 3) Icons.Default.Emergency else Icons.Outlined.Emergency,
+                            contentDescription = "Essentials"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = if (uiState.language == AppLanguage.ODIA) "ସହାୟତା" else "Essentials",
+                            fontSize = 11.sp
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = OceanBlue,
+                        selectedTextColor = OceanBlue,
+                        indicatorColor = BentoSlate100,
+                        unselectedIconColor = BentoSlate400,
+                        unselectedTextColor = BentoSlate400
+                    )
+                )
+            }
         }
     ) { innerPadding ->
-        PullToRefreshBox(
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = { viewModel.refreshData() },
-            state = pullToRefreshState,
-            indicator = {
-                PullToRefreshDefaults.Indicator(
-                    state = pullToRefreshState,
-                    isRefreshing = uiState.isRefreshing,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    containerColor = BentoCardWhite,
-                    color = BentoPrimaryBlue
-                )
-            },
+        Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .testTag("main_activity_pull_to_refresh")
+                .padding(innerPadding),
+            color = BentoSlate50
         ) {
             when (uiState.selectedTab) {
-                AppTab.HOTSPOTS -> {
-                    TourismScreen(
-                        hotspots = hotspots,
-                        weather = weather,
-                        selectedCategory = uiState.hotspotCategory,
-                        selectedHotspot = uiState.selectedHotspot,
-                        isMapMode = uiState.isMapMode,
-                        currentUser = currentUser,
-                        isRefreshing = uiState.isRefreshing || uiState.isTourismLoading,
-                        onRefresh = { viewModel.refreshData() },
-                        onToggleMapMode = { viewModel.toggleMapMode() },
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForHotspot = { id -> viewModel.getReviewsForTarget("HOTSPOT", id) },
-                        onSubmitHotspotReview = { id, name, rating, comment, guestName ->
-                            viewModel.submitReview("HOTSPOT", id, name, rating, comment, guestName)
-                        },
-                        onCategorySelect = { viewModel.setHotspotCategory(it) },
-                        onHotspotSelect = { viewModel.selectHotspot(it) },
-                        onToggleFavorite = { viewModel.toggleFavorite(it) },
-                        onExploreWithMaps = { hotspot -> viewModel.exploreHotspotWithMaps(hotspot) },
-                        searchQuery = uiState.searchQuery,
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                        isOnline = isOnline,
-                        selectedLanguage = uiState.selectedLanguage
-                    )
-                }
-                AppTab.NEWS -> {
-                    NewsScreen(
-                        articles = news,
-                        selectedCategory = uiState.newsCategory,
-                        searchQuery = uiState.searchQuery,
-                        selectedArticle = uiState.selectedArticle,
-                        currentUser = currentUser,
-                        isRefreshing = uiState.isRefreshing || uiState.isNewsLoading,
-                        onRefresh = { viewModel.refreshNewsFeed() },
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForArticle = { id -> viewModel.getReviewsForTarget("NEWS", id) },
-                        onSubmitArticleReview = { id, title, rating, comment, guestName ->
-                            viewModel.submitReview("NEWS", id, title, rating, comment, guestName)
-                        },
-                        onCategorySelect = { viewModel.setNewsCategory(it) },
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                        onArticleSelect = { viewModel.selectArticle(it) },
-                        onToggleBookmark = { viewModel.toggleBookmark(it) },
-                        onVerifyWithSearch = { article -> viewModel.verifyNewsWithSearch(article) },
-                        isOnline = isOnline
-                    )
-                }
-                AppTab.WEATHER -> {
-                    WeatherScreen(
-                        weather = weather,
-                        dailyForecasts = filteredDailyForecasts,
-                        timeSensitiveAlerts = timeSensitiveAlerts,
-                        currentUser = currentUser,
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshData() },
-                        onOpenAuth = { viewModel.openAuthSheet() },
-                        getReviewsForWeather = { id -> viewModel.getReviewsForTarget("WEATHER", id) },
-                        onSubmitWeatherReview = { id, title, rating, comment, guestName ->
-                            viewModel.submitReview("WEATHER", id, title, rating, comment, guestName)
-                        },
-                        searchQuery = uiState.searchQuery,
-                        onClearSearch = { viewModel.clearSearchQuery() },
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                        onCheckTideSearch = { tideState -> viewModel.checkCoastalTideSearch(tideState) },
-                        isOnline = isOnline
-                    )
-                }
-                AppTab.ESSENTIALS -> {
-                    EssentialsScreen(
-                        weatherAlertsEnabled = weatherAlertsEnabled,
-                        breakingNewsEnabled = breakingNewsEnabled,
-                        onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
-                        onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
-                        onOpenAlertCenter = { viewModel.openAlertsSheet() },
-                        onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
-                        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() },
-                        onLanguageChange = { lang -> viewModel.showUserNotice("Language preference updated to $lang") },
-                        onClearOfflineCache = { viewModel.clearOfflineCache() }
-                    )
-                }
+                0 -> TourismScreen(
+                    hotspots = uiState.hotspots,
+                    selectedCategory = uiState.selectedHotspotCategory,
+                    searchQuery = uiState.hotspotSearchQuery,
+                    language = uiState.language,
+                    favoriteIds = uiState.favoriteHotspotIds,
+                    onCategorySelected = { viewModel.setHotspotCategory(it) },
+                    onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
+                    onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) }
+                )
+                1 -> NewsScreen(
+                    articles = uiState.newsArticles,
+                    selectedCategory = uiState.selectedNewsCategory,
+                    language = uiState.language,
+                    bookmarkedIds = uiState.bookmarkedIds,
+                    isRefreshing = uiState.isRefreshing,
+                    onCategorySelected = { viewModel.setNewsCategory(it) },
+                    onToggleBookmark = { viewModel.toggleBookmark(it) },
+                    onRefresh = { viewModel.refreshAll() }
+                )
+                2 -> WeatherScreen(
+                    weather = uiState.weather,
+                    language = uiState.language
+                )
+                3 -> EssentialsScreen(
+                    emergencyContacts = uiState.emergencyContacts,
+                    transitList = uiState.transitList,
+                    language = uiState.language
+                )
             }
         }
     }
-    }
+}
 
-    // Full User Authentication, Profile Management & Avatar Upload Bottom Sheet
-    AuthBottomSheet(
-        isOpen = uiState.isAuthSheetOpen,
-        authMode = uiState.authMode,
-        currentUser = currentUser,
-        errorMessage = uiState.authError,
-        successMessage = uiState.authSuccessMessage,
-        onClose = { viewModel.closeAuthSheet() },
-        onSetMode = { viewModel.setAuthMode(it) },
-        onLogin = { email, pass -> viewModel.login(email, pass) },
-        onSignUp = { name, email, pass, phone, locality, answer ->
-            viewModel.signUp(name, email, pass, phone, locality, answer)
-        },
-        onResetPassword = { email, answer, newPass ->
-            viewModel.resetPassword(email, answer, newPass)
-        },
-        onUpdateProfile = { name, phone, locality, bio ->
-            viewModel.updateProfile(name, phone, locality, bio)
-        },
-        onUpdateAvatar = { avatarUri ->
-            viewModel.updateAvatar(avatarUri)
-        },
-        onLogout = { viewModel.logout(context) },
-        onGoogleSignIn = { viewModel.signInWithGoogle(context) }
-    )
-
-    // Offline & WorkManager Background Cache Sync Sheet
-    OfflineStatusBottomSheet(
-        isOpen = uiState.isOfflineSheetOpen,
-        isOnline = uiState.isOnline,
-        isSyncing = uiState.isSyncing,
-        lastSyncTime = uiState.lastSyncTime,
-        newsCount = news.size,
-        hotspotsCount = hotspots.size,
-        hasWeatherCache = weather != null,
-        forecastCount = dailyForecasts.size,
-        isCacheOlderThan24Hours = uiState.isCacheOlderThan24Hours,
-        onClose = { viewModel.closeOfflineSheet() },
-        onSyncNow = { viewModel.triggerManualSync() }
-    )
-
-    // Real-time Push & FCM Alert Center Bottom Sheet
-    LocalAlertsBottomSheet(
-        isOpen = uiState.isAlertsSheetOpen,
-        weather = weather,
-        breakingNews = breakingNewsList,
-        weatherAlertsEnabled = weatherAlertsEnabled,
-        breakingNewsEnabled = breakingNewsEnabled,
-        fcmToken = fcmToken,
-        onClose = { viewModel.closeAlertsSheet() },
-        onToggleWeatherAlerts = { viewModel.setWeatherAlertsOptIn(it) },
-        onToggleBreakingNews = { viewModel.setBreakingNewsOptIn(it) },
-        onSimulateWeatherAlert = { viewModel.simulateWeatherAlertPush() },
-        onSimulateBreakingNews = { viewModel.simulateBreakingNewsPush() },
-        onViewWeatherDetails = { viewModel.selectTab(AppTab.WEATHER) },
-        onReadArticle = { article ->
-            viewModel.selectTab(AppTab.NEWS)
-            viewModel.selectArticle(article)
-        }
-    )
-
-    // Gemini 3.5 Flash Search & Google Maps Grounding Assistant Sheet
-    BalasoreGroundingSheet(
-        groundingState = groundingState,
-        onClose = { viewModel.closeGroundingSheet() },
-        onExecuteQuery = { query, mode -> viewModel.executeGrounding(query, mode) },
-        onModeChange = { mode -> viewModel.setGroundingToolMode(mode) }
-    )
+@Composable
+fun LanguagePill(
+    title: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (isSelected) OceanBlue else Color.Transparent)
+            .clickable { onClick() }
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) Color.White else BentoSlate800,
+                fontSize = 10.sp
+            )
+        )
     }
 }

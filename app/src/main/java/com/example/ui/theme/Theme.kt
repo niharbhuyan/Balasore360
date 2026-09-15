@@ -1,84 +1,52 @@
 package com.example.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalContext
-import com.example.ui.viewmodel.ThemeMode
-
-private val DarkColorScheme = darkColorScheme(
-    primary = BalasorePrimaryDark,
-    onPrimary = BalasoreOnPrimaryDark,
-    primaryContainer = BalasorePrimaryContainerDark,
-    secondary = BalasoreSecondaryDark,
-    onSecondary = BalasoreOnSecondaryDark,
-    tertiary = BalasoreTertiaryDark,
-    onTertiary = BalasoreOnTertiaryDark,
-    background = BalasoreBackgroundDark,
-    onBackground = BalasoreOnBackgroundDark,
-    surface = BalasoreSurfaceDark,
-    onSurface = BalasoreOnSurfaceDark,
-    surfaceVariant = BalasoreSurfaceVariantDark,
-    onSurfaceVariant = BalasoreOnSurfaceVariantDark,
-    outline = BalasoreOutlineDark
-)
+import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = BalasorePrimary,
-    onPrimary = BalasoreOnPrimary,
-    primaryContainer = BalasorePrimaryContainer,
-    onPrimaryContainer = BalasoreOnPrimaryContainer,
-    secondary = BalasoreSecondary,
-    onSecondary = BalasoreOnSecondary,
-    secondaryContainer = BalasoreSecondaryContainer,
-    onSecondaryContainer = BalasoreOnSecondaryContainer,
-    tertiary = BalasoreTertiary,
-    onTertiary = BalasoreOnTertiary,
-    tertiaryContainer = BalasoreTertiaryContainer,
-    onTertiaryContainer = BalasoreOnTertiaryContainer,
-    background = BalasoreBackground,
-    onBackground = BalasoreOnBackground,
-    surface = BalasoreSurface,
-    onSurface = BalasoreOnSurface,
-    surfaceVariant = BalasoreSurfaceVariant,
-    onSurfaceVariant = BalasoreOnSurfaceVariant,
-    outline = BalasoreOutline
+    primary = OceanBlue,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFE0F2FE),
+    onPrimaryContainer = OceanBlueDark,
+    secondary = CoralOrange,
+    onSecondary = Color.White,
+    background = BentoSlate50,
+    onBackground = BentoSlate900,
+    surface = Color.White,
+    onSurface = BentoSlate900,
+    surfaceVariant = BentoSlate100,
+    onSurfaceVariant = BentoSlate700
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF38BDF8),
+    onPrimary = BentoSlate900,
+    primaryContainer = OceanBlueDark,
+    onPrimaryContainer = Color(0xFFE0F2FE),
+    secondary = CoralOrange,
+    onSecondary = Color.White,
+    background = BentoSlate900,
+    onBackground = BentoSlate50,
+    surface = BentoSlate800,
+    onSurface = BentoSlate50,
+    surfaceVariant = BentoSlate700,
+    onSurfaceVariant = BentoSlate200
 )
 
 @Composable
-fun MyApplicationTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
-    darkTheme: Boolean = when (themeMode) {
-        ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    },
-    dynamicColor: Boolean = false, // Prefer tailored Balasore branding
+fun Balasore360Theme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    val bentoPalette = if (darkTheme) DarkBentoPalette else LightBentoPalette
-
-    CompositionLocalProvider(LocalBentoPalette provides bentoPalette) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
-    }
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 }
-
