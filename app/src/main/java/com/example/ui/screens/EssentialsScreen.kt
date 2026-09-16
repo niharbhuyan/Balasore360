@@ -75,6 +75,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Share
+import com.example.ui.viewmodel.ThemeMode
+import com.example.ui.viewmodel.UniqueFeatureSheetType
 import com.example.util.PlayStoreUpdateManager
 import com.example.util.UpdateUIState
 
@@ -85,9 +91,12 @@ fun EssentialsScreen(
     seafoodCatches: List<SeafoodCatch>,
     language: AppLanguage,
     updateState: UpdateUIState = UpdateUIState.Idle,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeModeChange: (ThemeMode) -> Unit = {},
     onCheckForUpdates: () -> Unit = {},
     onTriggerUpdate: () -> Unit = {},
     onCompleteUpdate: () -> Unit = {},
+    onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -210,6 +219,21 @@ fun EssentialsScreen(
                         SeafoodCatchItemView(item = catchItem, language = language)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.HARBOR_CATCH_RATES) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_harbor_rates_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🐟", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Live Harbor Trawler Bells & Daily Price Ticker", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -252,6 +276,56 @@ fun EssentialsScreen(
             )
         }
 
+        // Cyclone Shelter Compass & Emergency Kit Action Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("essentials_cyclone_shelter_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🌀", fontSize = 20.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Cyclone Shelters & Emergency Kit",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Locate nearest high-ground cyclone shelters with offline GPS coordinates and interactive essential survival pack checklist.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFF14532D),
+                            fontSize = 11.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CYCLONE_RESILIENCE) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Open Offline Shelter Compass & Checklist", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
         // Transit Section Title
         item {
             Spacer(modifier = Modifier.height(16.dp))
@@ -290,6 +364,107 @@ fun EssentialsScreen(
             )
         }
 
+        // App Theme & Appearance Setting Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .testTag("app_theme_selection_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = when (themeMode) {
+                                    ThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
+                                    ThemeMode.LIGHT -> Icons.Default.LightMode
+                                    ThemeMode.DARK -> Icons.Default.DarkMode
+                                },
+                                contentDescription = "Theme Icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଆପ୍ ରୂପରେଖା ଓ ଡିସପ୍ଲେ" else "App Theme & Appearance",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = when (themeMode) {
+                                    ThemeMode.SYSTEM -> if (language == AppLanguage.ODIA) "ସିଷ୍ଟମ୍ ଡିଫଲ୍ଟ ଅନୁସାରେ ସ୍ୱୟଂକ୍ରିୟ" else "Follows system setting automatically"
+                                    ThemeMode.LIGHT -> if (language == AppLanguage.ODIA) "ସର୍ବଦା ଲାଇଟ୍ ମୋଡ୍ (ଉଜ୍ଜ୍ୱଳ)" else "Always light mode"
+                                    ThemeMode.DARK -> if (language == AppLanguage.ODIA) "ସର୍ବଦା ଡାର୍କ ମୋଡ୍ (କମ ଆଲୋକ ପାଇଁ ଉପଯୁକ୍ତ)" else "Comfortable dark mode for low light"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Theme selector pills
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        ThemeOptionPill(
+                            title = if (language == AppLanguage.ODIA) "ସିଷ୍ଟମ୍" else "System",
+                            icon = Icons.Default.BrightnessAuto,
+                            isSelected = themeMode == ThemeMode.SYSTEM,
+                            onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("theme_btn_system")
+                        )
+                        ThemeOptionPill(
+                            title = if (language == AppLanguage.ODIA) "ଲାଇଟ୍" else "Light",
+                            icon = Icons.Default.LightMode,
+                            isSelected = themeMode == ThemeMode.LIGHT,
+                            onClick = { onThemeModeChange(ThemeMode.LIGHT) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("theme_btn_light")
+                        )
+                        ThemeOptionPill(
+                            title = if (language == AppLanguage.ODIA) "ଡାର୍କ" else "Dark",
+                            icon = Icons.Default.DarkMode,
+                            isSelected = themeMode == ThemeMode.DARK,
+                            onClick = { onThemeModeChange(ThemeMode.DARK) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("theme_btn_dark")
+                        )
+                    }
+                }
+            }
+        }
+
         // Google Play Store Auto-Updates Status & Control Card
         item {
             Card(
@@ -298,8 +473,8 @@ fun EssentialsScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .testTag("play_store_auto_updates_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     modifier = Modifier
@@ -316,13 +491,13 @@ fun EssentialsScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFE0F2FE)),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Autorenew,
                                     contentDescription = "Auto Update",
-                                    tint = OceanBlue,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -332,12 +507,12 @@ fun EssentialsScreen(
                                     text = if (language == AppLanguage.ODIA) "ଗୁଗୁଲ୍ ପ୍ଲେ ଅଟୋ-ଅପଡେଟ୍" else "Play Store Auto-Updates",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = BentoSlate900
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
-                                    text = "Version 1.0.2 (Build 3)",
-                                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                                    text = "Version ${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE})",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
                         }
@@ -593,6 +768,40 @@ fun EssentialsScreen(
                                 )
                             )
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Balasore 360 v${com.example.BuildConfig.VERSION_NAME} App Bundle")
+                                putExtra(Intent.EXTRA_TEXT, "Balasore 360 v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) Signed Release AAB Bundle ready for Google Play Store upload: Balasore360-v${com.example.BuildConfig.VERSION_NAME}-release.aab")
+                            }
+                            val shareIntent = Intent.createChooser(sendIntent, "Share AAB Release Details")
+                            context.startActivity(shareIntent)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("export_aab_bundle_btn"),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Export AAB Release Info (v${com.example.BuildConfig.VERSION_NAME})",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
                     }
                 }
             }
@@ -937,6 +1146,44 @@ fun SeafoodCatchItemView(
                     )
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ThemeOptionPill(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        modifier = modifier.height(38.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 12.sp
+                )
+            )
         }
     }
 }

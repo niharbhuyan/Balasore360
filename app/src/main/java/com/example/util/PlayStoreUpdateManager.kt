@@ -190,18 +190,19 @@ class PlayStoreUpdateManager(private val context: Context) {
     }
 
     companion object {
-        const val PLAY_STORE_PACKAGE_NAME = "com.aistudio.balasore360.vxknrt"
+        const val PLAY_STORE_PACKAGE_NAME = "com.niharsales.balasore360"
 
         fun openPlayStore(context: Context) {
+            val pkg = context.packageName.ifEmpty { PLAY_STORE_PACKAGE_NAME }
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$PLAY_STORE_PACKAGE_NAME")).apply {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg")).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(intent)
             } catch (e: ActivityNotFoundException) {
                 val webIntent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$PLAY_STORE_PACKAGE_NAME")
+                    Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
                 ).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }

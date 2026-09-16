@@ -1,5 +1,8 @@
 package com.example.data.repository
 
+import android.content.Context
+import com.example.data.model.BalasoreForecastDay
+import com.example.data.model.BalasoreForecastHour
 import com.example.data.model.CycloneShelter
 import com.example.data.model.DailyBalasoreIdiom
 import com.example.data.model.DrdoAdvisory
@@ -392,6 +395,81 @@ object BalasoreRepository {
         seaCondition = "Calm • Excellent for beach excursions"
     )
 
+    val forecast3Days = listOf(
+        BalasoreForecastDay(
+            id = "day_1",
+            dayLabel = "Tomorrow",
+            dateFormatted = "Thu, 17 Sep",
+            odiaDayLabel = "ଆସନ୍ତାକାଲି (ଗୁରୁବାର)",
+            highTempC = 31,
+            lowTempC = 24,
+            condition = "Scattered Coastal Showers & Bay Breeze",
+            odiaCondition = "ଉପକୂଳିଆ ବିକ୍ଷିପ୍ତ ବର୍ଷା ଓ ସାମୁଦ୍ରିକ ପବନ",
+            weatherIcon = "🌧️",
+            rainProbability = 65,
+            windSummary = "20 km/h (ENE)",
+            humidity = "76%",
+            uvIndex = "Moderate (5)",
+            marineNotice = "Intertidal beach walk safe before 01:00 PM; mild swells off Balaramgadi estuary.",
+            hourlySlots = listOf(
+                BalasoreForecastHour("06:00 AM", 24, "⛅", 20, 14),
+                BalasoreForecastHour("09:00 AM", 27, "⛅", 35, 18),
+                BalasoreForecastHour("12:00 PM", 31, "🌧️", 65, 22),
+                BalasoreForecastHour("03:00 PM", 29, "🌦️", 50, 20),
+                BalasoreForecastHour("06:00 PM", 27, "☁️", 30, 16),
+                BalasoreForecastHour("09:00 PM", 25, "🌙", 15, 12)
+            )
+        ),
+        BalasoreForecastDay(
+            id = "day_2",
+            dayLabel = "Friday",
+            dateFormatted = "Fri, 18 Sep",
+            odiaDayLabel = "ଶୁକ୍ରବାର",
+            highTempC = 29,
+            lowTempC = 23,
+            condition = "Kalbaisakhi Thunderstorm & Squall",
+            odiaCondition = "କାଳବୈଶାଖୀ ଝଡ଼ ଓ ବଜ୍ରପାତ ଚେତାବନୀ",
+            weatherIcon = "⚡",
+            rainProbability = 85,
+            windSummary = "38 km/h Gusting to 50 km/h",
+            humidity = "86%",
+            uvIndex = "Low (3)",
+            marineNotice = "IMD Orange Alert: Fishermen strictly advised not to venture into deep sea.",
+            hourlySlots = listOf(
+                BalasoreForecastHour("06:00 AM", 24, "☁️", 40, 18),
+                BalasoreForecastHour("09:00 AM", 26, "🌧️", 70, 26),
+                BalasoreForecastHour("12:00 PM", 29, "⚡", 85, 40),
+                BalasoreForecastHour("03:00 PM", 26, "⛈️", 90, 48),
+                BalasoreForecastHour("06:00 PM", 25, "🌧️", 60, 30),
+                BalasoreForecastHour("09:00 PM", 24, "🌧️", 45, 22)
+            )
+        ),
+        BalasoreForecastDay(
+            id = "day_3",
+            dayLabel = "Saturday",
+            dateFormatted = "Sat, 19 Sep",
+            odiaDayLabel = "ଶନିବାର",
+            highTempC = 33,
+            lowTempC = 25,
+            condition = "Sunny Clear Skies & Gentle Sea Breeze",
+            odiaCondition = "ଫର୍ଚ୍ଚା ଖରାଟିଆ ପାଗ ଓ ସୁଲୁସୁଲିଆ ପବନ",
+            weatherIcon = "☀️",
+            rainProbability = 15,
+            windSummary = "14 km/h (SE)",
+            humidity = "68%",
+            uvIndex = "Very High (8)",
+            marineNotice = "Optimal calm conditions. Perfect for Chandipur 4.8 km low-tide excursion.",
+            hourlySlots = listOf(
+                BalasoreForecastHour("06:00 AM", 25, "🌅", 5, 10),
+                BalasoreForecastHour("09:00 AM", 28, "☀️", 10, 12),
+                BalasoreForecastHour("12:00 PM", 33, "☀️", 15, 16),
+                BalasoreForecastHour("03:00 PM", 32, "🌤️", 10, 15),
+                BalasoreForecastHour("06:00 PM", 28, "🌇", 5, 14),
+                BalasoreForecastHour("09:00 PM", 26, "✨", 0, 10)
+            )
+        )
+    )
+
     val transitSchedules = listOf(
         TransitSchedule(
             id = "tr_1",
@@ -430,4 +508,28 @@ object BalasoreRepository {
             status = "Active Frequency"
         )
     )
+
+    fun getInstance(context: Context): BalasoreRepository = this
+
+    fun isCacheOlderThan24Hours(): Boolean = false
+
+    suspend fun syncAllData(forceNetwork: Boolean = false): SyncResult = SyncResult(
+        isSuccess = true,
+        weatherUpdated = true,
+        newsArticlesCount = newsArticles.size,
+        hotspotsCount = hotspots.size,
+        timestamp = System.currentTimeMillis(),
+        isOfflineServed = false,
+        message = "Sync completed successfully"
+    )
 }
+
+data class SyncResult(
+    val isSuccess: Boolean = true,
+    val weatherUpdated: Boolean = true,
+    val newsArticlesCount: Int = 0,
+    val hotspotsCount: Int = 0,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isOfflineServed: Boolean = false,
+    val message: String = ""
+)

@@ -1,4 +1,20 @@
 <resources>
     <string name="app_name">Balasore 360</string>
     <string name="app_tagline">Your Gateway to Balasore, Chandipur &amp; Beyond</string>
+    <string name="brand_name">Nihar Sales</string>
+    <string name="app_subtitle">Digital Hub and Tourism Portal</string>
+    <string name="tab_tourism">Tourism</string>
+    <string name="tab_news">Latest News</string>
+    <string name="tab_weather">Weather &amp; Alerts</string>
+    <string name="tab_essentials">Essentials</string>
+    <string name="search_hint">Search news, beaches, temples, weather&#8230;</string>
+    <string name="retry">Retry</string>
+    <string name="offline_mode_active">No connection • Offline mode active</string>
+    <string name="offline_room_cached">Cached news, weather and tourism spots</string>
+    <string name="favorites">Favorites</string>
+    <string name="language_preference">Language &amp; Script Preference</string>
+    <string name="language_hint">Choose your preferred language (English, Odia, Hindi)</string>
+    <string name="lang_english">English</string>
+    <string name="lang_odia">ଓଡ଼ିଆ</string>
+    <string name="lang_hindi">हिन्दी</string>
 </resources>

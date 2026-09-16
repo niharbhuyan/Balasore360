@@ -8,6 +8,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.data.local.UserEntity
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -117,6 +118,9 @@ class FirebaseAuthManager(private val context: Context) {
                 credentialManager.getCredential(context, request)
             } catch (e: GetCredentialCancellationException) {
                 return@withContext Result.failure(Exception("Google Sign-In was cancelled by user."))
+            } catch (e: NoCredentialException) {
+                Log.w("FirebaseAuthManager", "No Google credentials available on device: ${e.message}")
+                return@withContext Result.failure(Exception("No Google account found on device. Please add a Google account or sign in with email."))
             } catch (e: GetCredentialException) {
                 // If Play Services or server client ID isn't linked to real Google Cloud project yet,
                 // give a friendly message with guidance:

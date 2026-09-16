@@ -37,16 +37,28 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = BentoSlate200
 )
 
+data class BentoPalette(
+    val isDark: Boolean = false,
+    val gold: Color = BentoGold,
+    val tideIncoming: Color = TideIncoming,
+    val tideReceding: Color = TideReceding
+)
+
+val LocalBentoPalette = androidx.compose.runtime.staticCompositionLocalOf { BentoPalette() }
+
 @Composable
 fun Balasore360Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val bentoPalette = BentoPalette(isDark = darkTheme)
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    androidx.compose.runtime.CompositionLocalProvider(LocalBentoPalette provides bentoPalette) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

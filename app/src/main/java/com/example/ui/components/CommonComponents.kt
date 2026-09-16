@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Cloud
@@ -45,6 +46,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Train
+import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Button
@@ -66,6 +69,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.example.ui.theme.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -762,6 +766,404 @@ fun TideStatusBadge(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
+
+/**
+ * Modern Animated Live Marine Status Ticker.
+ * Informs the user in real-time about Chandipur vanishing sea tides,
+ * walking safety window, and ITR missile range advisory status with live pulsing beacon.
+ */
+@Composable
+fun LiveMarineStatusTicker(
+    tidePhase: String,
+    safeWalkMins: Int,
+    recededKm: Double,
+    hasDrdoAlert: Boolean = false,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "pulse_alpha"
+    )
+
+    val isSafeToWalk = safeWalkMins > 0
+    val statusColor = if (isSafeToWalk) Color(0xFF0284C7) else Color(0xFFEF4444)
+    val statusBg = if (isSafeToWalk) Color(0xFFF0F9FF) else Color(0xFFFEF2F2)
+    val statusBorder = if (isSafeToWalk) Color(0xFFBAE6FD) else Color(0xFFFECACA)
+
+    val tickerText = when (selectedLanguage) {
+        AppLanguage.ODIA -> "ଚାନ୍ଦିପୁର: ସମୁଦ୍ର ${recededKm} କିମି ପଛକୁ ଗଲାଣି • ଚାଲିବା ସମୟ ${safeWalkMins} ମିନିଟ୍"
+        AppLanguage.HINDI -> "चांदीपुर: समुद्र ${recededKm} किमी पीछे हटा • चलने का समय ${safeWalkMins} मिनट शेष"
+        AppLanguage.ENGLISH -> "Chandipur: Sea receded ${recededKm} km • Safe walk: ${safeWalkMins} mins left"
+    }
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = statusBg,
+        border = BorderStroke(1.dp, statusBorder),
+        shadowElevation = 0.5.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .testTag("live_marine_ticker")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(statusColor.copy(alpha = pulseAlpha))
+                )
+
+                Text(
+                    text = tickerText,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.5.sp
+                    ),
+                    color = if (isSafeToWalk) BentoSlate900 else BentoRedText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = if (isSafeToWalk) BentoPrimaryBlue else BentoRedText,
+                modifier = Modifier.padding(start = 6.dp)
+            ) {
+                Text(
+                    text = if (hasDrdoAlert) "ITR ALERT" else "LIVE TIDE",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 9.sp,
+                        letterSpacing = 0.8.sp
+                    ),
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Coastal Marine Bento Quick-Action Dock.
+ * 4 high-priority bento micro-cards giving instantaneous 1-tap utility:
+ * 1. Chandipur Vanishing Sea Radar
+ * 2. 24x7 Emergency SOS Speed-Dial
+ * 3. Balasore Express & Transit Radar
+ * 4. Civic & Coastal Warning Bulletins
+ */
+@Composable
+fun BentoQuickActionDock(
+    recededKm: Double,
+    isSafeToWalk: Boolean,
+    safeWalkMins: Int,
+    activeAlertsCount: Int,
+    selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    onTideClick: () -> Unit,
+    onEmergencySosClick: () -> Unit,
+    onTransitClick: () -> Unit,
+    onAlertsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Card 1: Chandipur Tide Radar
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = BentoCardWhite,
+                border = BorderStroke(1.dp, BentoBorder),
+                shadowElevation = 1.dp,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onTideClick)
+                    .testTag("dock_tide_radar")
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFE0F2FE),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Water,
+                                    contentDescription = null,
+                                    tint = BentoPrimaryBlue,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSafeToWalk) Color(0xFFDCFCE7) else Color(0xFFFEE2E2)
+                        ) {
+                            Text(
+                                text = "-${recededKm} KM",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                ),
+                                color = if (isSafeToWalk) Color(0xFF15803D) else Color(0xFFB91C1C),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = when (selectedLanguage) {
+                            AppLanguage.ODIA -> "ଚାନ୍ଦିପୁର ଜୁଆର"
+                            AppLanguage.HINDI -> "चांदीपुर ज्वार"
+                            AppLanguage.ENGLISH -> "Chandipur Tide"
+                        },
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate900
+                    )
+                    Text(
+                        text = if (isSafeToWalk) "${safeWalkMins}m safe window" else "Sea returning",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = BentoSlate500
+                    )
+                }
+            }
+
+            // Card 2: 24x7 Emergency SOS Dialer
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = BentoCardWhite,
+                border = BorderStroke(1.dp, BentoBorder),
+                shadowElevation = 1.dp,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onEmergencySosClick)
+                    .testTag("dock_emergency_sos")
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFFEE2E2),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Call,
+                                    contentDescription = null,
+                                    tint = BentoRedText,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = BentoRedBg
+                        ) {
+                            Text(
+                                text = "112 SOS",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                ),
+                                color = BentoRedText,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = when (selectedLanguage) {
+                            AppLanguage.ODIA -> "ଜରୁରୀକାଳୀନ ଡାଏଲ୍"
+                            AppLanguage.HINDI -> "आपातकालीन डायल"
+                            AppLanguage.ENGLISH -> "Emergency SOS"
+                        },
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate900
+                    )
+                    Text(
+                        text = "Hospital • Police • Fire",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = BentoSlate500
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Card 3: Balasore Express & Transit Radar
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = BentoCardWhite,
+                border = BorderStroke(1.dp, BentoBorder),
+                shadowElevation = 1.dp,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onTransitClick)
+                    .testTag("dock_transit_radar")
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFFEF3C7),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Train,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD97706),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFFEF3C7)
+                        ) {
+                            Text(
+                                text = "BLS RADAR",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                ),
+                                color = Color(0xFFB45309),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = when (selectedLanguage) {
+                            AppLanguage.ODIA -> "ଟ୍ରେନ୍ ଓ ବସ୍ ସୂଚୀ"
+                            AppLanguage.HINDI -> "ट्रेन और बस समय"
+                            AppLanguage.ENGLISH -> "Transit & Trains"
+                        },
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate900
+                    )
+                    Text(
+                        text = "Express schedules",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = BentoSlate500
+                    )
+                }
+            }
+
+            // Card 4: Local Alerts & DRDO Bulletins
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = BentoCardWhite,
+                border = BorderStroke(1.dp, BentoBorder),
+                shadowElevation = 1.dp,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onAlertsClick)
+                    .testTag("dock_alerts_radar")
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (activeAlertsCount > 0) Color(0xFFFEE2E2) else Color(0xFFF1F5F9),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (activeAlertsCount > 0) Icons.Default.NotificationsActive else Icons.Default.Notifications,
+                                    contentDescription = null,
+                                    tint = if (activeAlertsCount > 0) BentoRedText else BentoSlate700,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (activeAlertsCount > 0) BentoRedBg else BentoSlate100
+                        ) {
+                            Text(
+                                text = if (activeAlertsCount > 0) "$activeAlertsCount ACTIVE" else "ALL CLEAR",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                ),
+                                color = if (activeAlertsCount > 0) BentoRedText else BentoSlate700,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = when (selectedLanguage) {
+                            AppLanguage.ODIA -> "ସ୍ଥାନୀୟ ସତର୍କତା"
+                            AppLanguage.HINDI -> "स्थानीय अलर्ट"
+                            AppLanguage.ENGLISH -> "Local Alerts"
+                        },
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BentoSlate900
+                    )
+                    Text(
+                        text = if (activeAlertsCount > 0) "DRDO & Weather warning" else "Normal conditions",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = BentoSlate500
+                    )
+                }
+            }
         }
     }
 }

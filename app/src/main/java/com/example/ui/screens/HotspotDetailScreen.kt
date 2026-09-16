@@ -89,17 +89,7 @@ import com.example.data.local.UserEntity
 import com.example.data.local.WeatherCacheEntity
 import com.example.ui.components.ReviewsSection
 import com.example.ui.util.AppLanguage
-import com.example.ui.theme.BentoBlueLight
-import com.example.ui.theme.BentoBorder
-import com.example.ui.theme.BentoCardWhite
-import com.example.ui.theme.BentoGold
-import com.example.ui.theme.BentoPrimaryBlue
-import com.example.ui.theme.BentoRedText
-import com.example.ui.theme.BentoSlate100
-import com.example.ui.theme.BentoSlate400
-import com.example.ui.theme.BentoSlate500
-import com.example.ui.theme.BentoSlate700
-import com.example.ui.theme.BentoSlate900
+import com.example.ui.theme.*
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -727,6 +717,74 @@ fun HotspotDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Nearby Circuit & Travel Continuation Card
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                border = BorderStroke(1.dp, Color(0xFFBBF7D0)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFDCFCE7),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Explore,
+                                    contentDescription = null,
+                                    tint = Color(0xFF16A34A),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "RECOMMENDED CIRCUIT COMBINATION",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp,
+                                    fontSize = 10.sp
+                                ),
+                                color = Color(0xFF15803D)
+                            )
+                            Text(
+                                text = "Nearby attractions to visit together",
+                                style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate600)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    val circuitRecommendation = when {
+                        hotspot.category.contains("Beach", ignoreCase = true) ->
+                            "Combine with Balaramgadi Fishing Harbor (4 km) for fresh coastal catch & Mirzapur sand dunes for sunset views."
+                        hotspot.category.contains("Temple", ignoreCase = true) || hotspot.category.contains("Spiritual", ignoreCase = true) ->
+                            "Pair your visit with Remuna's Brass & Bell-Metal Craft Village (2 km) and Emami Jagannath Mandir."
+                        hotspot.category.contains("Nature", ignoreCase = true) || hotspot.category.contains("Eco", ignoreCase = true) ->
+                            "Ideal full-day safari when combined with Rishia Dam reservoir & Panchalingeswar perennial hill stream."
+                        else ->
+                            "Explore the historic Balasore Old Town district, Raja Baikuntha Nath De heritage library, and Budhabalanga river ghats."
+                    }
+
+                    Text(
+                        text = circuitRecommendation,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFF14532D),
+                            lineHeight = 18.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Citizen Reviews Section
             ReviewsSection(
                 targetType = "HOTSPOT",
@@ -826,4 +884,18 @@ private fun shareHotspotDetails(context: Context, hotspot: HotspotEntity) {
         )
     }
     context.startActivity(Intent.createChooser(shareIntent, "Share Tourism Destination"))
+}
+
+private fun getHotspotCategoryIcon(category: String): ImageVector {
+    return when (category.lowercase()) {
+        "beach", "coast", "beach & coast" -> Icons.Default.BeachAccess
+        "temple", "spiritual", "heritage & spiritual" -> Icons.Default.Museum
+        "nature", "wildlife", "nature & pilgrimage", "wildlife sanctuary" -> Icons.Default.Park
+        "marine", "port" -> Icons.Default.DirectionsBoat
+        else -> Icons.Default.Place
+    }
+}
+
+private fun getHotspotImageRes(id: String): Int? {
+    return null
 }

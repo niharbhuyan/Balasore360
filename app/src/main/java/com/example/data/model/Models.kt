@@ -40,6 +40,32 @@ data class WeatherInfo(
     val cycloneAlert: String? = null
 )
 
+data class BalasoreForecastHour(
+    val timeLabel: String,
+    val tempC: Int,
+    val conditionEmoji: String,
+    val popPercentage: Int,
+    val windKmh: Int
+)
+
+data class BalasoreForecastDay(
+    val id: String,
+    val dayLabel: String,
+    val dateFormatted: String,
+    val odiaDayLabel: String,
+    val highTempC: Int,
+    val lowTempC: Int,
+    val condition: String,
+    val odiaCondition: String,
+    val weatherIcon: String,
+    val rainProbability: Int,
+    val windSummary: String,
+    val humidity: String,
+    val uvIndex: String,
+    val marineNotice: String,
+    val hourlySlots: List<BalasoreForecastHour> = emptyList()
+)
+
 // 1. Chandipur Tidal Clock & Biodiversity
 data class TidalClockData(
     val currentPhase: String = "Receding Sea (Low Tide)",

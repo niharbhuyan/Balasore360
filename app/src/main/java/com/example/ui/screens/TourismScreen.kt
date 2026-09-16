@@ -27,15 +27,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -45,6 +50,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,11 +68,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.AppLanguage
+import com.example.data.model.BalasoreForecastDay
+import com.example.data.model.BalasoreWeatherAlert
 import com.example.data.model.DailyBalasoreIdiom
 import com.example.data.model.Hotspot
 import com.example.data.model.LiteraryTrailPoint
 import com.example.data.model.TempleRitualInfo
+import com.example.data.model.WeatherInfo
 import com.example.ui.components.AdMobBannerCard
+import com.example.ui.components.DashboardWeatherWidget
+import com.example.ui.components.UniqueFeaturesPillGrid
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -79,6 +90,7 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
+import com.example.ui.viewmodel.UniqueFeatureSheetType
 
 @Composable
 fun TourismScreen(
@@ -90,9 +102,19 @@ fun TourismScreen(
     searchQuery: String,
     language: AppLanguage,
     favoriteIds: Set<String>,
+    weather: WeatherInfo = WeatherInfo(),
+    forecastDays: List<BalasoreForecastDay> = emptyList(),
+    weatherAlerts: List<BalasoreWeatherAlert> = emptyList(),
+    isFahrenheit: Boolean = false,
+    selectedForecastIndex: Int = 0,
     onCategorySelected: (String) -> Unit,
     onSearchChanged: (String) -> Unit,
     onToggleFavorite: (String) -> Unit,
+    onToggleTempUnit: () -> Unit = {},
+    onSelectForecastDay: (Int) -> Unit = {},
+    onAcknowledgeAlert: (String) -> Unit = {},
+    onNavigateToWeather: () -> Unit = {},
+    onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -109,38 +131,221 @@ fun TourismScreen(
             .testTag("tourism_screen_list"),
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        // Hero Header Card
+        // Coastal Marine Bento Hero Header Card
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(24.dp))
                     .background(
                         Brush.verticalGradient(
-                            listOf(OceanBlueDark, OceanBlue)
+                            listOf(Color(0xFF0F172A), OceanBlueDark, OceanBlue)
                         )
                     )
                     .padding(20.dp)
             ) {
                 Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF38BDF8).copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.4f))
+                        ) {
+                            Text(
+                                text = "BALASORE 360 • COASTAL GUIDE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.sp,
+                                    fontSize = 9.5.sp,
+                                    color = Color(0xFF7DD3FC)
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White.copy(alpha = 0.15f),
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    val uri = Uri.parse("geo:21.4934,86.9135?q=Tourist+Attractions+in+Balasore")
+                                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+                                    context.startActivity(mapIntent)
+                                }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Map,
+                                    contentDescription = "Explore on Maps",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     Text(
-                        text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପରିଦର୍ଶନ" else "Discover Balasore",
-                        style = MaterialTheme.typography.titleLarge.copy(
+                        text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପରିଦର୍ଶନ" else "Explore Balasore",
+                        style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White
                         )
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (language == AppLanguage.ODIA)
-                            "ଚାନ୍ଦିପୁର ବେଳାଭୂମି, କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ଓ କୁଲଡିହା ଅଭୟାରଣ୍ୟ"
+                            "ଚାନ୍ଦିପୁର ବେଳାଭୂମି, କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ଓ କୁଲଡିହା ବନ୍ୟପ୍ରାଣୀ ଅଭୟାରଣ୍ୟର ଅନନ୍ୟ ଐତିହ୍ୟ"
                         else
-                            "From vanishing sea tides to 12th-century Kalinga temples & wildlife reserves",
+                            "From vanishing sea tides & golden sand to 12th-century Kalinga temples and pristine wildlife reserves.",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = Color(0xFFE2E8F0),
+                            lineHeight = 20.sp
                         )
                     )
+                }
+            }
+        }
+
+        // Interactive Dashboard Weather Widget (Current Conditions, 3-Day Forecast & Severe Alerts)
+        item {
+            DashboardWeatherWidget(
+                weather = weather,
+                forecastDays = forecastDays,
+                weatherAlerts = weatherAlerts,
+                language = language,
+                isFahrenheit = isFahrenheit,
+                selectedForecastIndex = selectedForecastIndex,
+                onToggleTempUnit = onToggleTempUnit,
+                onSelectForecastDay = onSelectForecastDay,
+                onAcknowledgeAlert = onAcknowledgeAlert,
+                onNavigateToWeather = onNavigateToWeather
+            )
+        }
+
+        // Live Special Features Quick Hub
+        item {
+            UniqueFeaturesPillGrid(onFeatureClick = onOpenFeatureSheet)
+        }
+
+        // "Day in Balasore" Curated Itinerary Bento Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("day_in_balasore_itinerary_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, BentoSlate100)
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE0F2FE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Route,
+                                    contentDescription = "Itinerary",
+                                    tint = OceanBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱରରେ ଏକ ଦିନ (ଟୁର୍ ଯୋଜନା)" else "A Day in Balasore • Curated Circuit",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900
+                                    )
+                                )
+                                Text(
+                                    text = "Morning Heritage • Afternoon Vanishing Sea • Sunset Aarti",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = OceanBlueDark)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    val stops = listOf(
+                        Triple(
+                            "08:00 AM",
+                            "Khirachora Gopinatha Temple",
+                            "Taste divine Amrita Keli prasad & admire 12th-century stone carvings"
+                        ),
+                        Triple(
+                            "02:30 PM",
+                            "Chandipur Vanishing Sea",
+                            "Walk 4 km onto the exposed seabed & observe red ghost crab colonies"
+                        ),
+                        Triple(
+                            "05:30 PM",
+                            "Emami Jagannath Temple & Marine Drive",
+                            "Witness seaside evening sand art & spiritual temple illumination"
+                        )
+                    )
+
+                    stops.forEachIndexed { index, (time, title, desc) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = if (index == 0) Color(0xFFFEF3C7) else if (index == 1) Color(0xFFE0F2FE) else Color(0xFFF3E8FF),
+                                modifier = Modifier.padding(top = 2.dp)
+                            ) {
+                                Text(
+                                    text = time,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp,
+                                        color = if (index == 0) Color(0xFFB45309) else if (index == 1) OceanBlue else Color(0xFF7E22CE)
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900
+                                    )
+                                )
+                                Text(
+                                    text = desc,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = BentoSlate600,
+                                        lineHeight = 15.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -274,6 +479,113 @@ fun TourismScreen(
                             Text("Sandhya Arati", style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500))
                             Text(templeRitualInfo.sandhyaArati, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate800))
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.REMUNA_PRASAD_ARTISANS) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_remuna_artisan_sheet_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Restaurant, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Live Bhog Batch & GI Artisan Showcase", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        // FEATURE: Kuldiha Elephant Corridor & Ecotourism Passport Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("kuldiha_corridor_passport_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFAF5FF)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("🐘", fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Kuldiha Wildlife Corridor",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Similipal-Hadgarh Elephant Pass & Passport",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Color(0xFF9333EA),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+
+                        Surface(
+                            color = Color(0xFFFAF5FF),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, Color(0xFFE9D5FF))
+                        ) {
+                            Text(
+                                text = "ECO-HUB",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    color = Color(0xFF7E22CE)
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Real-time forest ranger crossing alerts, speed corridors along Nilagiri highway, and digital check-in passport stamps for Rissia dam & salt licks.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = BentoSlate700,
+                            lineHeight = 16.sp
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.ELEPHANT_PASSPORT) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_kuldiha_passport_sheet_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Explore, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Open Elephant Safety & Eco-Passport", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

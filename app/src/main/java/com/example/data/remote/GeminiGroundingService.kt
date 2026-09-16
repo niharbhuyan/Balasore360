@@ -171,7 +171,8 @@ class GeminiGroundingService {
             }
 
             // Parse response JSON
-            val json = JSONObject(responseBody)
+            val nonNullBody = responseBody ?: "{}"
+            val json = JSONObject(nonNullBody)
             val candidates = json.optJSONArray("candidates")
             val firstCandidate = candidates?.optJSONObject(0)
 
@@ -196,7 +197,8 @@ class GeminiGroundingService {
                     }
                 }
             }
-            val mainText = textBuilder.toString().ifBlank { "Received response from Gemini." }
+            val rawMainText = textBuilder.toString()
+            val mainText = if (rawMainText.isBlank()) "Received response from Gemini." else rawMainText
 
             // Extract Grounding Metadata
             val groundingMetadata = firstCandidate.optJSONObject("groundingMetadata")
@@ -223,7 +225,8 @@ class GeminiGroundingService {
                         val web = chunk.optJSONObject("web")
                         if (web != null) {
                             val uri = web.optString("uri")
-                            val title = web.optString("title").ifBlank { uri }
+                            val rawTitle = web.optString("title")
+                            val title = if (rawTitle.isNullOrBlank()) uri else rawTitle
                             if (uri.isNotBlank()) {
                                 citations.add(WebCitation(title = title, uri = uri))
                             }
@@ -232,7 +235,8 @@ class GeminiGroundingService {
                         // Maps place info
                         val maps = chunk.optJSONObject("maps") ?: chunk.optJSONObject("place")
                         if (maps != null) {
-                            val placeName = maps.optString("name").ifBlank { maps.optString("title") }
+                            val rawName = maps.optString("name")
+                            val placeName = if (!rawName.isNullOrBlank()) rawName else maps.optString("title")
                             val address = maps.optString("address")
                             val uri = maps.optString("uri")
                             if (placeName.isNotBlank()) {

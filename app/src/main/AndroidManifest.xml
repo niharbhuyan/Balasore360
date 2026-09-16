@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
+    <!-- Telephony hardware is optional so tablets/large screen devices can install the app -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

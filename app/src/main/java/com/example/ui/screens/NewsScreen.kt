@@ -73,6 +73,9 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
+import com.example.ui.viewmodel.UniqueFeatureSheetType
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun NewsScreen(
@@ -86,6 +89,7 @@ fun NewsScreen(
     onCategorySelected: (String) -> Unit,
     onToggleBookmark: (String) -> Unit,
     onRefresh: () -> Unit,
+    onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -218,6 +222,21 @@ fun NewsScreen(
 
                     // Cyclone Shelter Directory
                     CycloneSheltersView(shelters = cycloneShelters, language = language)
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CYCLONE_RESILIENCE) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("news_open_cyclone_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Open Offline Cyclone Shelter Map & Checklist", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

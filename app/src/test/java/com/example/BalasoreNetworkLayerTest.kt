@@ -1,7 +1,7 @@
 package com.example
 
 import com.example.data.remote.BalasoreApiService
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -13,7 +13,7 @@ class BalasoreNetworkLayerTest {
     private val apiService = BalasoreApiService.create()
 
     @Test
-    fun `fetch news via Retrofit network layer parses valid articles`() = runTest {
+    fun `fetch news via Retrofit network layer parses valid articles`() = runBlocking {
         val response = apiService.getBalasoreNews()
         assertEquals("ok", response.status)
         assertNotNull(response.articles)
@@ -30,7 +30,7 @@ class BalasoreNetworkLayerTest {
     }
 
     @Test
-    fun `fetch breaking news via Retrofit returns emergency alerts`() = runTest {
+    fun `fetch breaking news via Retrofit returns emergency alerts`() = runBlocking {
         val response = apiService.getBreakingNews()
         assertEquals("ok", response.status)
         assertNotNull(response.articles)
@@ -38,7 +38,7 @@ class BalasoreNetworkLayerTest {
     }
 
     @Test
-    fun `fetch marine weather observatory via Retrofit returns Chandipur data`() = runTest {
+    fun `fetch marine weather observatory via Retrofit returns Chandipur data`() = runBlocking {
         val response = apiService.getMarineObservatoryData()
         assertEquals("BLS_CHANDIPUR_01", response.stationId)
         assertNotNull(response.tideState)

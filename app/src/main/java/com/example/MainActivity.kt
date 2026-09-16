@@ -37,6 +37,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -46,6 +50,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.viewmodel.ThemeMode
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,6 +77,13 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.BalasoreViewModel
+import com.example.ui.viewmodel.UniqueFeatureSheetType
+import com.example.ui.components.CycloneResilienceSheet
+import com.example.ui.components.DefenseTrailSheet
+import com.example.ui.components.ElephantPassportSheet
+import com.example.ui.components.HarborCatchRatesSheet
+import com.example.ui.components.HorseshoeCrabSheet
+import com.example.ui.components.RemunaPrasadArtisansSheet
 
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -100,7 +113,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            Balasore360Theme {
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val isDarkTheme = when (uiState.themeMode) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            Balasore360Theme(darkTheme = isDarkTheme) {
                 BalasoreApp(
                     viewModel = viewModel,
                     updateManager = updateManager
@@ -177,41 +196,52 @@ fun BalasoreApp(
                             )
                         }
 
-                        // Language Toggle Pills
                         Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(BentoSlate100)
-                                .padding(2.dp),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            LanguagePill(
-                                title = "EN",
-                                isSelected = uiState.language == AppLanguage.ENGLISH,
-                                onClick = { viewModel.setLanguage(AppLanguage.ENGLISH) }
+                            // Theme Mode Toggle Button
+                            ThemeTogglePill(
+                                currentMode = uiState.themeMode,
+                                onCycleTheme = { viewModel.cycleThemeMode() }
                             )
-                            LanguagePill(
-                                title = "ଓଡ଼ି",
-                                isSelected = uiState.language == AppLanguage.ODIA,
-                                onClick = { viewModel.setLanguage(AppLanguage.ODIA) }
-                            )
-                            LanguagePill(
-                                title = "HI",
-                                isSelected = uiState.language == AppLanguage.HINDI,
-                                onClick = { viewModel.setLanguage(AppLanguage.HINDI) }
-                            )
+
+                            // Language Toggle Pills
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(2.dp),
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                LanguagePill(
+                                    title = "EN",
+                                    isSelected = uiState.language == AppLanguage.ENGLISH,
+                                    onClick = { viewModel.setLanguage(AppLanguage.ENGLISH) }
+                                )
+                                LanguagePill(
+                                    title = "ଓଡ଼ି",
+                                    isSelected = uiState.language == AppLanguage.ODIA,
+                                    onClick = { viewModel.setLanguage(AppLanguage.ODIA) }
+                                )
+                                LanguagePill(
+                                    title = "HI",
+                                    isSelected = uiState.language == AppLanguage.HINDI,
+                                    onClick = { viewModel.setLanguage(AppLanguage.HINDI) }
+                                )
+                            }
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
         bottomBar = {
             NavigationBar(
                 modifier = Modifier.testTag("balasore_bottom_nav"),
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 NavigationBarItem(
@@ -230,11 +260,11 @@ fun BalasoreApp(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = OceanBlue,
-                        selectedTextColor = OceanBlue,
-                        indicatorColor = BentoSlate100,
-                        unselectedIconColor = BentoSlate400,
-                        unselectedTextColor = BentoSlate400
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 )
 
@@ -254,11 +284,11 @@ fun BalasoreApp(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = OceanBlue,
-                        selectedTextColor = OceanBlue,
-                        indicatorColor = BentoSlate100,
-                        unselectedIconColor = BentoSlate400,
-                        unselectedTextColor = BentoSlate400
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 )
 
@@ -278,11 +308,11 @@ fun BalasoreApp(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = OceanBlue,
-                        selectedTextColor = OceanBlue,
-                        indicatorColor = BentoSlate100,
-                        unselectedIconColor = BentoSlate400,
-                        unselectedTextColor = BentoSlate400
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 )
 
@@ -302,11 +332,11 @@ fun BalasoreApp(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = OceanBlue,
-                        selectedTextColor = OceanBlue,
-                        indicatorColor = BentoSlate100,
-                        unselectedIconColor = BentoSlate400,
-                        unselectedTextColor = BentoSlate400
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 )
             }
@@ -376,7 +406,7 @@ fun BalasoreApp(
 
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = BentoSlate50
+                color = MaterialTheme.colorScheme.background
             ) {
                 when (uiState.selectedTab) {
                     0 -> TourismScreen(
@@ -388,9 +418,19 @@ fun BalasoreApp(
                         searchQuery = uiState.hotspotSearchQuery,
                         language = uiState.language,
                         favoriteIds = uiState.favoriteHotspotIds,
+                        weather = uiState.weather,
+                        forecastDays = uiState.forecastDays,
+                        weatherAlerts = uiState.weatherAlerts,
+                        isFahrenheit = uiState.isFahrenheit,
+                        selectedForecastIndex = uiState.selectedForecastDayIndex,
                         onCategorySelected = { viewModel.setHotspotCategory(it) },
                         onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
-                        onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) }
+                        onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) },
+                        onToggleTempUnit = { viewModel.toggleTemperatureUnit() },
+                        onSelectForecastDay = { viewModel.selectForecastDay(it) },
+                        onAcknowledgeAlert = { viewModel.acknowledgeAlert(it) },
+                        onNavigateToWeather = { viewModel.selectTab(2) },
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
                     1 -> NewsScreen(
                         articles = uiState.newsArticles,
@@ -402,13 +442,15 @@ fun BalasoreApp(
                         isRefreshing = uiState.isRefreshing,
                         onCategorySelected = { viewModel.setNewsCategory(it) },
                         onToggleBookmark = { viewModel.toggleBookmark(it) },
-                        onRefresh = { viewModel.refreshAll() }
+                        onRefresh = { viewModel.refreshAll() },
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
                     2 -> WeatherScreen(
                         weather = uiState.weather,
                         tidalClock = uiState.tidalClock,
                         drdoAdvisories = uiState.drdoAdvisories,
-                        language = uiState.language
+                        language = uiState.language,
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
                     3 -> EssentialsScreen(
                         emergencyContacts = uiState.emergencyContacts,
@@ -416,11 +458,66 @@ fun BalasoreApp(
                         seafoodCatches = uiState.seafoodCatches,
                         language = uiState.language,
                         updateState = updateState,
+                        themeMode = uiState.themeMode,
+                        onThemeModeChange = { viewModel.setThemeMode(it) },
                         onCheckForUpdates = { updateManager.checkForUpdates(updateLauncher, autoStartFlexible = false) },
                         onTriggerUpdate = { updateManager.startUpdate(updateLauncher) },
-                        onCompleteUpdate = { updateManager.completeUpdate() }
+                        onCompleteUpdate = { updateManager.completeUpdate() },
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
                 }
+            }
+
+            // Active Unique Feature Modal Sheet
+            when (uiState.activeFeatureSheet) {
+                UniqueFeatureSheetType.HORSESHOE_CRAB -> {
+                    HorseshoeCrabSheet(
+                        sightings = uiState.horseshoeCrabSightings,
+                        guidelines = uiState.intertidalEcoGuidelines,
+                        onLogSighting = { reporter, sector, species, count ->
+                            viewModel.logHorseshoeCrabSighting(reporter, sector, species, count)
+                        },
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.DEFENSE_TRAIL -> {
+                    DefenseTrailSheet(
+                        milestones = uiState.defenseMilestones,
+                        exclusionZone = uiState.maritimeExclusionZone,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.REMUNA_PRASAD_ARTISANS -> {
+                    RemunaPrasadArtisansSheet(
+                        prasadStatus = uiState.prasadStatus,
+                        artisans = uiState.balasoreArtisans,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.CYCLONE_RESILIENCE -> {
+                    CycloneResilienceSheet(
+                        shelters = uiState.detailedCycloneShelters,
+                        kitItems = uiState.emergencyKitItems,
+                        onToggleKitItem = { viewModel.toggleEmergencyKitItem(it) },
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.HARBOR_CATCH_RATES -> {
+                    HarborCatchRatesSheet(
+                        catchRates = uiState.harborCatchRates,
+                        landingBells = uiState.harborLandingBells,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.ELEPHANT_PASSPORT -> {
+                    ElephantPassportSheet(
+                        corridorAlert = uiState.elephantCorridorAlert,
+                        passportStamps = uiState.ecoPassportStamps,
+                        onToggleStamp = { viewModel.toggleEcoPassportStamp(it) },
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                null -> {}
             }
         }
     }
@@ -435,7 +532,7 @@ fun LanguagePill(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(if (isSelected) OceanBlue else Color.Transparent)
+            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
             .clickable { onClick() }
             .padding(horizontal = 8.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
@@ -444,9 +541,65 @@ fun LanguagePill(
             text = title,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) Color.White else BentoSlate800,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 10.sp
             )
         )
+    }
+}
+
+@Composable
+fun ThemeTogglePill(
+    currentMode: ThemeMode,
+    onCycleTheme: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val (icon, tint, label) = when (currentMode) {
+        ThemeMode.SYSTEM -> Triple(
+            Icons.Default.BrightnessAuto,
+            MaterialTheme.colorScheme.primary,
+            "Auto"
+        )
+        ThemeMode.LIGHT -> Triple(
+            Icons.Default.LightMode,
+            Color(0xFFD97706),
+            "Light"
+        )
+        ThemeMode.DARK -> Triple(
+            Icons.Default.DarkMode,
+            Color(0xFF38BDF8),
+            "Dark"
+        )
+    }
+
+    Surface(
+        onClick = onCycleTheme,
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 1.dp,
+        modifier = modifier
+            .testTag("theme_toggle_button")
+            .height(26.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = "Theme mode: $label (Tap to switch)",
+                tint = tint,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        }
     }
 }

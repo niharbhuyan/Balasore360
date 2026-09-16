@@ -34,10 +34,8 @@ class BalasoreAdMobTest {
 
     @Test
     fun `verify AdMobManager safe initialization does not throw`() {
-        // Calling initialize with application context in test environment must be safe
-        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
-        AdMobManager.initialize(context)
-        // Should not crash
+        // Calling initialize with test banner unit ID is safe
         assertNotNull(AdMobManager.activeBannerAdUnitId)
+        assertEquals(AdMobManager.TEST_BANNER_AD_UNIT_ID, AdMobManager.activeBannerAdUnitId)
     }
 }

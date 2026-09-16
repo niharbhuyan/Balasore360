@@ -1,6 +1,13 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -19,6 +26,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,14 +41,18 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,6 +88,7 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
+import com.example.ui.viewmodel.UniqueFeatureSheetType
 import kotlin.math.sin
 
 @Composable
@@ -83,6 +97,7 @@ fun WeatherScreen(
     tidalClock: TidalClockData,
     drdoAdvisories: List<DrdoAdvisory>,
     language: AppLanguage,
+    onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -162,6 +177,115 @@ fun WeatherScreen(
                                     color = Color.White.copy(alpha = 0.8f)
                                 )
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 24-Hour Coastal & Marine Horizon Row
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("marine_horizon_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, BentoSlate100)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "୨୪-ଘଣ୍ଟାର ଉପକୂଳ କ୍ଷିତିଜ ପୂର୍ବାନୁମାନ" else "24-Hour Coastal & Marine Horizon",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFE0F2FE)
+                        ) {
+                            Text(
+                                text = "BAY OF BENGAL",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 9.sp,
+                                    color = OceanBlue
+                                ),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val hourlyForecasts = listOf(
+                        Triple("Now", "31°C", "0.4m (Vanishing)"),
+                        Triple("14:00", "32°C", "0.6m (Receding)"),
+                        Triple("16:00", "30°C", "1.4m (Incoming)"),
+                        Triple("18:00", "28°C", "2.8m (High Tide)"),
+                        Triple("20:00", "27°C", "3.2m (Peak Surge)"),
+                        Triple("22:00", "26°C", "2.2m (Slack)"),
+                        Triple("00:00", "25°C", "1.1m (Ebb)"),
+                        Triple("02:00", "24°C", "0.5m (Low Tide)")
+                    )
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(vertical = 4.dp)
+                    ) {
+                        items(hourlyForecasts) { (time, temp, tide) ->
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (time == "Now") Color(0xFF0284C7) else Color(0xFFF8FAFC),
+                                border = BorderStroke(1.dp, if (time == "Now") Color(0xFF0284C7) else Color(0xFFE2E8F0)),
+                                modifier = Modifier.width(96.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = time,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp,
+                                            color = if (time == "Now") Color.White else BentoSlate500
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Icon(
+                                        imageVector = if (time in listOf("18:00", "20:00", "22:00", "00:00", "02:00")) Icons.Default.Water else Icons.Default.WbSunny,
+                                        contentDescription = null,
+                                        tint = if (time == "Now") Color(0xFFBAE6FD) else if (time in listOf("18:00", "20:00", "22:00", "00:00", "02:00")) OceanBlue else AmberGold,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = temp,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = if (time == "Now") Color.White else BentoSlate900
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = tide,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = if (time == "Now") Color(0xFFE0F2FE) else BentoSlate600
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -281,63 +405,12 @@ fun WeatherScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Visual Tidal Wave Curve (Custom Canvas)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(68.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFF8FAFC))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val w = size.width
-                            val h = size.height
-                            val midY = h * 0.5f
-
-                            // Draw baseline
-                            drawLine(
-                                color = Color(0xFFCBD5E1),
-                                start = Offset(0f, midY),
-                                end = Offset(w, midY),
-                                strokeWidth = 1.dp.toPx(),
-                                cap = StrokeCap.Round
-                            )
-
-                            // Sine wave path representing semi-diurnal tide
-                            val path = Path()
-                            val points = 60
-                            for (i in 0..points) {
-                                val x = (i.toFloat() / points) * w
-                                val normalizedAngle = (i.toFloat() / points) * (2 * Math.PI.toFloat())
-                                val y = midY + (sin(normalizedAngle) * (h * 0.35f))
-                                if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                            }
-
-                            drawPath(
-                                path = path,
-                                color = Color(0xFF0284C7),
-                                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
-                            )
-
-                            // Current time marker (at low tide trough)
-                            val markerX = w * 0.72f
-                            val markerY = midY + (sin((markerX / w) * (2 * Math.PI.toFloat())) * (h * 0.35f))
-
-                            // Glow circle
-                            drawCircle(
-                                color = Color(0xFF38BDF8).copy(alpha = 0.4f),
-                                radius = 9.dp.toPx(),
-                                center = Offset(markerX, markerY)
-                            )
-                            // Solid center
-                            drawCircle(
-                                color = Color(0xFF0284C7),
-                                radius = 4.5.dp.toPx(),
-                                center = Offset(markerX, markerY)
-                            )
-                        }
-                    }
+                    // Dynamic Animated Chandipur Tide Wave Canvas
+                    DynamicChandipurTideCanvas(
+                        safeWalkMinutesRemaining = tidalClock.safeWalkMinutesRemaining,
+                        recededDistanceKm = 4.2,
+                        modifier = Modifier.testTag("dynamic_chandipur_tide_canvas")
+                    )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -402,6 +475,21 @@ fun WeatherScreen(
                                 )
                             )
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.HORSESHOE_CRAB) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_horseshoe_crab_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🦀", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Living Fossil Bio-Radar & Seabed Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -478,6 +566,21 @@ fun WeatherScreen(
                     drdoAdvisories.forEach { advisory ->
                         DrdoAdvisoryItem(advisory = advisory, language = language)
                         Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.DEFENSE_TRAIL) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_defense_trail_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🚀", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Kalam Defense Trail & Maritime Radar", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -558,6 +661,82 @@ fun WeatherScreen(
                             label = "UV Index",
                             value = "Moderate (5)"
                         )
+                    }
+                }
+            }
+        }
+
+        // Coastal Cyclone Resilience & Shelter Compass Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("weather_cyclone_shelter_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFF0FDF4)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("🌀", fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Coastal Resilience & Cyclone Shelters",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Offline GPS Shelters & Disaster Kit Checklist",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Color(0xFF16A34A),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Access nearest multi-purpose elevated cyclone shelters with independent solar backup, verified capacity, and offline survival pack essentials.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = BentoSlate700,
+                            lineHeight = 16.sp
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CYCLONE_RESILIENCE) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_cyclone_resilience_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Open Shelter Finder & Disaster Kit", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -688,5 +867,223 @@ fun WeatherMetricItem(
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
         )
+    }
+}
+
+/**
+ * Interactive Animated Chandipur Vanishing Sea Tidal Simulation Canvas.
+ * Models the semi-diurnal harmonic tides with flowing dual wave fronts,
+ * golden sand seabed layer, dynamic vanishing sea distance indicator (-5 km),
+ * and pulsating safety beacon.
+ */
+@Composable
+fun DynamicChandipurTideCanvas(
+    safeWalkMinutesRemaining: Int,
+    recededDistanceKm: Double,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "tide_wave_anim")
+    val wavePhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave_phase"
+    )
+    val pulseGlow by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.85f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse_glow"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(115.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF0F172A))
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+
+            // 1. Golden Sand Seabed Layer (Intertidal seabed mudflat)
+            val sandPath = Path().apply {
+                moveTo(0f, h)
+                lineTo(w, h)
+                lineTo(w, h * 0.72f)
+                lineTo(0f, h * 0.82f)
+                close()
+            }
+            drawPath(
+                path = sandPath,
+                color = Color(0xFFD4A373).copy(alpha = 0.45f)
+            )
+
+            // Baseline representing sea-shore boundary
+            drawLine(
+                color = Color(0xFF475569).copy(alpha = 0.5f),
+                start = Offset(0f, h * 0.52f),
+                end = Offset(w, h * 0.52f),
+                strokeWidth = 1.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+
+            // 2. Secondary Deep Tide Wave (Background flow)
+            val bgPath = Path()
+            val points = 80
+            val midY = h * 0.48f
+            for (i in 0..points) {
+                val x = (i.toFloat() / points) * w
+                val angle = (i.toFloat() / points) * (2.2f * Math.PI.toFloat()) - (wavePhase * 0.8f)
+                val y = midY + (sin(angle) * (h * 0.22f))
+                if (i == 0) bgPath.moveTo(x, y) else bgPath.lineTo(x, y)
+            }
+            bgPath.lineTo(w, h)
+            bgPath.lineTo(0f, h)
+            bgPath.close()
+
+            drawPath(
+                path = bgPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0284C7).copy(alpha = 0.25f),
+                        Color(0xFF0369A1).copy(alpha = 0.40f)
+                    ),
+                    startY = 0f,
+                    endY = h
+                )
+            )
+
+            // 3. Primary Harmonic Ocean Wave (Foreground flow)
+            val fgPath = Path()
+            val fgStrokePath = Path()
+            for (i in 0..points) {
+                val x = (i.toFloat() / points) * w
+                val angle = (i.toFloat() / points) * (2 * Math.PI.toFloat()) + wavePhase
+                val y = midY + (sin(angle) * (h * 0.26f))
+                if (i == 0) {
+                    fgPath.moveTo(x, y)
+                    fgStrokePath.moveTo(x, y)
+                } else {
+                    fgPath.lineTo(x, y)
+                    fgStrokePath.lineTo(x, y)
+                }
+            }
+            fgPath.lineTo(w, h)
+            fgPath.lineTo(0f, h)
+            fgPath.close()
+
+            drawPath(
+                path = fgPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF38BDF8).copy(alpha = 0.35f),
+                        Color(0xFF0284C7).copy(alpha = 0.65f),
+                        Color(0xFF0F172A)
+                    ),
+                    startY = midY - (h * 0.26f),
+                    endY = h
+                )
+            )
+            drawPath(
+                path = fgStrokePath,
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color(0xFF38BDF8), Color(0xFF7DD3FC), Color(0xFF0284C7))
+                ),
+                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // 4. Chandipur Vanishing Sea Marker (Dynamic position based on receded distance)
+            val normalizedRecede = (recededDistanceKm / 5.0).coerceIn(0.15, 0.85).toFloat()
+            val markerX = w * normalizedRecede
+            val markerAngle = (markerX / w) * (2 * Math.PI.toFloat()) + wavePhase
+            val markerY = midY + (sin(markerAngle) * (h * 0.26f))
+
+            // Pulsing water beacon glow
+            drawCircle(
+                color = Color(0xFF38BDF8).copy(alpha = pulseGlow * 0.5f),
+                radius = 12.dp.toPx(),
+                center = Offset(markerX, markerY)
+            )
+            // Solid center pin
+            drawCircle(
+                color = Color.White,
+                radius = 5.dp.toPx(),
+                center = Offset(markerX, markerY)
+            )
+            drawCircle(
+                color = Color(0xFF0284C7),
+                radius = 3.dp.toPx(),
+                center = Offset(markerX, markerY)
+            )
+
+            // Dashed vertical guide to seabed
+            drawLine(
+                color = Color(0xFF38BDF8).copy(alpha = 0.6f),
+                start = Offset(markerX, markerY),
+                end = Offset(markerX, h),
+                strokeWidth = 1.5.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+        }
+
+        // Overlay Labels inside Canvas Box
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopStart),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Shoreline (0 km)",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF94A3B8)
+                )
+            )
+            Text(
+                text = "Vanishing Seabed (-5 km)",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF38BDF8)
+                )
+            )
+        }
+
+        // Bottom status badge
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Tide Level: -${recededDistanceKm} km Out",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF1F5F9)
+                )
+            )
+            Text(
+                text = if (safeWalkMinutesRemaining > 0) "Safe Walk: ${safeWalkMinutesRemaining}m" else "High Tide Warning",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (safeWalkMinutesRemaining > 0) Color(0xFF4ADE80) else Color(0xFFF87171)
+                )
+            )
+        }
     }
 }

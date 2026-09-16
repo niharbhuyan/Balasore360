@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.ui.viewmodel.BalasoreViewModel
 import com.example.ui.viewmodel.ThemeMode
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -20,5 +21,23 @@ class ThemeModeTest {
         assertEquals(ThemeMode.LIGHT, nextTheme(ThemeMode.SYSTEM))
         assertEquals(ThemeMode.DARK, nextTheme(ThemeMode.LIGHT))
         assertEquals(ThemeMode.SYSTEM, nextTheme(ThemeMode.DARK))
+    }
+
+    @Test
+    fun testViewModelThemeModeToggle() {
+        val viewModel = BalasoreViewModel()
+        assertEquals(ThemeMode.SYSTEM, viewModel.uiState.value.themeMode)
+
+        viewModel.cycleThemeMode()
+        assertEquals(ThemeMode.LIGHT, viewModel.uiState.value.themeMode)
+
+        viewModel.cycleThemeMode()
+        assertEquals(ThemeMode.DARK, viewModel.uiState.value.themeMode)
+
+        viewModel.cycleThemeMode()
+        assertEquals(ThemeMode.SYSTEM, viewModel.uiState.value.themeMode)
+
+        viewModel.setThemeMode(ThemeMode.DARK)
+        assertEquals(ThemeMode.DARK, viewModel.uiState.value.themeMode)
     }
 }
