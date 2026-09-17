@@ -18,6 +18,7 @@ object AdMobManager {
     // Official user AdMob IDs
     const val ADMOB_APP_ID = "ca-app-pub-4880243637225183~4956380952"
     const val PUBLISHER_ID = "pub-4880243637225183"
+    const val APP_ADS_TXT_RECORD = "google.com, pub-4880243637225183, DIRECT, f08c47fec0942fa0"
 
     // Standard Google test ad unit ID for banners (prevents test policy violations)
     const val TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"

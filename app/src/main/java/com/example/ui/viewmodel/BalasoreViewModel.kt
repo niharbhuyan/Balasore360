@@ -14,6 +14,7 @@ import com.example.data.remote.GroundingToolMode
 import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
+import com.example.data.repository.TravelJournalRepository
 import com.example.data.repository.UniqueFeaturesRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +69,9 @@ data class BalasoreUiState(
     val itineraryItems: List<ItineraryItemEntity> = DefaultData.getDefaultItineraryItems(),
     // Live Emergency Alerts fetched from Backend
     val liveEmergencyAlerts: List<EmergencyAlertDto> = DefaultData.getDefaultEmergencyAlerts(),
-    val dismissedAlertIds: Set<String> = emptySet()
+    val dismissedAlertIds: Set<String> = emptySet(),
+    // Daily Auto-Update Pulse
+    val dailyPulse: com.example.data.daily.DailyBalasorePulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
 )
 
 enum class UniqueFeatureSheetType {
@@ -77,7 +80,40 @@ enum class UniqueFeatureSheetType {
     REMUNA_PRASAD_ARTISANS,
     CYCLONE_RESILIENCE,
     HARBOR_CATCH_RATES,
-    ELEPHANT_PASSPORT
+    ELEPHANT_PASSPORT,
+    // 8 Core Feature Hubs:
+    CHANDIPUR_TIDE_TIMER,
+    CYCLONE_SHELTER_FINDER,
+    BALASORE_FOOD_TRAIL,
+    BILINGUAL_HERITAGE_AUDIO,
+    TRANSIT_FARE_ESTIMATOR,
+    KULDIHA_SAFARI_COMPANION,
+    TRAVEL_JOURNAL,
+    BLOOD_AND_DIALYSIS_DIRECTORY,
+    // 7 Daily Auto-Updated Features:
+    KASAFAL_RED_CRABS,
+    NILAGIRI_STONE_SABAI,
+    BALARAMGADI_ESTUARY,
+    COLONIAL_HERITAGE_WALK,
+    TALASARI_AUCTION_MONITOR,
+    BALESWARIYA_DIALECT_PROVERBS,
+    PAN_BARAJA_AGRO,
+    // 10 Next-Gen Daily Auto-Updated Features:
+    BICHITRAPUR_MANGROVE_BOATING,
+    CHANDANESWAR_CHADAK_MELA,
+    PANCHALINGESWAR_STREAM_SAFETY,
+    DARK_SKY_BIOLUMINESCENCE,
+    BELL_METAL_ARTISANS,
+    BUDDHIST_JAIN_CIRCUIT,
+    HEIRLOOM_RICE_AGRO,
+    LAKHANNATH_ZAMINDARI,
+    BUDHABALANGA_RIVER_ANGLING,
+    CYCLONE_ORAL_HISTORY,
+    // Healthcare & Medical Daily Auto-Updated Suites:
+    DOCTORS_DIRECTORY,
+    MEDICINE_STORES_DIRECTORY,
+    POLYCLINIC_DIRECTORY,
+    PATHOLOGY_LAB_DIRECTORY
 }
 
 data class GroundingState(
@@ -107,6 +143,8 @@ enum class AuthMode {
 class BalasoreViewModel : ViewModel() {
 
     private var itineraryRepo: ItineraryRepository? = null
+    var travelJournalRepo: TravelJournalRepository? = null
+        private set
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
 
     private val _uiState = MutableStateFlow(BalasoreUiState())
@@ -128,13 +166,25 @@ class BalasoreViewModel : ViewModel() {
     fun initDatabase(context: Context) {
         if (itineraryRepo != null) return
         try {
-            val repo = ItineraryRepository(AppDatabase.getInstance(context).itineraryDao())
+            val db = AppDatabase.getInstance(context)
+            val repo = ItineraryRepository(db.itineraryDao())
             itineraryRepo = repo
+
+            val jRepo = TravelJournalRepository(db.travelJournalDao())
+            travelJournalRepo = jRepo
+
             viewModelScope.launch {
                 try {
                     repo.ensureDefaultItinerarySeeded()
                 } catch (t: Throwable) {
                     android.util.Log.e("BalasoreViewModel", "Error seeding default itinerary: ${t.message}")
+                }
+            }
+            viewModelScope.launch {
+                try {
+                    jRepo.ensureDefaultJournalSeeded()
+                } catch (t: Throwable) {
+                    android.util.Log.e("BalasoreViewModel", "Error seeding default journal: ${t.message}")
                 }
             }
             viewModelScope.launch {
@@ -305,6 +355,12 @@ class BalasoreViewModel : ViewModel() {
 
     fun closeFeatureSheet() {
         _uiState.value = _uiState.value.copy(activeFeatureSheet = null)
+    }
+
+    fun refreshDailyPulse() {
+        _uiState.value = _uiState.value.copy(
+            dailyPulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+        )
     }
 
     fun toggleEmergencyKitItem(itemId: String) {

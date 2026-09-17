@@ -15,9 +15,10 @@ import androidx.room.TypeConverters
         CacheSyncMetadataEntity::class,
         UserEntity::class,
         ReviewEntity::class,
-        ItineraryItemEntity::class
+        ItineraryItemEntity::class,
+        TravelJournalEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -37,6 +38,11 @@ abstract class AppDatabase : RoomDatabase() {
      * Abstract getter method for Custom Travel Itinerary DAO.
      */
     abstract fun itineraryDao(): ItineraryDao
+
+    /**
+     * Abstract getter method for Offline Travel Journal DAO.
+     */
+    abstract fun travelJournalDao(): TravelJournalDao
 
     /**
      * Hotspot DAO getter implemented to delegate to tourismDao for backward compatibility.

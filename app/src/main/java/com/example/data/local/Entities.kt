@@ -171,3 +171,21 @@ data class ItineraryItemEntity(
     val addedAt: Long = System.currentTimeMillis()
 )
 
+@Entity(
+    tableName = "travel_journals",
+    indices = [
+        Index("visitedDate")
+    ]
+)
+data class TravelJournalEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val title: String,
+    val locationName: String,
+    val category: String = "Beach",
+    val rating: Int = 5,
+    val notes: String = "",
+    val colorTag: Long = 0xFF0284C7,
+    val visitedDate: Long = System.currentTimeMillis()
+)
+

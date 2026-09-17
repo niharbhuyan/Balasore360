@@ -31,9 +31,496 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.*
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.UniqueFeatureSheetType
+import com.example.data.daily.DailyBalasorePulse
+import com.example.data.daily.DailyUpdateEngine
 
 /**
- * Quick access dock for the 6 unique Balasore features.
+ * Live Daily Auto-Update Pulse Card for Balasore.
+ * Displays today's date, real-time fish auction status, red crab emergence window,
+ * and today's Fakir Mohan Senapati proverb.
+ */
+@Composable
+fun DailyAutoUpdateCard(
+    dailyPulse: DailyBalasorePulse,
+    onRefresh: () -> Unit,
+    onFeatureClick: (UniqueFeatureSheetType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .testTag("daily_auto_update_card"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+        border = BorderStroke(1.5.dp, Color(0xFFBAE6FD)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header Bar
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF22C55E),
+                        modifier = Modifier.size(10.dp)
+                    ) {}
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "LIVE TODAY IN BALASORE",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0369A1),
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFE0F2FE)
+                    ) {
+                        Text(
+                            text = "AUTO-UPDATED",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp,
+                                color = Color(0xFF0284C7)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    IconButton(
+                        onClick = onRefresh,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh Today's Data",
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = dailyPulse.formattedDate,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0F172A)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Proverb Banner of the Day
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onFeatureClick(UniqueFeatureSheetType.BALESWARIYA_DIALECT_PROVERBS) },
+                color = Color(0xFFFAF5FF),
+                border = BorderStroke(1.dp, Color(0xFFE9D5FF))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("📜", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Today's Fakir Mohan Proverb (ଆଜିର ଢଗ)",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF7C3AED)
+                            )
+                        }
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color(0xFF7C3AED),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "“${dailyPulse.proverbOfTheDay.odiaText}”",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4C1D95),
+                        lineHeight = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = dailyPulse.proverbOfTheDay.englishTranslation,
+                        fontSize = 10.sp,
+                        color = Color(0xFF475569),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Dual Live Ticker: Fish Auction & Red Crab Emergence
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Ticker 1: Fish Auction
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.TALASARI_AUCTION_MONITOR) },
+                    color = Color(0xFFEFF6FF),
+                    border = BorderStroke(1.dp, Color(0xFFBFDBFE))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🐟 Fish Auction", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1D4ED8))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.isAuctionLiveNow) Color(0xFF22C55E) else Color(0xFF94A3B8),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (dailyPulse.isAuctionLiveNow) "Live on Beach" else dailyPulse.auctionCountdownText,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (dailyPulse.isAuctionLiveNow) Color(0xFF15803D) else Color(0xFF1E40AF)
+                        )
+                        Text(
+                            text = "Hilsa & Tiger Prawns",
+                            fontSize = 9.sp,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+
+                // Ticker 2: Red Crab Window
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.KASAFAL_RED_CRABS) },
+                    color = Color(0xFFFFF1F2),
+                    border = BorderStroke(1.dp, Color(0xFFFECDD3))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🦀 Red Crab Trail", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFBE123C))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.isRedCrabWindowActive) Color(0xFFE11D48) else Color(0xFF94A3B8),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (dailyPulse.isRedCrabWindowActive) "Prime Emergence" else "Low Tide Window",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF9F1239)
+                        )
+                        Text(
+                            text = dailyPulse.redCrabEveningWindow,
+                            fontSize = 9.sp,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 2: Mangrove Boating & Dark Sky Glow
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Ticker 3: Bichitrapur Mangrove High Tide
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.BICHITRAPUR_MANGROVE_BOATING) },
+                    color = Color(0xFFF0FDF4),
+                    border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🛶 Mangrove Boating", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF15803D))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.isBichitrapurBoatingActive) Color(0xFF22C55E) else Color(0xFFEAB308),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (dailyPulse.isBichitrapurBoatingActive) "High-Tide Open" else "Low-Tide Docked",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF166534)
+                        )
+                        Text(
+                            text = dailyPulse.bichitrapurBoatingWindow,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+
+                // Ticker 4: Dark Sky & Sea Glow Watch
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.DARK_SKY_BIOLUMINESCENCE) },
+                    color = Color(0xFF0F172A),
+                    border = BorderStroke(1.dp, Color(0xFF0284C7))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("✨ Night Sky & Glow", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF7DD3FC))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.isDarkSkyNightOptimal) Color(0xFF38BDF8) else Color(0xFF64748B),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = dailyPulse.moonPhaseName,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Glow: ${dailyPulse.bioluminescenceLikelihood}",
+                            fontSize = 9.sp,
+                            color = Color(0xFF38BDF8),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 3: 🩺 Healthcare & 24x7 Medical Pulse
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Ticker 5: Doctors & OPD Roster
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.DOCTORS_DIRECTORY) },
+                    color = Color(0xFFF0F9FF),
+                    border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🩺 Doctors & OPD", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0369A1))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF0284C7),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "OPD Chambers Active",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0C4A6E)
+                        )
+                        Text(
+                            text = dailyPulse.todayOnDutyEmergencyDoctors,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF0284C7)
+                        )
+                    }
+                }
+
+                // Ticker 6: 24x7 Pharmacies & Anti-Venom
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.MEDICINE_STORES_DIRECTORY) },
+                    color = Color(0xFFF0FDF4),
+                    border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("💊 24x7 Pharmacies", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF15803D))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF22C55E),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${dailyPulse.activePharmacies24x7Count} Stores Open 24/7",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF14532D)
+                        )
+                        Text(
+                            text = dailyPulse.antiVenomStockAdvisory,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF16A34A)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 4: 🔬 Pathology Labs & Fasting Blood Tests
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Ticker 7: Pathology Labs & Fasting Roster
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.PATHOLOGY_LAB_DIRECTORY) },
+                    color = Color(0xFFFFF1F2),
+                    border = BorderStroke(1.dp, Color(0xFFFECDD3))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🔬 Pathology Labs", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9F1239))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFE11D48),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Fasting Blood & CBC",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF881337)
+                        )
+                        Text(
+                            text = dailyPulse.polyclinicSampleCollectionStatus,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFFBE123C)
+                        )
+                    }
+                }
+
+                // Ticker 8: Polyclinics & Diagnostics
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.POLYCLINIC_DIRECTORY) },
+                    color = Color(0xFFFAF5FF),
+                    border = BorderStroke(1.dp, Color(0xFFDDD6FE))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🏥 Polyclinics", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6B21A8))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF9333EA),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "USG & Daycare Active",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF581C87)
+                        )
+                        Text(
+                            text = "Digital reports on WhatsApp",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF7E22CE)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Quick access dock for all 19 unique Balasore features and daily auto-update hubs.
  */
 @Composable
 fun UniqueFeaturesPillGrid(
@@ -85,7 +572,7 @@ fun UniqueFeaturesPillGrid(
                     color = Color(0xFFF1F5F9)
                 ) {
                     Text(
-                        text = "6 LIVE HUBS",
+                        text = "29 LIVE HUBS",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
@@ -98,37 +585,46 @@ fun UniqueFeaturesPillGrid(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 2 rows of 3 pills each
+            // Section 1: 🌟 Daily Auto-Update Hubs
+            Text(
+                text = "🌟 DAILY AUTO UPDATES",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0369A1),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 UniqueFeatureChip(
                     icon = "🦀",
-                    label = "Horseshoe Crab",
-                    sub = "Marine Radar",
-                    color = Color(0xFFFFFBEB),
-                    borderColor = Color(0xFFFDE68A),
+                    label = "Kasafal Crabs",
+                    sub = "Daily Tide Schedule",
+                    color = Color(0xFFFFF1F2),
+                    borderColor = Color(0xFFFECDD3),
                     modifier = Modifier.weight(1f),
-                    onClick = { onFeatureClick(UniqueFeatureSheetType.HORSESHOE_CRAB) }
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.KASAFAL_RED_CRABS) }
                 )
                 UniqueFeatureChip(
-                    icon = "🚀",
-                    label = "ITR Missile Trail",
-                    sub = "Dr. Kalam & Radar",
+                    icon = "🐟",
+                    label = "Fish Auction",
+                    sub = "Talasari Morning Clock",
                     color = Color(0xFFEFF6FF),
                     borderColor = Color(0xFFBFDBFE),
                     modifier = Modifier.weight(1f),
-                    onClick = { onFeatureClick(UniqueFeatureSheetType.DEFENSE_TRAIL) }
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.TALASARI_AUCTION_MONITOR) }
                 )
                 UniqueFeatureChip(
-                    icon = "🍲",
-                    label = "Amrita Keli",
-                    sub = "Bhog & Artisans",
-                    color = Color(0xFFFEF2F2),
-                    borderColor = Color(0xFFFECACA),
+                    icon = "🗣️",
+                    label = "Daily Proverbs",
+                    sub = "Baleswariya Dialect",
+                    color = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFDDD6FE),
                     modifier = Modifier.weight(1f),
-                    onClick = { onFeatureClick(UniqueFeatureSheetType.REMUNA_PRASAD_ARTISANS) }
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BALESWARIYA_DIALECT_PROVERBS) }
                 )
             }
 
@@ -139,27 +635,400 @@ fun UniqueFeaturesPillGrid(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 UniqueFeatureChip(
-                    icon = "🌀",
-                    label = "Cyclone Shelter",
-                    sub = "Resilience Hub",
+                    icon = "🛶",
+                    label = "Bichitrapur",
+                    sub = "Tidal Mangrove Creek",
                     color = Color(0xFFF0FDF4),
                     borderColor = Color(0xFFBBF7D0),
                     modifier = Modifier.weight(1f),
-                    onClick = { onFeatureClick(UniqueFeatureSheetType.CYCLONE_RESILIENCE) }
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BICHITRAPUR_MANGROVE_BOATING) }
                 )
                 UniqueFeatureChip(
-                    icon = "🐟",
-                    label = "Harbor Catch",
-                    sub = "Daily Rate Board",
-                    color = Color(0xFFF8FAFC),
-                    borderColor = Color(0xFFCBD5E1),
+                    icon = "✨",
+                    label = "Dark Sky & Glow",
+                    sub = "Dagara Dunes & Moon",
+                    color = Color(0xFFF0F9FF),
+                    borderColor = Color(0xFFBAE6FD),
                     modifier = Modifier.weight(1f),
-                    onClick = { onFeatureClick(UniqueFeatureSheetType.HARBOR_CATCH_RATES) }
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.DARK_SKY_BIOLUMINESCENCE) }
                 )
+                UniqueFeatureChip(
+                    icon = "⛰️",
+                    label = "Panchalingeswar",
+                    sub = "Spring Flow & Steps",
+                    color = Color(0xFFECFDF5),
+                    borderColor = Color(0xFFA7F3D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.PANCHALINGESWAR_STREAM_SAFETY) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 2: 🌊 Coastal & Estuary Hubs
+            Text(
+                text = "🌊 COASTAL & ESTUARY",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0891B2),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🌊",
+                    label = "Safe Tide Timer",
+                    sub = "Chandipur Embankment",
+                    color = Color(0xFFF0F9FF),
+                    borderColor = Color(0xFFBAE6FD),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) }
+                )
+                UniqueFeatureChip(
+                    icon = "⛵",
+                    label = "River Estuary",
+                    sub = "Balaramgadi Boats",
+                    color = Color(0xFFECFEFF),
+                    borderColor = Color(0xFFA5F3FC),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BALARAMGADI_ESTUARY) }
+                )
+                UniqueFeatureChip(
+                    icon = "🎣",
+                    label = "River Angling",
+                    sub = "Budhabalanga Slack",
+                    color = Color(0xFFF0FDF4),
+                    borderColor = Color(0xFFBBF7D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BUDHABALANGA_RIVER_ANGLING) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🛡️",
+                    label = "Cyclone GPS",
+                    sub = "Multi-Block Shelters",
+                    color = Color(0xFFF0FDF4),
+                    borderColor = Color(0xFFBBF7D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.CYCLONE_SHELTER_FINDER) }
+                )
+                UniqueFeatureChip(
+                    icon = "🔥",
+                    label = "Chandaneswar",
+                    sub = "Chadak Mela & Vows",
+                    color = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.CHANDANESWAR_CHADAK_MELA) }
+                )
+                UniqueFeatureChip(
+                    icon = "🗣️",
+                    label = "Cyclone Lore",
+                    sub = "Elder Early Warnings",
+                    color = Color(0xFFFEF2F2),
+                    borderColor = Color(0xFFFECACA),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.CYCLONE_ORAL_HISTORY) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 3: 🪨 Artisans, Agriculture & Heritage
+            Text(
+                text = "🪨 ARTISANS & AGRO-HERITAGE",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF059669),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🪨",
+                    label = "Stone & Sabai",
+                    sub = "Nilagiri Fair Trade",
+                    color = Color(0xFFF0FDFA),
+                    borderColor = Color(0xFF99F6E4),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.NILAGIRI_STONE_SABAI) }
+                )
+                UniqueFeatureChip(
+                    icon = "🌿",
+                    label = "Pan Baraja",
+                    sub = "Bhograi Agro-Tourism",
+                    color = Color(0xFFF0FDF4),
+                    borderColor = Color(0xFFBBF7D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.PAN_BARAJA_AGRO) }
+                )
+                UniqueFeatureChip(
+                    icon = "🔔",
+                    label = "Bell Metal",
+                    sub = "Remuna-Soro Kansari",
+                    color = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BELL_METAL_ARTISANS) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🌾",
+                    label = "Heirloom Rice",
+                    sub = "Kanakchur & Kalajira",
+                    color = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.HEIRLOOM_RICE_AGRO) }
+                )
+                UniqueFeatureChip(
+                    icon = "☸️",
+                    label = "Buddhist Circuit",
+                    sub = "Ayodhya & Kupari",
+                    color = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFDDD6FE),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BUDDHIST_JAIN_CIRCUIT) }
+                )
+                UniqueFeatureChip(
+                    icon = "🏰",
+                    label = "Lakhannath",
+                    sub = "Border Moat Fortress",
+                    color = Color(0xFFEFF6FF),
+                    borderColor = Color(0xFFBFDBFE),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.LAKHANNATH_ZAMINDARI) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🏛️",
+                    label = "Colonial Walk",
+                    sub = "Dutch & French Port",
+                    color = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFE9D5FF),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.COLONIAL_HERITAGE_WALK) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 4: 🍲 Food, Audio & Transit
+            Text(
+                text = "🍲 FOOD & MOBILITY",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFD97706),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🍲",
+                    label = "Food Trail",
+                    sub = "Amrita Keli & Crab",
+                    color = Color(0xFFFEF3C7),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BALASORE_FOOD_TRAIL) }
+                )
+                UniqueFeatureChip(
+                    icon = "🎧",
+                    label = "Heritage Audio",
+                    sub = "English & ଓଡ଼ିଆ Stories",
+                    color = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFE9D5FF),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BILINGUAL_HERITAGE_AUDIO) }
+                )
+                UniqueFeatureChip(
+                    icon = "🚖",
+                    label = "Fare Estimator",
+                    sub = "Auto & Taxi RTO Rates",
+                    color = Color(0xFFEFF6FF),
+                    borderColor = Color(0xFFBFDBFE),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.TRANSIT_FARE_ESTIMATOR) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 5: 🐘 Wildlife, Journal & Health
+            Text(
+                text = "🐘 WILDLIFE, HEALTH & JOURNAL",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF047857),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 UniqueFeatureChip(
                     icon = "🐘",
-                    label = "Kuldiha Passport",
-                    sub = "Wildlife Corridor",
+                    label = "Kuldiha Safari",
+                    sub = "Species Checklist",
+                    color = Color(0xFFECFDF5),
+                    borderColor = Color(0xFFA7F3D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.KULDIHA_SAFARI_COMPANION) }
+                )
+                UniqueFeatureChip(
+                    icon = "📖",
+                    label = "Travel Journal",
+                    sub = "Offline Scrapbook",
+                    color = Color(0xFFF0F9FF),
+                    borderColor = Color(0xFFBAE6FD),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.TRAVEL_JOURNAL) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 6: 🏥 Healthcare, Doctors & Polyclinics (Daily Auto-Updated)
+            Text(
+                text = "🏥 HEALTHCARE & MEDICAL HUBS (DAILY AUTO-UPDATED)",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0284C7),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🩺",
+                    label = "Doctors & OPD",
+                    sub = "FMMCH & DHH Roster",
+                    color = Color(0xFFF0F9FF),
+                    borderColor = Color(0xFFBAE6FD),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.DOCTORS_DIRECTORY) }
+                )
+                UniqueFeatureChip(
+                    icon = "💊",
+                    label = "Medicine Stores",
+                    sub = "24x7 & Jan Aushadhi",
+                    color = Color(0xFFF0FDF4),
+                    borderColor = Color(0xFFBBF7D0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.MEDICINE_STORES_DIRECTORY) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🔬",
+                    label = "Pathology Labs",
+                    sub = "Blood Tests & Fasting",
+                    color = Color(0xFFFFF1F2),
+                    borderColor = Color(0xFFFECDD3),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.PATHOLOGY_LAB_DIRECTORY) }
+                )
+                UniqueFeatureChip(
+                    icon = "🏥",
+                    label = "Polyclinics & Labs",
+                    sub = "Diagnostics & Daycare",
+                    color = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFDDD6FE),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.POLYCLINIC_DIRECTORY) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🩸",
+                    label = "Blood & Dialysis",
+                    sub = "DHH & Red Cross 24x7",
+                    color = Color(0xFFFEF2F2),
+                    borderColor = Color(0xFFFECACA),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.BLOOD_AND_DIALYSIS_DIRECTORY) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 7: 🚀 Defense & Conservation Radars
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🚀",
+                    label = "ITR Missile Trail",
+                    sub = "Dr. Kalam & Radar",
+                    color = Color(0xFFEFF6FF),
+                    borderColor = Color(0xFFBFDBFE),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.DEFENSE_TRAIL) }
+                )
+                UniqueFeatureChip(
+                    icon = "🦀",
+                    label = "Horseshoe Crab",
+                    sub = "Marine Radar",
+                    color = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.HORSESHOE_CRAB) }
+                )
+                UniqueFeatureChip(
+                    icon = "🌿",
+                    label = "Corridor Alert",
+                    sub = "Elephant Tracking",
                     color = Color(0xFFFAF5FF),
                     borderColor = Color(0xFFE9D5FF),
                     modifier = Modifier.weight(1f),

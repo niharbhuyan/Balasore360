@@ -84,6 +84,37 @@ import com.example.ui.components.ElephantPassportSheet
 import com.example.ui.components.HarborCatchRatesSheet
 import com.example.ui.components.HorseshoeCrabSheet
 import com.example.ui.components.RemunaPrasadArtisansSheet
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import com.example.ui.features.coastal.ChandipurTideTimerSheet
+import com.example.ui.features.coastal.CycloneShelterFinderSheet
+import com.example.ui.features.heritage.BalasoreFoodTrailSheet
+import com.example.ui.features.heritage.HeritageAudioSnippetsSheet
+import com.example.ui.features.transit.TransitFareEstimatorSheet
+import com.example.ui.features.transit.KuldihaSafariCompanionSheet
+import com.example.ui.features.journal.TravelJournalSheet
+import com.example.ui.features.emergency.BloodAndDialysisDirectorySheet
+import com.example.ui.features.coastal.KasafalRedCrabsSheet
+import com.example.ui.features.artisans.NilagiriStoneSabaiSheet
+import com.example.ui.features.coastal.BalaramgadiEstuarySheet
+import com.example.ui.features.heritage.ColonialHeritageWalkSheet
+import com.example.ui.features.coastal.TalasariAuctionMonitorSheet
+import com.example.ui.features.heritage.BaleswariyaDialectProverbsSheet
+import com.example.ui.features.agro.PanBarajaAgroSheet
+import com.example.ui.features.coastal.BichitrapurMangroveSheet
+import com.example.ui.features.heritage.ChandaneswarChadakSheet
+import com.example.ui.features.nature.PanchalingeswarStreamSheet
+import com.example.ui.features.coastal.DarkSkyBioluminescenceSheet
+import com.example.ui.features.artisans.BellMetalArtisansSheet
+import com.example.ui.features.heritage.BuddhistJainCircuitSheet
+import com.example.ui.features.agro.HeirloomRiceAgroSheet
+import com.example.ui.features.heritage.LakhannathZamindariSheet
+import com.example.ui.features.coastal.BudhabalangaRiverAnglingSheet
+import com.example.ui.features.resilience.CycloneOralHistorySheet
+import com.example.ui.features.health.DoctorsDirectorySheet
+import com.example.ui.features.health.MedicineStoresDirectorySheet
+import com.example.ui.features.health.PolyclinicDirectorySheet
+import com.example.ui.features.health.PathologyLabDirectorySheet
 
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -445,7 +476,9 @@ fun BalasoreApp(
                             viewModel.addToItinerary(spot, day, time, notes)
                         },
                         onRemoveFromItinerary = { viewModel.removeFromItinerary(it) },
-                        onClearItinerary = { viewModel.clearItinerary() }
+                        onClearItinerary = { viewModel.clearItinerary() },
+                        dailyPulse = uiState.dailyPulse,
+                        onRefreshDailyPulse = { viewModel.refreshDailyPulse() }
                     )
                     1 -> NewsScreen(
                         articles = uiState.newsArticles,
@@ -531,6 +564,297 @@ fun BalasoreApp(
                         onToggleStamp = { viewModel.toggleEcoPassportStamp(it) },
                         onDismiss = { viewModel.closeFeatureSheet() }
                     )
+                }
+                UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        ChandipurTideTimerSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.CYCLONE_SHELTER_FINDER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        CycloneShelterFinderSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_FOOD_TRAIL -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalasoreFoodTrailSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BILINGUAL_HERITAGE_AUDIO -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        HeritageAudioSnippetsSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TRANSIT_FARE_ESTIMATOR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TransitFareEstimatorSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.KULDIHA_SAFARI_COMPANION -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        KuldihaSafariCompanionSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TRAVEL_JOURNAL -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TravelJournalSheet(
+                            journalRepo = viewModel.travelJournalRepo,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BLOOD_AND_DIALYSIS_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BloodAndDialysisDirectorySheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.KASAFAL_RED_CRABS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        KasafalRedCrabsSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.NILAGIRI_STONE_SABAI -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        NilagiriStoneSabaiSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALARAMGADI_ESTUARY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalaramgadiEstuarySheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.COLONIAL_HERITAGE_WALK -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        ColonialHeritageWalkSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TALASARI_AUCTION_MONITOR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TalasariAuctionMonitorSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALESWARIYA_DIALECT_PROVERBS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BaleswariyaDialectProverbsSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.PAN_BARAJA_AGRO -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PanBarajaAgroSheet(
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BICHITRAPUR_MANGROVE_BOATING -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BichitrapurMangroveSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.CHANDANESWAR_CHADAK_MELA -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        ChandaneswarChadakSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.PANCHALINGESWAR_STREAM_SAFETY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PanchalingeswarStreamSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.DARK_SKY_BIOLUMINESCENCE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        DarkSkyBioluminescenceSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BELL_METAL_ARTISANS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BellMetalArtisansSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BUDDHIST_JAIN_CIRCUIT -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BuddhistJainCircuitSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.HEIRLOOM_RICE_AGRO -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        HeirloomRiceAgroSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.LAKHANNATH_ZAMINDARI -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        LakhannathZamindariSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BUDHABALANGA_RIVER_ANGLING -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BudhabalangaRiverAnglingSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.CYCLONE_ORAL_HISTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        CycloneOralHistorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.DOCTORS_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        DoctorsDirectorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.MEDICINE_STORES_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        MedicineStoresDirectorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.POLYCLINIC_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PolyclinicDirectorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.PATHOLOGY_LAB_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PathologyLabDirectorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
                 }
                 null -> {}
             }

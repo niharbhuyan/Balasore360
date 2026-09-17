@@ -11,6 +11,8 @@ class BalasoreAdMobTest {
     @Test
     fun `verify AdMob App ID matches user configuration`() {
         assertEquals("ca-app-pub-4880243637225183~4956380952", AdMobManager.ADMOB_APP_ID)
+        assertEquals("pub-4880243637225183", AdMobManager.PUBLISHER_ID)
+        assertEquals("google.com, pub-4880243637225183, DIRECT, f08c47fec0942fa0", AdMobManager.APP_ADS_TXT_RECORD)
     }
 
     @Test

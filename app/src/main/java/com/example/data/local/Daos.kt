@@ -303,3 +303,33 @@ interface ItineraryDao {
     suspend fun clearAllItinerary(): Int
 }
 
+@Dao
+interface TravelJournalDao {
+    @Query("SELECT * FROM travel_journals ORDER BY visitedDate DESC")
+    fun getAllJournals(): Flow<List<TravelJournalEntity>>
+
+    @Query("SELECT * FROM travel_journals ORDER BY visitedDate DESC")
+    suspend fun getAllJournalsSync(): List<TravelJournalEntity>
+
+    @Query("SELECT COUNT(*) FROM travel_journals")
+    suspend fun getJournalCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertJournal(journal: TravelJournalEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertJournals(journals: List<TravelJournalEntity>)
+
+    @Update
+    suspend fun updateJournal(journal: TravelJournalEntity): Int
+
+    @Delete
+    suspend fun deleteJournal(journal: TravelJournalEntity): Int
+
+    @Query("DELETE FROM travel_journals WHERE id = :id")
+    suspend fun deleteJournalById(id: Long): Int
+
+    @Query("DELETE FROM travel_journals")
+    suspend fun clearAllJournals(): Int
+}
+

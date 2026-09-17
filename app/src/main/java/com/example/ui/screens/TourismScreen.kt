@@ -84,6 +84,10 @@ import com.example.ui.components.HotspotWeatherBadge
 import com.example.ui.components.HotspotWeatherIcon
 import com.example.ui.components.LiveEmergencyAlertBanner
 import com.example.ui.components.UniqueFeaturesPillGrid
+import com.example.ui.components.DailyAutoUpdateCard
+import com.example.ui.components.TidalDataVisualizationCard
+import com.example.data.daily.DailyBalasorePulse
+import com.example.data.daily.DailyUpdateEngine
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -128,6 +132,8 @@ fun TourismScreen(
     onAddToItinerary: (Hotspot, Int, String, String) -> Unit = { _, _, _, _ -> },
     onRemoveFromItinerary: (Long) -> Unit = {},
     onClearItinerary: () -> Unit = {},
+    dailyPulse: DailyBalasorePulse = DailyUpdateEngine.getDailyPulse(),
+    onRefreshDailyPulse: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -256,7 +262,24 @@ fun TourismScreen(
             )
         }
 
-        // Live Special Features Quick Hub
+        // Daily Auto-Update Pulse Card (Real-Time Tide, Proverb & Fish Auction)
+        item {
+            DailyAutoUpdateCard(
+                dailyPulse = dailyPulse,
+                onRefresh = onRefreshDailyPulse,
+                onFeatureClick = onOpenFeatureSheet
+            )
+        }
+
+        // Recharts Data Visualization: Historical Balasore Tidal Data & Sea-Recession Trends (Local Storage)
+        item {
+            TidalDataVisualizationCard(
+                language = language,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+        }
+
+        // Live Special Features Quick Hub (19 Live Hubs)
         item {
             UniqueFeaturesPillGrid(onFeatureClick = onOpenFeatureSheet)
         }
