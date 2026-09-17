@@ -1,13 +1,19 @@
 package com.example.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.local.AppDatabase
+import com.example.data.local.ItineraryItemEntity
 import com.example.data.model.*
+import com.example.data.remote.BalasoreApiService
+import com.example.data.remote.EmergencyAlertDto
 import com.example.data.remote.GeminiGroundingService
 import com.example.data.remote.GroundingResponse
 import com.example.data.remote.GroundingToolMode
 import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.DefaultData
+import com.example.data.repository.ItineraryRepository
 import com.example.data.repository.UniqueFeaturesRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,7 +63,12 @@ data class BalasoreUiState(
     val isRefreshing: Boolean = false,
     val bookmarkedIds: Set<String> = emptySet(),
     val favoriteHotspotIds: Set<String> = emptySet(),
-    val groundingState: GroundingState = GroundingState()
+    val groundingState: GroundingState = GroundingState(),
+    // Custom Interactive Itinerary (Room persisted)
+    val itineraryItems: List<ItineraryItemEntity> = DefaultData.getDefaultItineraryItems(),
+    // Live Emergency Alerts fetched from Backend
+    val liveEmergencyAlerts: List<EmergencyAlertDto> = DefaultData.getDefaultEmergencyAlerts(),
+    val dismissedAlertIds: Set<String> = emptySet()
 )
 
 enum class UniqueFeatureSheetType {
@@ -95,8 +106,101 @@ enum class AuthMode {
 
 class BalasoreViewModel : ViewModel() {
 
+    private var itineraryRepo: ItineraryRepository? = null
+    private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
+
     private val _uiState = MutableStateFlow(BalasoreUiState())
     val uiState: StateFlow<BalasoreUiState> = _uiState.asStateFlow()
+
+    init {
+        try {
+            if (android.os.Looper.getMainLooper() != null) {
+                fetchLiveEmergencyAlerts()
+            }
+        } catch (_: Throwable) {
+            // JVM unit test environment without Android Looper
+        }
+    }
+
+    /**
+     * Connects local Room database and streams itinerary items into UI state.
+     */
+    fun initDatabase(context: Context) {
+        if (itineraryRepo != null) return
+        try {
+            val repo = ItineraryRepository(AppDatabase.getInstance(context).itineraryDao())
+            itineraryRepo = repo
+            viewModelScope.launch {
+                try {
+                    repo.ensureDefaultItinerarySeeded()
+                } catch (t: Throwable) {
+                    android.util.Log.e("BalasoreViewModel", "Error seeding default itinerary: ${t.message}")
+                }
+            }
+            viewModelScope.launch {
+                try {
+                    repo.allItineraryItems.collect { items ->
+                        if (items.isNotEmpty()) {
+                            _uiState.value = _uiState.value.copy(itineraryItems = items)
+                        }
+                    }
+                } catch (t: Throwable) {
+                    android.util.Log.e("BalasoreViewModel", "Error collecting itinerary items: ${t.message}")
+                }
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("BalasoreViewModel", "Failed to initialize database: ${t.message}")
+        }
+    }
+
+    fun setItineraryRepository(repo: ItineraryRepository) {
+        this.itineraryRepo = repo
+        viewModelScope.launch {
+            repo.ensureDefaultItinerarySeeded()
+        }
+        viewModelScope.launch {
+            repo.allItineraryItems.collect { items ->
+                _uiState.value = _uiState.value.copy(itineraryItems = items)
+            }
+        }
+    }
+
+    fun addToItinerary(hotspot: Hotspot, day: Int = 1, timeSlot: String = "10:00 AM", notes: String = "") {
+        viewModelScope.launch {
+            itineraryRepo?.addToItinerary(hotspot, day, timeSlot, notes)
+        }
+    }
+
+    fun removeFromItinerary(id: Long) {
+        viewModelScope.launch {
+            itineraryRepo?.removeItem(id)
+        }
+    }
+
+    fun clearItinerary() {
+        viewModelScope.launch {
+            itineraryRepo?.clearAll()
+        }
+    }
+
+    fun dismissEmergencyAlert(alertId: String) {
+        _uiState.value = _uiState.value.copy(
+            dismissedAlertIds = _uiState.value.dismissedAlertIds + alertId
+        )
+    }
+
+    fun fetchLiveEmergencyAlerts() {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getLiveEmergencyAlerts()
+                _uiState.value = _uiState.value.copy(
+                    liveEmergencyAlerts = response.alerts
+                )
+            } catch (e: Exception) {
+                // Keep existing or fallback gracefully
+            }
+        }
+    }
 
     fun selectTab(tabIndex: Int) {
         _uiState.value = _uiState.value.copy(selectedTab = tabIndex)

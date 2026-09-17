@@ -145,3 +145,29 @@ data class ReviewEntity(
     val comment: String,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(
+    tableName = "travel_itinerary",
+    indices = [
+        Index("hotspotId"),
+        Index("dayNumber")
+    ]
+)
+data class ItineraryItemEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val hotspotId: String,
+    val hotspotName: String,
+    val odiaName: String = "",
+    val category: String = "Heritage",
+    val dayNumber: Int = 1,
+    val timeSlot: String = "10:00 AM",
+    val notes: String = "",
+    val latitude: Double = 21.4934,
+    val longitude: Double = 86.9325,
+    val weatherCondition: String = "Sunny",
+    val weatherIconUrl: String = "https://cdn.weatherapi.com/weather/64x64/day/113.png",
+    val tempC: Double = 29.0,
+    val addedAt: Long = System.currentTimeMillis()
+)
+

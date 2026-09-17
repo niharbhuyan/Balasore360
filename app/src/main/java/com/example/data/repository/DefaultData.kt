@@ -1,9 +1,11 @@
 package com.example.data.repository
 
 import com.example.data.local.HotspotEntity
+import com.example.data.local.ItineraryItemEntity
 import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
+import com.example.data.remote.EmergencyAlertDto
 
 object DefaultData {
     fun getInitialHotspots(): List<HotspotEntity> = listOf(
@@ -480,5 +482,83 @@ object DefaultData {
             )
         )
     }
+
+    fun getDefaultItineraryItems(): List<ItineraryItemEntity> = listOf(
+        ItineraryItemEntity(
+            id = 1L,
+            hotspotId = "khirachora_temple",
+            hotspotName = "Khirachora Gopinatha Temple",
+            odiaName = "କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ମନ୍ଦିର",
+            category = "Temple",
+            dayNumber = 1,
+            timeSlot = "08:30 AM",
+            notes = "Taste divine Amrita Keli prasad & admire 12th-century Kalinga architecture.",
+            latitude = 21.5284,
+            longitude = 86.8647,
+            weatherCondition = "Sunny Morning",
+            weatherIconUrl = "https://cdn.weatherapi.com/weather/64x64/day/113.png",
+            tempC = 27.5
+        ),
+        ItineraryItemEntity(
+            id = 2L,
+            hotspotId = "chandipur_beach",
+            hotspotName = "Chandipur Beach & Vanishing Sea",
+            odiaName = "ଚାନ୍ଦିପୁର ବେଳାଭୂମି",
+            category = "Beach",
+            dayNumber = 1,
+            timeSlot = "02:30 PM",
+            notes = "Walk 4 km onto the exposed seabed at low tide & spot living fossil horseshoe crabs.",
+            latitude = 21.4682,
+            longitude = 87.0163,
+            weatherCondition = "Coastal Breeze",
+            weatherIconUrl = "https://cdn.weatherapi.com/weather/64x64/day/116.png",
+            tempC = 29.8
+        ),
+        ItineraryItemEntity(
+            id = 3L,
+            hotspotId = "emami_jagannath_temple",
+            hotspotName = "Emami Jagannath Temple",
+            odiaName = "ଏମାମି ଜଗନ୍ନାଥ ମନ୍ଦିର",
+            category = "Temple",
+            dayNumber = 1,
+            timeSlot = "05:45 PM",
+            notes = "Witness evening sand art & sunset aarti along the illuminated temple pond.",
+            latitude = 21.5034,
+            longitude = 86.9150,
+            weatherCondition = "Clear Evening",
+            weatherIconUrl = "https://cdn.weatherapi.com/weather/64x64/day/113.png",
+            tempC = 28.0
+        )
+    )
+
+    fun getDefaultEmergencyAlerts(): List<EmergencyAlertDto> = listOf(
+        EmergencyAlertDto(
+            id = "alert_cyclone_live_01",
+            title = "IMD Red Warning: Cyclone Alert for Balasore Coastal Belt",
+            odiaTitle = "ବାଲେଶ୍ୱର ଉପକୂଳରେ ବାତ୍ୟା ସତର୍କ ସୂଚନା (ନାଲି ଚେତାବନୀ)",
+            type = "CYCLONE",
+            severity = "CRITICAL",
+            summary = "Deep depression over Northwest Bay of Bengal intensifying. Squally winds 85-95 km/h expected near Chandipur & Talasari.",
+            details = "Special Relief Commissioner advises total suspension of artisanal fishing. Multipurpose cyclone shelters in Bhograi, Remuna, and Sadar blocks opened for coastal residents.",
+            affectedArea = "Chandipur, Talasari, Bahanaga & Kasafal Coast",
+            windSpeedKmph = 95,
+            actionRequired = "Stay away from exposed intertidal mudflats. Secure coastal rooftop assets.",
+            emergencyHelpline = "06782-262244"
+        ),
+        EmergencyAlertDto(
+            id = "alert_river_spike_02",
+            title = "Flood Alert: Subarnarekha River Level Spike at Rajghat",
+            odiaTitle = "ସୁବର୍ଣ୍ଣରେଖା ନଦୀରେ ଜଳସ୍ତର ବୃଦ୍ଧି ସତର୍କତା (ରାଜଘାଟ ଷ୍ଟେସନ)",
+            type = "RIVER_SPIKE",
+            severity = "HIGH_PRIORITY",
+            summary = "Subarnarekha River water level spiked to 10.42m, exceeding Danger Level (10.36m) following upstream Galudih barrage discharge.",
+            details = "Rapid influx of 1,50,000 cusecs recorded. Low-lying riparian hamlets in Jaleswar and Baliapal blocks instructed to remain vigilant. ODRAF team stationed at Jaleswar bridge.",
+            affectedArea = "Jaleswar, Bhograi & Baliapal Riverine Basin",
+            waterLevelMeters = 10.42,
+            dangerLevelMeters = 10.36,
+            actionRequired = "Riparian residents should avoid crossing submerged bridges and stay tuned to Block Nodal Officer updates.",
+            emergencyHelpline = "06781-222045"
+        )
+    )
 }
 

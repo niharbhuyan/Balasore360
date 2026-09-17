@@ -14,9 +14,10 @@ import androidx.room.TypeConverters
         HotspotEntity::class,
         CacheSyncMetadataEntity::class,
         UserEntity::class,
-        ReviewEntity::class
+        ReviewEntity::class,
+        ItineraryItemEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -31,6 +32,11 @@ abstract class AppDatabase : RoomDatabase() {
      * Abstract getter method for Tourism DAO to enable CRUD operations for tourism destinations, heritage spots, and beaches.
      */
     abstract fun tourismDao(): TourismDao
+
+    /**
+     * Abstract getter method for Custom Travel Itinerary DAO.
+     */
+    abstract fun itineraryDao(): ItineraryDao
 
     /**
      * Hotspot DAO getter implemented to delegate to tourismDao for backward compatibility.
@@ -69,7 +75,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     DATABASE_NAME
-                ).fallbackToDestructiveMigration(dropAllTables = true).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

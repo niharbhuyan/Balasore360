@@ -30,6 +30,9 @@ interface BalasoreApiService {
     @GET("api/v1/balasore/weather/marine-observatory")
     suspend fun getMarineObservatoryData(): BalasoreMarineWeatherResponse
 
+    @GET("api/v1/balasore/emergency/live-alerts")
+    suspend fun getLiveEmergencyAlerts(): LiveEmergencyAlertsResponse
+
     companion object {
         const val BASE_URL = "https://api.balasore360.local/"
 

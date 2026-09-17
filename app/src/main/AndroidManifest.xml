@@ -29,6 +29,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Balasore360">
 
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBalasore360MapsKey" />
+
         <!-- Google AdMob Application ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

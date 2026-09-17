@@ -97,13 +97,23 @@ import com.example.util.UpdateUIState
 class MainActivity : ComponentActivity() {
 
     private val viewModel: BalasoreViewModel by viewModels()
-    private lateinit var updateManager: PlayStoreUpdateManager
+    private var updateManager: PlayStoreUpdateManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        updateManager = PlayStoreUpdateManager(this)
+        try {
+            updateManager = PlayStoreUpdateManager(this)
+        } catch (t: Throwable) {
+            Log.w("MainActivity", "PlayStoreUpdateManager safe fallback: ${t.message}")
+        }
+
+        try {
+            viewModel.initDatabase(this)
+        } catch (t: Throwable) {
+            Log.e("MainActivity", "Safe initDatabase catch: ${t.message}")
+        }
 
         // Crash-proof AdMob initialization
         try {
@@ -130,16 +140,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (::updateManager.isInitialized) {
-            updateManager.checkPendingUpdateCompletion()
-        }
+        updateManager?.checkPendingUpdateCompletion()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (::updateManager.isInitialized) {
-            updateManager.cleanup()
-        }
+        updateManager?.cleanup()
     }
 }
 
@@ -147,10 +153,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BalasoreApp(
     viewModel: BalasoreViewModel,
-    updateManager: PlayStoreUpdateManager
+    updateManager: PlayStoreUpdateManager? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val updateState by updateManager.updateState.collectAsState()
+    val updateState = updateManager?.updateState?.collectAsState()?.value ?: UpdateUIState.Idle
 
     // Activity Result Launcher for Google Play In-App Updates
     val updateLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -162,8 +168,8 @@ fun BalasoreApp(
     }
 
     // Auto-check for updates on app launch
-    LaunchedEffect(Unit) {
-        updateManager.checkForUpdates(launcher = updateLauncher, autoStartFlexible = true)
+    LaunchedEffect(updateManager) {
+        updateManager?.checkForUpdates(launcher = updateLauncher, autoStartFlexible = true)
     }
 
     Scaffold(
@@ -393,7 +399,7 @@ fun BalasoreApp(
                             }
                         }
                         Button(
-                            onClick = { updateManager.completeUpdate() },
+                            onClick = { updateManager?.completeUpdate() },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF166534)),
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
@@ -430,7 +436,16 @@ fun BalasoreApp(
                         onSelectForecastDay = { viewModel.selectForecastDay(it) },
                         onAcknowledgeAlert = { viewModel.acknowledgeAlert(it) },
                         onNavigateToWeather = { viewModel.selectTab(2) },
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
+                        itineraryItems = uiState.itineraryItems,
+                        liveEmergencyAlerts = uiState.liveEmergencyAlerts,
+                        dismissedAlertIds = uiState.dismissedAlertIds,
+                        onDismissAlert = { viewModel.dismissEmergencyAlert(it) },
+                        onAddToItinerary = { spot, day, time, notes ->
+                            viewModel.addToItinerary(spot, day, time, notes)
+                        },
+                        onRemoveFromItinerary = { viewModel.removeFromItinerary(it) },
+                        onClearItinerary = { viewModel.clearItinerary() }
                     )
                     1 -> NewsScreen(
                         articles = uiState.newsArticles,
@@ -460,9 +475,9 @@ fun BalasoreApp(
                         updateState = updateState,
                         themeMode = uiState.themeMode,
                         onThemeModeChange = { viewModel.setThemeMode(it) },
-                        onCheckForUpdates = { updateManager.checkForUpdates(updateLauncher, autoStartFlexible = false) },
-                        onTriggerUpdate = { updateManager.startUpdate(updateLauncher) },
-                        onCompleteUpdate = { updateManager.completeUpdate() },
+                        onCheckForUpdates = { updateManager?.checkForUpdates(updateLauncher, autoStartFlexible = false) },
+                        onTriggerUpdate = { updateManager?.startUpdate(updateLauncher) },
+                        onCompleteUpdate = { updateManager?.completeUpdate() },
                         onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
                 }

@@ -3,15 +3,99 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3000;
-const APK_PATH = path.join(__dirname, 'app/build/outputs/apk/debug/app-debug.apk');
-const ADS_TXT_PATH = path.join(__dirname, 'app-ads.txt');
-const INDEX_HTML_PATH = path.join(__dirname, 'index.html');
-const PRIVACY_HTML_PATH = path.join(__dirname, 'privacy.html');
+const ROOT_DIR = __dirname;
+const AAB_FILE_NAME = 'Balasore360-v1.0.3-release.aab';
+const AAB_PATH = path.join(ROOT_DIR, AAB_FILE_NAME);
+const FALLBACK_AAB_PATH = path.join(ROOT_DIR, 'Balasore360-release.aab');
+const APK_PATH = path.join(ROOT_DIR, 'Balasore360-debug.apk');
+const FALLBACK_APK_PATH = path.join(ROOT_DIR, 'app-debug.apk');
+const ASSETS_ZIP_PATH = path.join(ROOT_DIR, 'Balasore360_PlayStore_Assets.zip');
+const ADS_TXT_PATH = path.join(ROOT_DIR, 'app-ads.txt');
+const INDEX_HTML_PATH = path.join(ROOT_DIR, 'index.html');
+const PRIVACY_HTML_PATH = path.join(ROOT_DIR, 'privacy.html');
+
+function serveFileWithRanges(req, res, filePath, contentType, downloadFilename) {
+  if (!fs.existsSync(filePath)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end(`File not found: ${downloadFilename}`);
+    return;
+  }
+
+  const stat = fs.statSync(filePath);
+  const totalSize = stat.size;
+  const range = req.headers.range;
+
+  if (range) {
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+
+    if (start >= totalSize || end >= totalSize) {
+      res.writeHead(416, {
+        'Content-Range': `bytes */${totalSize}`,
+        'Content-Type': 'text/plain'
+      });
+      res.end('Requested range not satisfiable');
+      return;
+    }
+
+    const chunksize = (end - start) + 1;
+    const fileStream = fs.createReadStream(filePath, { start, end });
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': contentType,
+      'Content-Disposition': `attachment; filename="${downloadFilename}"`,
+      'Cache-Control': 'no-cache'
+    });
+    fileStream.pipe(res);
+    fileStream.on('error', (err) => {
+      console.error('Stream error:', err.message);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end();
+      }
+    });
+  } else {
+    res.writeHead(200, {
+      'Content-Length': totalSize,
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes',
+      'Content-Disposition': `attachment; filename="${downloadFilename}"`,
+      'Cache-Control': 'no-cache'
+    });
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+    fileStream.on('error', (err) => {
+      console.error('Stream error:', err.message);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end();
+      }
+    });
+  }
+}
 
 const server = http.createServer((req, res) => {
-  const url = (req.url || '/').split('?')[0];
+  req.on('error', (err) => {
+    console.error('Request error:', err.message);
+  });
+  res.on('error', (err) => {
+    console.error('Response error:', err.message);
+  });
 
-  // AdMob ads verification file
+  const rawUrl = (req.url || '/').split('?')[0];
+  const url = decodeURIComponent(rawUrl);
+
+  // Health check
+  if (url === '/health' || url === '/ping') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', time: new Date().toISOString() }));
+    return;
+  }
+
+  // AdMob app-ads.txt
   if (url === '/app-ads.txt') {
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
     if (fs.existsSync(ADS_TXT_PATH)) {
@@ -22,24 +106,43 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // APK download
-  if (url === '/app-debug.apk' || url === '/download') {
-    if (fs.existsSync(APK_PATH)) {
-      const stat = fs.statSync(APK_PATH);
-      res.writeHead(200, {
-        'Content-Type': 'application/vnd.android.package-archive',
-        'Content-Length': stat.size,
-        'Content-Disposition': 'attachment; filename="Balasore360.apk"'
-      });
-      fs.createReadStream(APK_PATH).pipe(res);
-    } else {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('APK not found. Please compile the applet first.');
-    }
+  // AAB Download routes
+  if (
+    url === '/download/aab' ||
+    url === '/Balasore360-v1.0.3-release.aab' ||
+    url === '/Balasore360-release.aab' ||
+    url === '/app-release.aab' ||
+    url.endsWith('.aab')
+  ) {
+    const targetFile = fs.existsSync(AAB_PATH) ? AAB_PATH : FALLBACK_AAB_PATH;
+    serveFileWithRanges(req, res, targetFile, 'application/octet-stream', AAB_FILE_NAME);
     return;
   }
 
-  // Google Play Store Mandatory Privacy Policy permalink
+  // APK Download routes
+  if (
+    url === '/download/apk' ||
+    url === '/app-debug.apk' ||
+    url === '/Balasore360-debug.apk' ||
+    url === '/download' ||
+    url.endsWith('.apk')
+  ) {
+    const targetApk = fs.existsSync(APK_PATH) ? APK_PATH : (fs.existsSync(FALLBACK_APK_PATH) ? FALLBACK_APK_PATH : path.join(ROOT_DIR, 'Balasore360-release.apk'));
+    serveFileWithRanges(req, res, targetApk, 'application/vnd.android.package-archive', 'Balasore360.apk');
+    return;
+  }
+
+  // Graphic Assets Zip
+  if (
+    url === '/download/assets' ||
+    url === '/Balasore360_PlayStore_Assets.zip' ||
+    url.endsWith('.zip')
+  ) {
+    serveFileWithRanges(req, res, ASSETS_ZIP_PATH, 'application/zip', 'Balasore360_PlayStore_Assets.zip');
+    return;
+  }
+
+  // Google Play Store Mandatory Privacy Policy
   if (url === '/privacy' || url === '/privacy.html' || url === '/privacy-policy') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     if (fs.existsSync(PRIVACY_HTML_PATH)) {
@@ -52,22 +155,43 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Application diagnostic API
+  // Diagnostic API
   if (url === '/api/info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       appName: 'Balasore 360',
-      version: '1.0.2',
+      version: '1.0.3',
+      versionCode: 4,
       status: 'ready',
-      privacyPolicyUrl: '/privacy',
-      admobAppId: 'ca-app-pub-4880243637225183~4956380952',
-      admobPublisherId: 'pub-4880243637225183',
-      apkAvailable: fs.existsSync(APK_PATH)
+      aabAvailable: fs.existsSync(AAB_PATH),
+      aabSize: fs.existsSync(AAB_PATH) ? fs.statSync(AAB_PATH).size : 0,
+      apkAvailable: fs.existsSync(APK_PATH),
+      privacyPolicyUrl: '/privacy'
     }));
     return;
   }
 
-  // Default homepage (serves index.html with prominent Privacy Policy section)
+  // Serve static assets if requested (images, css, js)
+  const safePath = path.normalize(path.join(ROOT_DIR, url));
+  if (safePath.startsWith(ROOT_DIR) && fs.existsSync(safePath) && fs.statSync(safePath).isFile() && url !== '/') {
+    const ext = path.extname(safePath).toLowerCase();
+    const mimeTypes = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.svg': 'image/svg+xml',
+      '.js': 'application/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.txt': 'text/plain'
+    };
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(safePath).pipe(res);
+    return;
+  }
+
+  // Default homepage (index.html)
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   if (fs.existsSync(INDEX_HTML_PATH)) {
     res.end(fs.readFileSync(INDEX_HTML_PATH, 'utf8'));
@@ -77,5 +201,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Balasore 360 Companion Server listening on port ${PORT}`);
+  console.log(`Balasore 360 Production Server listening on port ${PORT}`);
 });

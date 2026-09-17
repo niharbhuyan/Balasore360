@@ -263,3 +263,43 @@ interface CacheMetadataDao {
     @Query("DELETE FROM cache_sync_metadata")
     suspend fun clearAll()
 }
+
+@Dao
+interface ItineraryDao {
+    @Query("SELECT * FROM travel_itinerary ORDER BY dayNumber ASC, id ASC")
+    fun getAllItineraryItems(): Flow<List<ItineraryItemEntity>>
+
+    @Query("SELECT * FROM travel_itinerary ORDER BY dayNumber ASC, id ASC")
+    suspend fun getAllItineraryItemsSync(): List<ItineraryItemEntity>
+
+    @Query("SELECT * FROM travel_itinerary WHERE id = :id LIMIT 1")
+    suspend fun getItineraryItemById(id: Long): ItineraryItemEntity?
+
+    @Query("SELECT COUNT(*) FROM travel_itinerary")
+    fun getItineraryCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM travel_itinerary")
+    suspend fun getItineraryCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItineraryItem(item: ItineraryItemEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItineraryItems(items: List<ItineraryItemEntity>)
+
+    @Update
+    suspend fun updateItineraryItem(item: ItineraryItemEntity): Int
+
+    @Delete
+    suspend fun deleteItineraryItem(item: ItineraryItemEntity): Int
+
+    @Query("DELETE FROM travel_itinerary WHERE id = :id")
+    suspend fun deleteItineraryItemById(id: Long): Int
+
+    @Query("DELETE FROM travel_itinerary WHERE hotspotId = :hotspotId")
+    suspend fun deleteByHotspotId(hotspotId: String): Int
+
+    @Query("DELETE FROM travel_itinerary")
+    suspend fun clearAllItinerary(): Int
+}
+
