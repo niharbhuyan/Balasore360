@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -25,6 +26,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Explore
@@ -63,7 +66,9 @@ import androidx.compose.ui.unit.sp
 import com.example.data.admob.AdMobManager
 import com.example.data.model.AppLanguage
 import com.example.ui.screens.EssentialsScreen
+import com.example.ui.screens.HotspotsMapView
 import com.example.ui.screens.NewsScreen
+import com.example.ui.screens.SpecialFeaturesScreen
 import com.example.ui.screens.TourismScreen
 import com.example.ui.screens.WeatherScreen
 import com.example.ui.theme.Balasore360Theme
@@ -115,6 +120,8 @@ import com.example.ui.features.health.DoctorsDirectorySheet
 import com.example.ui.features.health.MedicineStoresDirectorySheet
 import com.example.ui.features.health.PolyclinicDirectorySheet
 import com.example.ui.features.health.PathologyLabDirectorySheet
+import com.example.ui.features.coastal.RiverFloodTelemetrySheet
+import com.example.ui.features.artisans.LacquerCraftArtisansSheet
 
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -201,6 +208,15 @@ fun BalasoreApp(
     // Auto-check for updates on app launch
     LaunchedEffect(updateManager) {
         updateManager?.checkForUpdates(launcher = updateLauncher, autoStartFlexible = true)
+    }
+
+    // System Back Press handling: dismiss active bottom sheet first, then switch back to Explore tab
+    BackHandler(enabled = uiState.activeFeatureSheet != null || uiState.selectedTab != 0) {
+        if (uiState.activeFeatureSheet != null) {
+            viewModel.closeFeatureSheet()
+        } else if (uiState.selectedTab != 0) {
+            viewModel.selectTab(0)
+        }
     }
 
     Scaffold(
@@ -293,7 +309,8 @@ fun BalasoreApp(
                     label = {
                         Text(
                             text = if (uiState.language == AppLanguage.ODIA) "ସ୍ଥାନ" else "Explore",
-                            fontSize = 11.sp
+                            fontSize = 10.5.sp,
+                            maxLines = 1
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -310,14 +327,15 @@ fun BalasoreApp(
                     onClick = { viewModel.selectTab(1) },
                     icon = {
                         Icon(
-                            imageVector = if (uiState.selectedTab == 1) Icons.AutoMirrored.Filled.Article else Icons.AutoMirrored.Outlined.Article,
-                            contentDescription = "News"
+                            imageVector = if (uiState.selectedTab == 1) Icons.Default.AutoAwesome else Icons.Outlined.AutoAwesome,
+                            contentDescription = "Special Features"
                         )
                     },
                     label = {
                         Text(
-                            text = if (uiState.language == AppLanguage.ODIA) "ଖବର" else "News",
-                            fontSize = 11.sp
+                            text = if (uiState.language == AppLanguage.ODIA) "ସ୍ୱତନ୍ତ୍ର" else "Special",
+                            fontSize = 10.5.sp,
+                            maxLines = 1
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -334,14 +352,15 @@ fun BalasoreApp(
                     onClick = { viewModel.selectTab(2) },
                     icon = {
                         Icon(
-                            imageVector = if (uiState.selectedTab == 2) Icons.Default.Cloud else Icons.Outlined.Cloud,
-                            contentDescription = "Weather"
+                            imageVector = if (uiState.selectedTab == 2) Icons.AutoMirrored.Filled.Article else Icons.AutoMirrored.Outlined.Article,
+                            contentDescription = "News"
                         )
                     },
                     label = {
                         Text(
-                            text = if (uiState.language == AppLanguage.ODIA) "ପାଣିପାଗ" else "Weather",
-                            fontSize = 11.sp
+                            text = if (uiState.language == AppLanguage.ODIA) "ଖବର" else "News",
+                            fontSize = 10.5.sp,
+                            maxLines = 1
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -358,14 +377,40 @@ fun BalasoreApp(
                     onClick = { viewModel.selectTab(3) },
                     icon = {
                         Icon(
-                            imageVector = if (uiState.selectedTab == 3) Icons.Default.Emergency else Icons.Outlined.Emergency,
+                            imageVector = if (uiState.selectedTab == 3) Icons.Default.Cloud else Icons.Outlined.Cloud,
+                            contentDescription = "Weather"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = if (uiState.language == AppLanguage.ODIA) "ପାଣିପାଗ" else "Weather",
+                            fontSize = 10.5.sp,
+                            maxLines = 1
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                )
+
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 4,
+                    onClick = { viewModel.selectTab(4) },
+                    icon = {
+                        Icon(
+                            imageVector = if (uiState.selectedTab == 4) Icons.Default.Emergency else Icons.Outlined.Emergency,
                             contentDescription = "Essentials"
                         )
                     },
                     label = {
                         Text(
                             text = if (uiState.language == AppLanguage.ODIA) "ସହାୟତା" else "Essentials",
-                            fontSize = 11.sp
+                            fontSize = 10.5.sp,
+                            maxLines = 1
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -466,7 +511,8 @@ fun BalasoreApp(
                         onToggleTempUnit = { viewModel.toggleTemperatureUnit() },
                         onSelectForecastDay = { viewModel.selectForecastDay(it) },
                         onAcknowledgeAlert = { viewModel.acknowledgeAlert(it) },
-                        onNavigateToWeather = { viewModel.selectTab(2) },
+                        onNavigateToWeather = { viewModel.selectTab(3) },
+                        onNavigateToSpecialFeatures = { viewModel.selectTab(1) },
                         onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
                         itineraryItems = uiState.itineraryItems,
                         liveEmergencyAlerts = uiState.liveEmergencyAlerts,
@@ -480,27 +526,36 @@ fun BalasoreApp(
                         dailyPulse = uiState.dailyPulse,
                         onRefreshDailyPulse = { viewModel.refreshDailyPulse() }
                     )
-                    1 -> NewsScreen(
+                    1 -> SpecialFeaturesScreen(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                    )
+                    2 -> NewsScreen(
                         articles = uiState.newsArticles,
                         riverGauges = uiState.riverGauges,
                         cycloneShelters = uiState.cycloneShelters,
                         selectedCategory = uiState.selectedNewsCategory,
+                        searchQuery = uiState.newsSearchQuery,
                         language = uiState.language,
                         bookmarkedIds = uiState.bookmarkedIds,
                         isRefreshing = uiState.isRefreshing,
                         onCategorySelected = { viewModel.setNewsCategory(it) },
+                        onSearchQueryChanged = { viewModel.setNewsSearchQuery(it) },
                         onToggleBookmark = { viewModel.toggleBookmark(it) },
                         onRefresh = { viewModel.refreshAll() },
                         onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
-                    2 -> WeatherScreen(
+                    3 -> WeatherScreen(
                         weather = uiState.weather,
                         tidalClock = uiState.tidalClock,
                         drdoAdvisories = uiState.drdoAdvisories,
                         language = uiState.language,
+                        lastKnownTide = uiState.lastKnownTideForecast,
                         onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                     )
-                    3 -> EssentialsScreen(
+                    4 -> EssentialsScreen(
                         emergencyContacts = uiState.emergencyContacts,
                         transitList = uiState.transitList,
                         seafoodCatches = uiState.seafoodCatches,
@@ -571,7 +626,8 @@ fun BalasoreApp(
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                     ) {
                         ChandipurTideTimerSheet(
-                            onClose = { viewModel.closeFeatureSheet() }
+                            onClose = { viewModel.closeFeatureSheet() },
+                            lastKnownTide = uiState.lastKnownTideForecast
                         )
                     }
                 }
@@ -853,6 +909,37 @@ fun BalasoreApp(
                     ) {
                         PathologyLabDirectorySheet(
                             onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.RIVER_FLOOD_TELEMETRY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        RiverFloodTelemetrySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.MATI_MANISHA_ARTISANS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        LacquerCraftArtisansSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_MAP_EXPLORER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        HotspotsMapView(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
                         )
                     }
                 }

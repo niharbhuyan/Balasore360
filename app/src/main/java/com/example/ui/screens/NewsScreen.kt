@@ -28,9 +28,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Water
@@ -42,6 +44,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,6 +68,7 @@ import com.example.data.model.RiverGauge
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
+import com.example.ui.theme.BentoSlate200
 import com.example.ui.theme.BentoSlate400
 import com.example.ui.theme.BentoSlate500
 import com.example.ui.theme.BentoSlate600
@@ -90,13 +95,25 @@ fun NewsScreen(
     onToggleBookmark: (String) -> Unit,
     onRefresh: () -> Unit,
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
+    searchQuery: String = "",
+    onSearchQueryChanged: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val categories = listOf("All", "Infrastructure", "Defense", "Culture", "Civic Alert")
+    val categories = listOf("All", "Politics", "Sports", "Emergency", "Development", "Infrastructure", "Defense", "Culture", "Civic Alert")
 
+    // Filter articles by category and local search keywords across titles and body snippets
     val filteredArticles = articles.filter { article ->
-        selectedCategory == "All" || article.category == selectedCategory
+        val matchesCategory = selectedCategory == "All" || article.category == selectedCategory
+        val query = searchQuery.trim()
+        val matchesSearch = query.isEmpty() ||
+            article.title.contains(query, ignoreCase = true) ||
+            article.odiaTitle.contains(query, ignoreCase = true) ||
+            article.snippet.contains(query, ignoreCase = true) ||
+            article.odiaSnippet.contains(query, ignoreCase = true) ||
+            article.category.contains(query, ignoreCase = true) ||
+            article.source.contains(query, ignoreCase = true)
+        matchesCategory && matchesSearch
     }
 
     LazyColumn(
@@ -241,8 +258,62 @@ fun NewsScreen(
             }
         }
 
-        // Category Filter Chips
+        // Category Filter Chips & Local Search Field
         item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                // Local Search Input Field
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChanged,
+                    placeholder = {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଖବର ଓ ଆର୍ଟିକିଲ୍ ଖୋଜନ୍ତୁ..." else "Search headlines, topics, or keywords...",
+                            fontSize = 13.sp,
+                            color = BentoSlate400
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search News",
+                            tint = OceanBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotBlank()) {
+                            IconButton(
+                                onClick = { onSearchQueryChanged("") },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear Search",
+                                    tint = BentoSlate500,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OceanBlue,
+                        unfocusedBorderColor = BentoSlate200,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
+                        .testTag("news_search_text_field")
+                )
+            }
+
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -272,6 +343,60 @@ fun NewsScreen(
                         border = null,
                         shape = RoundedCornerShape(10.dp)
                     )
+                }
+            }
+        }
+
+        // Empty state when search keywords produce no matches
+        if (filteredArticles.isEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .testTag("news_empty_search_card"),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, BentoSlate200)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("📰", fontSize = 36.sp)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "କୌଣସି ଖବର ମିଳିଲା ନାହିଁ" else "No News Articles Found",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA)
+                                "'$searchQuery' ପାଇଁ କୌଣସି ଆର୍ଟିକିଲ୍ ମିଳିଲା ନାହିଁ।"
+                            else
+                                "No articles match the keyword '$searchQuery' in category '$selectedCategory'.",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = BentoSlate600,
+                                fontSize = 12.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Button(
+                            onClick = {
+                                onSearchQueryChanged("")
+                                onCategorySelected("All")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = OceanBlue),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Reset Search Filters", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }

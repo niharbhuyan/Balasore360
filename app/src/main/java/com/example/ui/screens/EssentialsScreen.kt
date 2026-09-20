@@ -32,6 +32,16 @@ import androidx.compose.material.icons.filled.PhonelinkRing
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SetMeal
 import androidx.compose.material.icons.filled.Train
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Warning
+import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -47,11 +57,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.admob.AdMobManager
 import com.example.data.model.AppLanguage
 import com.example.data.model.EmergencyContact
 import com.example.data.model.SeafoodCatch
 import com.example.data.model.TransitSchedule
 import com.example.ui.components.AdMobBannerCard
+import com.example.ui.components.AdMobVerificationCard
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate400
@@ -100,6 +112,7 @@ fun EssentialsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var subscribedRouteIds by remember { mutableStateOf(setOf<String>()) }
 
     LazyColumn(
         modifier = modifier
@@ -456,7 +469,25 @@ fun EssentialsScreen(
 
         // Transit List
         items(transitList, key = { it.id }) { item ->
-            TransitScheduleCard(item = item)
+            val isSubscribed = subscribedRouteIds.contains(item.id)
+            TransitScheduleCard(
+                item = item,
+                isSubscribedToAlerts = isSubscribed,
+                onToggleAlertNotifications = {
+                    val nextSubscribed = if (isSubscribed) {
+                        subscribedRouteIds - item.id
+                    } else {
+                        subscribedRouteIds + item.id
+                    }
+                    subscribedRouteIds = nextSubscribed
+                    val toastMessage = if (!isSubscribed) {
+                        "Push notifications enabled for ${item.routeName} alerts & schedule updates"
+                    } else {
+                        "Alert notifications muted for ${item.routeName}"
+                    }
+                    Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         // AdMob Banner Placement in Essentials
@@ -939,7 +970,7 @@ fun EssentialsScreen(
                                 )
                             )
                             Text(
-                                text = "v1.0.2 • Developer: Nihar Bhuyan",
+                                text = "v${com.example.BuildConfig.VERSION_NAME} • Developer: Nihar Bhuyan",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = BentoSlate500
                                 )
@@ -1009,6 +1040,19 @@ fun EssentialsScreen(
                     }
                 }
             }
+        }
+
+        // Google AdMob & app-ads.txt Setup and Verification Center
+        item {
+            AdMobVerificationCard(
+                language = language,
+                onCopyAppAdsTxt = {
+                    AdMobManager.copyAppAdsTxtSnippet(context)
+                },
+                onShareAppAdsTxt = {
+                    AdMobManager.shareAppAdsTxt(context)
+                }
+            )
         }
     }
 }
@@ -1106,74 +1150,130 @@ fun EmergencyContactCard(
 @Composable
 fun TransitScheduleCard(
     item: TransitSchedule,
+    isSubscribedToAlerts: Boolean = false,
+    onToggleAlertNotifications: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 5.dp),
+            .padding(horizontal = 16.dp, vertical = 5.dp)
+            .testTag("transit_card_${item.id}"),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, BentoSlate100)
+        border = BorderStroke(1.dp, if (isSubscribedToAlerts) OceanBlue.copy(alpha = 0.5f) else BentoSlate100)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(14.dp)
         ) {
             Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(BentoSlate100),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (item.type == "Train") Icons.Default.Train else Icons.Default.DirectionsBus,
-                        contentDescription = item.type,
-                        tint = OceanBlue,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(if (isSubscribedToAlerts) Color(0xFFE0F2FE) else BentoSlate100),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (item.type == "Train") Icons.Default.Train else Icons.Default.DirectionsBus,
+                            contentDescription = item.type,
+                            tint = OceanBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = item.routeName,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Text(
+                            text = "${item.origin} → ${item.destination}",
+                            style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column {
-                    Text(
-                        text = item.routeName,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = BentoSlate900
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = item.time,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlueDark
+                            )
                         )
-                    )
-                    Text(
-                        text = "${item.origin} → ${item.destination}",
-                        style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
-                    )
+                        Text(
+                            text = item.status,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = if (item.status.contains("Delay", ignoreCase = true) || item.status.contains("Alert", ignoreCase = true)) Color(0xFFDC2626) else EmeraldGreen,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onToggleAlertNotifications,
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(if (isSubscribedToAlerts) Color(0xFFDCFCE7) else BentoSlate100)
+                            .testTag("transit_notify_btn_${item.id}")
+                    ) {
+                        Icon(
+                            imageVector = if (isSubscribedToAlerts) Icons.Default.NotificationsActive else Icons.Default.Notifications,
+                            contentDescription = "Set Route Alert Push Notification",
+                            tint = if (isSubscribedToAlerts) Color(0xFF16A34A) else BentoSlate500,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = item.time,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = OceanBlueDark
+            if (isSubscribedToAlerts) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFFF0FDF4))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = null,
+                        tint = Color(0xFF16A34A),
+                        modifier = Modifier.size(12.dp)
                     )
-                )
-                Text(
-                    text = item.status,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = EmeraldGreen,
-                        fontWeight = FontWeight.SemiBold
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Push alerts active for ${item.routeName} schedule updates & delays",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color(0xFF15803D),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
-                )
+                }
             }
         }
     }

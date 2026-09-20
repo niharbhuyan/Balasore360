@@ -4,6 +4,7 @@
     <string name="brand_name">Nihar Sales</string>
     <string name="app_subtitle">Digital Hub and Tourism Portal</string>
     <string name="tab_tourism">Tourism</string>
+    <string name="tab_special">Special</string>
     <string name="tab_news">Latest News</string>
     <string name="tab_weather">Weather &amp; Alerts</string>
     <string name="tab_essentials">Essentials</string>

@@ -65,6 +65,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.ChandipurTideEntity
 import kotlinx.coroutines.delay
 
 /**
@@ -75,6 +76,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun ChandipurTideTimerSheet(
     onClose: () -> Unit,
+    lastKnownTide: ChandipurTideEntity? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -154,6 +156,60 @@ fun ChandipurTideTimerSheet(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Room Database: Offline Cached Last Known Tide Schedule
+        if (lastKnownTide != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp)
+                    .testTag("offline_cached_tide_sheet_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFF0284C7)
+                        ) {
+                            Text(
+                                text = "ROOM PERSISTED • OFFLINE",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                        Text(
+                            text = "Last Known Tide Forecast",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0369A1)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Receded: ${lastKnownTide.recededDistanceKm} km | Low Tide: ${lastKnownTide.lowTideTime} | Next High Tide: ${lastKnownTide.nextHighTideTime}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF1E293B)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Status: ${lastKnownTide.safeWalkStatus} • ${lastKnownTide.safeWalkMinutesRemaining} mins safe return window",
+                        fontSize = 11.5.sp,
+                        color = Color(0xFF0D9488),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
 
         // Main Countdown Card
         Card(
@@ -249,6 +305,115 @@ fun ChandipurTideTimerSheet(
                             fontSize = 10.sp,
                             color = Color(0xFF64748B),
                             fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Daily Auto-Updated Tidal Clock & Safe Walk Window Table
+        val dailyPulse = remember { com.example.data.daily.DailyUpdateEngine.getDailyPulse() }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+            border = BorderStroke(1.dp, Color(0xFF334155))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF38BDF8),
+                            modifier = Modifier.size(10.dp)
+                        ) {}
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "TODAY'S TIDAL CLOCK",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF38BDF8),
+                                letterSpacing = 1.sp
+                            )
+                        )
+                    }
+                    Text(
+                        text = dailyPulse.formattedDate,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color(0xFF94A3B8),
+                            fontSize = 10.sp
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text("Safe Walk Window", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = dailyPulse.chandipurLowTideWindow,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF34D399)
+                            )
+                            Text("Seabed recedes up to 5 km", fontSize = 9.sp, color = Color(0xFFCBD5E1))
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFF1E293B),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text("Next High Tide", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = dailyPulse.chandipurNextHighTide,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFF87171)
+                            )
+                            Text("Full beach inundation", fontSize = 9.sp, color = Color(0xFFCBD5E1))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Safety Index: ${dailyPulse.coastalSafetyIndex}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color(0xFFE2E8F0),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    Text(
+                        text = if (dailyPulse.isChandipurWalkSafeNow) "🟢 Safe Now" else "🟡 Watch Tide",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (dailyPulse.isChandipurWalkSafeNow) Color(0xFF4ADE80) else Color(0xFFFBBF24)
                         )
                     )
                 }

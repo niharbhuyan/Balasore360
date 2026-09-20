@@ -25,6 +25,28 @@ object AdMobManager {
 
     var activeBannerAdUnitId: String = TEST_BANNER_AD_UNIT_ID
 
+    fun copyAppAdsTxtSnippet(context: Context): Boolean {
+        return try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("app-ads.txt", APP_ADS_TXT_RECORD)
+            clipboard.setPrimaryClip(clip)
+            true
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    fun shareAppAdsTxt(context: Context) {
+        try {
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(android.content.Intent.EXTRA_SUBJECT, "Balasore 360 app-ads.txt record")
+                putExtra(android.content.Intent.EXTRA_TEXT, APP_ADS_TXT_RECORD)
+            }
+            context.startActivity(android.content.Intent.createChooser(intent, "Share app-ads.txt snippet"))
+        } catch (_: Throwable) {}
+    }
+
     @Volatile
     var isInitialized: Boolean = false
         private set

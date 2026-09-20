@@ -37,7 +37,14 @@ data class WeatherInfo(
     val windSpeedKmh: String = "18 km/h",
     val tideStatus: String = "Low Tide at 02:45 PM (Receding 5 km)",
     val seaCondition: String = "Safe for Beach Walkers",
-    val cycloneAlert: String? = null
+    val cycloneAlert: String? = null,
+    val feelsLikeCelsius: Int = 31,
+    val windGustsKmh: String = "24 km/h",
+    val uvIndex: Double = 6.0,
+    val precipitationMm: Double = 0.0,
+    val dataSource: String = "Open-Meteo Meteorological Service",
+    val lastUpdatedTime: String = "Live • Just Now",
+    val isLiveApi: Boolean = true
 )
 
 data class BalasoreForecastHour(

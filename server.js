@@ -4,7 +4,7 @@ const path = require('path');
 
 const PORT = 3000;
 const ROOT_DIR = __dirname;
-const AAB_FILE_NAME = 'Balasore360-v1.0.3-release.aab';
+const AAB_FILE_NAME = 'Balasore360-v1.0.5-release.aab';
 const AAB_PATH = path.join(ROOT_DIR, AAB_FILE_NAME);
 const FALLBACK_AAB_PATH = path.join(ROOT_DIR, 'Balasore360-release.aab');
 const APK_PATH = path.join(ROOT_DIR, 'Balasore360-debug.apk');
@@ -109,6 +109,8 @@ const server = http.createServer((req, res) => {
   // AAB Download routes
   if (
     url === '/download/aab' ||
+    url === '/Balasore360-v1.0.5-release.aab' ||
+    url === '/Balasore360-v1.0.4-release.aab' ||
     url === '/Balasore360-v1.0.3-release.aab' ||
     url === '/Balasore360-release.aab' ||
     url === '/app-release.aab' ||
@@ -160,8 +162,8 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       appName: 'Balasore 360',
-      version: '1.0.3',
-      versionCode: 4,
+      version: '1.0.5',
+      versionCode: 6,
       status: 'ready',
       aabAvailable: fs.existsSync(AAB_PATH),
       aabSize: fs.existsSync(AAB_PATH) ? fs.statSync(AAB_PATH).size : 0,

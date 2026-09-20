@@ -101,6 +101,23 @@ fun BalasoreItineraryPlanner(
     var selectedItemForMap by remember { mutableStateOf<ItineraryItemEntity?>(null) }
     var isAddSheetOpen by remember { mutableStateOf(false) }
     var newlyAddedItemId by remember { mutableStateOf<Long?>(null) }
+    var previousItemCount by remember { mutableIntStateOf(itineraryItems.size) }
+
+    // When a user saves a new location to the itinerary, trigger the highlight & animation
+    androidx.compose.runtime.LaunchedEffect(itineraryItems.size) {
+        if (itineraryItems.size > previousItemCount) {
+            val newestItem = itineraryItems.lastOrNull()
+            if (newestItem != null) {
+                newlyAddedItemId = newestItem.id
+                selectedItemForMap = newestItem
+                // If the new item is on a different day, switch filter to that day or All
+                if (selectedDayFilter != 0 && selectedDayFilter != newestItem.dayNumber) {
+                    selectedDayFilter = newestItem.dayNumber
+                }
+            }
+        }
+        previousItemCount = itineraryItems.size
+    }
 
     // Filter items based on day
     val filteredItems = remember(itineraryItems, selectedDayFilter) {
@@ -443,6 +460,20 @@ fun ItineraryItemRow(
                                         fontSize = 10.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            if (isNewlyAdded) {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFF10B981)
+                                ) {
+                                    Text(
+                                        text = "JUST ADDED ✨",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                     )
                                 }
                             }

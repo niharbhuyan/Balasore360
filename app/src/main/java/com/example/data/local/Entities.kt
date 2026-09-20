@@ -189,3 +189,28 @@ data class TravelJournalEntity(
     val visitedDate: Long = System.currentTimeMillis()
 )
 
+@Entity(
+    tableName = "chandipur_tides",
+    indices = [
+        Index("date"),
+        Index("lastFetchedTimestamp")
+    ]
+)
+data class ChandipurTideEntity(
+    @PrimaryKey
+    val id: String = "chandipur_tide_current",
+    val date: String,
+    val lowTideTime: String,
+    val highTideTime: String,
+    val nextHighTideTime: String,
+    val recededDistanceKm: Double,
+    val currentWaterLevelMeters: Double,
+    val tideState: String, // "RECEDING", "LOW_TIDE", "INCOMING", "HIGH_TIDE"
+    val safeWalkStatus: String, // "SAFE_WALK", "CAUTION", "UNSAFE_RETURN_SHORE"
+    val safeWalkMinutesRemaining: Int,
+    val lunarCondition: String,
+    val tidalForecastSummary: String,
+    val isOfflineCached: Boolean = true,
+    val lastFetchedTimestamp: Long = System.currentTimeMillis()
+)
+

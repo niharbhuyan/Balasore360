@@ -16,9 +16,10 @@ import androidx.room.TypeConverters
         UserEntity::class,
         ReviewEntity::class,
         ItineraryItemEntity::class,
-        TravelJournalEntity::class
+        TravelJournalEntity::class,
+        ChandipurTideEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -43,6 +44,11 @@ abstract class AppDatabase : RoomDatabase() {
      * Abstract getter method for Offline Travel Journal DAO.
      */
     abstract fun travelJournalDao(): TravelJournalDao
+
+    /**
+     * Abstract getter method for Chandipur Tide Schedule & Last Known Tide Offline Storage.
+     */
+    abstract fun chandipurTideDao(): ChandipurTideDao
 
     /**
      * Hotspot DAO getter implemented to delegate to tourismDao for backward compatibility.

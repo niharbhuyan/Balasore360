@@ -40,4 +40,15 @@ class BalasoreAdMobTest {
         assertNotNull(AdMobManager.activeBannerAdUnitId)
         assertEquals(AdMobManager.TEST_BANNER_AD_UNIT_ID, AdMobManager.activeBannerAdUnitId)
     }
+
+    @Test
+    fun `verify app-ads txt format strictly follows IAB standard`() {
+        val record = AdMobManager.APP_ADS_TXT_RECORD
+        val parts = record.split(",").map { it.trim() }
+        assertEquals(4, parts.size)
+        assertEquals("google.com", parts[0])
+        assertEquals("pub-4880243637225183", parts[1])
+        assertEquals("DIRECT", parts[2])
+        assertEquals("f08c47fec0942fa0", parts[3])
+    }
 }

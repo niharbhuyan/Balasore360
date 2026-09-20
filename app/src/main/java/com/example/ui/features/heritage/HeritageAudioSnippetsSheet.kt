@@ -40,6 +40,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import java.util.Locale
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -119,6 +124,7 @@ fun HeritageAudioSnippetsSheet(
         )
     }
 
+    val context = LocalContext.current
     var selectedStoryIndex by remember { mutableIntStateOf(0) }
     val currentStory = stories[selectedStoryIndex]
 
@@ -455,6 +461,117 @@ fun HeritageAudioSnippetsSheet(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Temple Architecture AR & Rekha Deula Spatial Visualizer
+        var isArModeActive by remember { mutableStateOf(false) }
+        var arZoomLevel by remember { mutableFloatStateOf(1.0f) }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B4B)),
+            border = BorderStroke(1.dp, Color(0xFF6366F1))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🏛️", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "Kalinga Architecture AR",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "Rekha Deula • Jagamohana • Natamandira",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color(0xFFA5B4FC),
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Switch(
+                        checked = isArModeActive,
+                        onCheckedChange = {
+                            isArModeActive = it
+                            Toast.makeText(
+                                context,
+                                if (it) "AR View Activated: Point camera at open floor" else "AR View Closed",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF6366F1)
+                        )
+                    )
+                }
+
+                if (isArModeActive) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF312E81),
+                        border = BorderStroke(1.dp, Color(0xFF4F46E5)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "3D Architectural Projections",
+                                    color = Color(0xFFC7D2FE),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                                Text(
+                                    text = "Zoom: ${String.format(Locale.getDefault(), "%.1fx", arZoomLevel)}",
+                                    color = Color(0xFFA5B4FC),
+                                    fontSize = 10.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            listOf(
+                                "Vimana (Sanctum Tower): 78 ft height, curvilinear spire (Rekha style)",
+                                "Amalaka & Kalasa: Crown stone and sacred pitcher pinnacle",
+                                "Jagamohana (Audience Hall): Pyramidal Pidha Deula tier layout",
+                                "Baulamala Stone: Hand-chiseled red sandstone relief carvings"
+                            ).forEach { elem ->
+                                Text(
+                                    text = "• $elem",
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Slider(
+                                value = arZoomLevel,
+                                onValueChange = { arZoomLevel = it },
+                                valueRange = 0.5f..2.5f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color(0xFF818CF8),
+                                    activeTrackColor = Color(0xFF6366F1)
+                                )
+                            )
+                        }
+                    }
+                }
             }
         }
 

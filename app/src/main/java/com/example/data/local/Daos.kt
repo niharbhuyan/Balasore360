@@ -333,3 +333,21 @@ interface TravelJournalDao {
     suspend fun clearAllJournals(): Int
 }
 
+@Dao
+interface ChandipurTideDao {
+    @Query("SELECT * FROM chandipur_tides ORDER BY lastFetchedTimestamp DESC LIMIT 1")
+    fun getLatestTideForecastFlow(): Flow<ChandipurTideEntity?>
+
+    @Query("SELECT * FROM chandipur_tides ORDER BY lastFetchedTimestamp DESC LIMIT 1")
+    suspend fun getLatestTideForecastSync(): ChandipurTideEntity?
+
+    @Query("SELECT * FROM chandipur_tides WHERE date = :date LIMIT 1")
+    suspend fun getTideByDate(date: String): ChandipurTideEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateTide(tide: ChandipurTideEntity)
+
+    @Query("DELETE FROM chandipur_tides")
+    suspend fun clearTides(): Int
+}
+

@@ -72,6 +72,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.ChandipurTideEntity
 import com.example.data.model.AppLanguage
 import com.example.data.model.DrdoAdvisory
 import com.example.data.model.TidalClockData
@@ -98,6 +99,7 @@ fun WeatherScreen(
     drdoAdvisories: List<DrdoAdvisory>,
     language: AppLanguage,
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
+    lastKnownTide: ChandipurTideEntity? = null,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -490,6 +492,78 @@ fun WeatherScreen(
                         Text("🦀", fontSize = 14.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Living Fossil Bio-Radar & Seabed Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        // Room Database: Last Known Tide Forecast (Offline Mode)
+        if (lastKnownTide != null) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .testTag("offline_last_known_tide_card"),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F9FF)),
+                    border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF0284C7)
+                                ) {
+                                    Text(
+                                        text = "ROOM DB • OFFLINE",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ସଂରକ୍ଷିତ ଜୁଆର ପୂର୍ବାନୁମାନ" else "Last Known Tide Forecast",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+                            }
+                            Text(
+                                text = "Offline Cached",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF0369A1)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Low Tide (Max Recede)", fontSize = 10.5.sp, color = BentoSlate600)
+                                Text("${lastKnownTide.lowTideTime} (${lastKnownTide.recededDistanceKm} km)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0369A1))
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("Next High Tide", fontSize = 10.5.sp, color = BentoSlate600)
+                                Text(lastKnownTide.nextHighTideTime, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0369A1))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = lastKnownTide.tidalForecastSummary,
+                            fontSize = 11.5.sp,
+                            color = BentoSlate700,
+                            lineHeight = 16.sp
+                        )
                     }
                 }
             }

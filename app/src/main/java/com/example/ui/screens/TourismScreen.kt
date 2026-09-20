@@ -124,6 +124,7 @@ fun TourismScreen(
     onSelectForecastDay: (Int) -> Unit = {},
     onAcknowledgeAlert: (String) -> Unit = {},
     onNavigateToWeather: () -> Unit = {},
+    onNavigateToSpecialFeatures: () -> Unit = {},
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     itineraryItems: List<ItineraryItemEntity> = emptyList(),
     liveEmergencyAlerts: List<EmergencyAlertDto> = emptyList(),
@@ -206,15 +207,14 @@ fun TourismScreen(
                                 .size(34.dp)
                                 .clip(CircleShape)
                                 .clickable {
-                                    val uri = Uri.parse("geo:21.4934,86.9135?q=Tourist+Attractions+in+Balasore")
-                                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
-                                    context.startActivity(mapIntent)
+                                    onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER)
                                 }
+                                .testTag("tourism_hero_map_button")
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Map,
-                                    contentDescription = "Explore on Maps",
+                                    contentDescription = "Explore Balasore on Google Maps",
                                     tint = Color.White,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -242,6 +242,80 @@ fun TourismScreen(
                             lineHeight = 20.sp
                         )
                     )
+                }
+            }
+        }
+
+        // Google Maps Interactive View Card (Real-Time Markers for Shelters & Tourist Hotspots)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER) }
+                    .testTag("open_balasore_google_map_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, BentoSlate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = OceanBlue.copy(alpha = 0.12f),
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Map,
+                                    contentDescription = null,
+                                    tint = OceanBlue,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ଗୁଗଲ୍ ମ୍ୟାପ୍ସ ଏକ୍ସପ୍ଲୋରର୍" else "Balasore Google Map Explorer",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Real-time markers for cyclone shelters & tourist hotspots",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = BentoSlate600,
+                                    fontSize = 11.5.sp
+                                )
+                            )
+                        }
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = OceanBlue,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Text(
+                            text = "View Map",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
                 }
             }
         }
@@ -279,9 +353,12 @@ fun TourismScreen(
             )
         }
 
-        // Live Special Features Quick Hub (19 Live Hubs)
+        // Live Special Features Quick Hub (31 Live Hubs)
         item {
-            UniqueFeaturesPillGrid(onFeatureClick = onOpenFeatureSheet)
+            UniqueFeaturesPillGrid(
+                onFeatureClick = onOpenFeatureSheet,
+                onOpenAllFeatures = onNavigateToSpecialFeatures
+            )
         }
 
         // Interactive Travel Itinerary Feature (Room-persisted, Google Maps SDK MapView, Coil weather, Entrance animations)

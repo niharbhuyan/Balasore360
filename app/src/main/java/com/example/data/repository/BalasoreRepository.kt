@@ -322,9 +322,39 @@ object BalasoreRepository {
             odiaTitle = "ସୁବର୍ଣ୍ଣରେଖା ଅବବାହିକାରେ ବନ୍ୟା ନିୟନ୍ତ୍ରଣ ପାଇଁ ସ୍ୱୟଂକ୍ରିୟ ସେନ୍ସର ସ୍ଥାପନ",
             snippet = "Real-time water level telemetry alerts will be transmitted to coastal Bhograi and Jaleswar panchayats for early monsoon preparedness.",
             odiaSnippet = "ଜଳସ୍ତର ଉପରେ ନଜର ରଖିବାକୁ ଭୋଗରାଇ ଏବଂ ଜଳେଶ୍ୱର ବ୍ଲକରେ ସେନ୍ସର ସ୍ଥାପିତ ହୋଇଛି।",
-            category = "Civic Alert",
+            category = "Emergency",
             timeAgo = "5 hours ago",
             source = "Balasore District Admin"
+        ),
+        NewsArticle(
+            id = "news_5",
+            title = "Balasore Municipal Corporation Reviews Urban Drainage and Smart City Projects",
+            odiaTitle = "ବାଲେଶ୍ୱର ପୌରପାଳିକା ପକ୍ଷରୁ ସହରୀ ଡ୍ରେନେଜ୍ ଓ ବିକାଶ କାର୍ଯ୍ୟର ସମୀକ୍ଷା",
+            snippet = "Key political representatives and district collectors meet to finalize the masterplan for underground cabling and rainwater drainage.",
+            odiaSnippet = "ସହରର ଉନ୍ନୟନ ଏବଂ ଭୂତଳ କେବୁଲିଂ ବ୍ୟବସ୍ଥା ନେଇ ପ୍ରଶାସନିକ ବୈଠକ ଅନୁଷ୍ଠିତ ହୋଇଛି।",
+            category = "Politics",
+            timeAgo = "6 hours ago",
+            source = "Utkal Mail"
+        ),
+        NewsArticle(
+            id = "news_6",
+            title = "Balasore Stadium to Host Inter-District Youth Cricket and Athletics Championship",
+            odiaTitle = "ବାଲେଶ୍ୱର ଷ୍ଟାଡିୟମରେ ଆନ୍ତଃଜିଲ୍ଲା କ୍ରିକେଟ ଓ ଆଥଲେଟିକ୍ସ ପ୍ରତିଯୋଗିତା ଆୟୋଜିତ",
+            snippet = "Over 450 young athletes from northern coastal districts will participate in the week-long athletic meet starting this Friday.",
+            odiaSnippet = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା କ୍ରୀଡା ସଂଘ ଦ୍ୱାରା ଯୁବ ଖେଳାଳିମାନଙ୍କ ପାଇଁ ରାଜ୍ୟସ୍ତରୀୟ ମ୍ୟାଚ୍ ଆୟୋଜନ।",
+            category = "Sports",
+            timeAgo = "8 hours ago",
+            source = "Odisha Sports Bureau"
+        ),
+        NewsArticle(
+            id = "news_7",
+            title = "NH-60 Six-Laning & Balasore Coastal Industrial Corridor Development Approved",
+            odiaTitle = "ଜାତୀୟ ରାଜପଥ-୬୦ ସମ୍ପ୍ରସାରଣ ଏବଂ ଉପକୂଳ ଶିଳ୍ପ କରିଡର ବିକାଶ ମଞ୍ଜୁର",
+            snippet = "New mega industrial logistics hub near Kuruda approved to boost coastal aquaculture exports and port transit connectivity.",
+            odiaSnippet = "କୁରୁଡା ନିକଟରେ ନୂତନ ଶିଳ୍ପ କରିଡର ଓ ଯୋଗାଯୋଗ ବ୍ୟବସ୍ଥାକୁ ମିଳିଲା ସରକାରୀ ଅନୁମୋଦନ।",
+            category = "Development",
+            timeAgo = "12 hours ago",
+            source = "Prameya News"
         )
     )
 

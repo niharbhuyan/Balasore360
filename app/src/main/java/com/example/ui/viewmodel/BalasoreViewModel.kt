@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
+import com.example.data.local.ChandipurTideEntity
+import com.example.data.local.ChandipurTideDao
 import com.example.data.local.ItineraryItemEntity
 import com.example.data.model.*
 import com.example.data.remote.BalasoreApiService
+import com.example.data.remote.WeatherApiService
 import com.example.data.remote.EmergencyAlertDto
 import com.example.data.remote.GeminiGroundingService
 import com.example.data.remote.GroundingResponse
@@ -21,6 +24,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class BalasoreUiState(
     val selectedTab: Int = 0,
@@ -31,11 +37,14 @@ data class BalasoreUiState(
     val hotspotSearchQuery: String = "",
     val newsArticles: List<NewsArticle> = BalasoreRepository.newsArticles,
     val selectedNewsCategory: String = "All",
+    val newsSearchQuery: String = "",
     val weather: WeatherInfo = BalasoreRepository.weather,
+    val isWeatherLoading: Boolean = false,
     val emergencyContacts: List<EmergencyContact> = BalasoreRepository.emergencyContacts,
     val transitList: List<TransitSchedule> = BalasoreRepository.transitSchedules,
     // 6 Unique Features
     val tidalClock: TidalClockData = BalasoreRepository.tidalClock,
+    val lastKnownTideForecast: ChandipurTideEntity? = null,
     val drdoAdvisories: List<DrdoAdvisory> = BalasoreRepository.drdoAdvisories,
     val templeRitualInfo: TempleRitualInfo = BalasoreRepository.templeRitualInfo,
     val riverGauges: List<RiverGauge> = BalasoreRepository.riverGauges,
@@ -113,7 +122,12 @@ enum class UniqueFeatureSheetType {
     DOCTORS_DIRECTORY,
     MEDICINE_STORES_DIRECTORY,
     POLYCLINIC_DIRECTORY,
-    PATHOLOGY_LAB_DIRECTORY
+    PATHOLOGY_LAB_DIRECTORY,
+    // Hydrology & Artisan Marketplace Sheets:
+    RIVER_FLOOD_TELEMETRY,
+    MATI_MANISHA_ARTISANS,
+    // Google Maps Explorer (Hotspots & Cyclone Shelters)
+    BALASORE_MAP_EXPLORER
 }
 
 data class GroundingState(
@@ -145,7 +159,9 @@ class BalasoreViewModel : ViewModel() {
     private var itineraryRepo: ItineraryRepository? = null
     var travelJournalRepo: TravelJournalRepository? = null
         private set
+    private var tideDao: ChandipurTideDao? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
+    private val weatherApiService: WeatherApiService by lazy { WeatherApiService.create() }
 
     private val _uiState = MutableStateFlow(BalasoreUiState())
     val uiState: StateFlow<BalasoreUiState> = _uiState.asStateFlow()
@@ -154,6 +170,14 @@ class BalasoreViewModel : ViewModel() {
         try {
             if (android.os.Looper.getMainLooper() != null) {
                 fetchLiveEmergencyAlerts()
+                fetchRealTimeWeather()
+                // Periodic auto-update ticker for daily data variance (every 60 seconds)
+                viewModelScope.launch {
+                    while (true) {
+                        delay(60_000L)
+                        refreshDailyPulse()
+                    }
+                }
             }
         } catch (_: Throwable) {
             // JVM unit test environment without Android Looper
@@ -161,10 +185,10 @@ class BalasoreViewModel : ViewModel() {
     }
 
     /**
-     * Connects local Room database and streams itinerary items into UI state.
+     * Connects local Room database and streams itinerary items and tide data into UI state.
      */
     fun initDatabase(context: Context) {
-        if (itineraryRepo != null) return
+        if (itineraryRepo != null && tideDao != null) return
         try {
             val db = AppDatabase.getInstance(context)
             val repo = ItineraryRepository(db.itineraryDao())
@@ -172,6 +196,9 @@ class BalasoreViewModel : ViewModel() {
 
             val jRepo = TravelJournalRepository(db.travelJournalDao())
             travelJournalRepo = jRepo
+
+            val tDao = db.chandipurTideDao()
+            tideDao = tDao
 
             viewModelScope.launch {
                 try {
@@ -187,6 +214,43 @@ class BalasoreViewModel : ViewModel() {
                     android.util.Log.e("BalasoreViewModel", "Error seeding default journal: ${t.message}")
                 }
             }
+            // Room Entity for Chandipur Tide Schedule (Last Known Tide when offline)
+            viewModelScope.launch {
+                try {
+                    val existingTide = tDao.getLatestTideForecastSync()
+                    if (existingTide == null) {
+                        val initialTide = ChandipurTideEntity(
+                            id = "chandipur_tide_current",
+                            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+                            lowTideTime = "02:45 PM",
+                            highTideTime = "08:30 AM",
+                            nextHighTideTime = "08:15 PM",
+                            recededDistanceKm = 4.8,
+                            currentWaterLevelMeters = 0.6,
+                            tideState = "RECEDING",
+                            safeWalkStatus = "SAFE_WALK",
+                            safeWalkMinutesRemaining = 135,
+                            lunarCondition = "Spring Tide (Amavasya Cycle)",
+                            tidalForecastSummary = "Sea recedes up to 5 km into the Bay of Bengal. Rare natural walking opportunity until 04:30 PM.",
+                            isOfflineCached = true,
+                            lastFetchedTimestamp = System.currentTimeMillis()
+                        )
+                        tDao.insertOrUpdateTide(initialTide)
+                        _uiState.value = _uiState.value.copy(lastKnownTideForecast = initialTide)
+                    } else {
+                        _uiState.value = _uiState.value.copy(lastKnownTideForecast = existingTide)
+                    }
+
+                    tDao.getLatestTideForecastFlow().collect { cachedTide ->
+                        if (cachedTide != null) {
+                            _uiState.value = _uiState.value.copy(lastKnownTideForecast = cachedTide)
+                        }
+                    }
+                } catch (t: Throwable) {
+                    android.util.Log.e("BalasoreViewModel", "Error initializing Chandipur tide entity: ${t.message}")
+                }
+            }
+
             viewModelScope.launch {
                 try {
                     repo.allItineraryItems.collect { items ->
@@ -272,6 +336,10 @@ class BalasoreViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(selectedNewsCategory = category)
     }
 
+    fun setNewsSearchQuery(query: String) {
+        _uiState.value = _uiState.value.copy(newsSearchQuery = query)
+    }
+
     fun toggleBookmark(articleId: String) {
         val current = _uiState.value.bookmarkedIds
         val updated = if (current.contains(articleId)) current - articleId else current + articleId
@@ -287,9 +355,87 @@ class BalasoreViewModel : ViewModel() {
     fun refreshAll() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
-            delay(1200) // Simulates network synchronization with local caching
+            fetchRealTimeWeather()
+            fetchLiveEmergencyAlerts()
+            refreshDailyPulse()
+            delay(800)
             _uiState.value = _uiState.value.copy(isRefreshing = false)
         }
+    }
+
+    /**
+     * Fetches real-time meteorological data for Balasore using the Open-Meteo public API
+     * and updates the UI state prominently with temperature, humidity, wind, UV index, and conditions.
+     */
+    fun fetchRealTimeWeather() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isWeatherLoading = true)
+            try {
+                val response = weatherApiService.getBalasoreForecast(
+                    latitude = 21.4934,
+                    longitude = 86.9135
+                )
+                val current = response.current
+                val daily = response.daily
+                if (current != null) {
+                    val tempC = current.temperature?.toInt() ?: 29
+                    val feelsLikeC = current.apparentTemperature?.toInt() ?: (tempC + 2)
+                    val humidity = "${current.relativeHumidity ?: 75}%"
+                    val windKmh = "${current.windSpeed?.toInt() ?: 18} km/h"
+                    val gustsKmh = "${current.windGusts?.toInt() ?: 24} km/h"
+                    val conditionStr = weatherCodeToDescription(current.weatherCode ?: 2)
+                    val highLowStr = if (daily?.temperatureMax?.isNotEmpty() == true && daily.temperatureMin?.isNotEmpty() == true) {
+                        "${daily.temperatureMax[0].toInt()}° / ${daily.temperatureMin[0].toInt()}°"
+                    } else {
+                        "${tempC + 4}° / ${tempC - 3}°"
+                    }
+                    val uv = daily?.uvIndexMax?.firstOrNull() ?: 6.2
+                    val precip = current.precipitation ?: 0.0
+
+                    val nowFormat = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+
+                    val updatedWeather = _uiState.value.weather.copy(
+                        tempCelsius = tempC,
+                        condition = conditionStr,
+                        highLow = highLowStr,
+                        humidity = humidity,
+                        windSpeedKmh = windKmh,
+                        feelsLikeCelsius = feelsLikeC,
+                        windGustsKmh = gustsKmh,
+                        uvIndex = uv,
+                        precipitationMm = precip,
+                        dataSource = "Open-Meteo Real-Time Met API",
+                        lastUpdatedTime = "Live • Updated $nowFormat",
+                        isLiveApi = true
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        weather = updatedWeather,
+                        isWeatherLoading = false
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(isWeatherLoading = false)
+                }
+            } catch (e: Exception) {
+                // Graceful fallback to cached meteorological state
+                android.util.Log.e("BalasoreViewModel", "Weather API fetch exception: ${e.message}")
+                _uiState.value = _uiState.value.copy(isWeatherLoading = false)
+            }
+        }
+    }
+
+    private fun weatherCodeToDescription(code: Int): String = when (code) {
+        0 -> "Clear Sunny Sky"
+        1 -> "Mainly Sunny"
+        2 -> "Partly Cloudy"
+        3 -> "Overcast Sky"
+        45, 48 -> "Coastal Fog / Mist"
+        51, 53, 55 -> "Light Coastal Drizzle"
+        61, 63 -> "Moderate Rain"
+        65 -> "Heavy Monsoon Downpour"
+        80, 81, 82 -> "Rain Showers"
+        95 -> "Bay of Bengal Thunderstorm"
+        96, 99 -> "Severe Coastal Thunderstorm"
+        else -> "Partly Cloudy"
     }
 
     fun openGroundingSheet(initialQuery: String = "", mode: GroundingToolMode = GroundingToolMode.COMBINED) {

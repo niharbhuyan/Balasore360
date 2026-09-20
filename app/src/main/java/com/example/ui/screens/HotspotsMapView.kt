@@ -3,29 +3,21 @@ package com.example.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,23 +26,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.NearMe
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,629 +60,957 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.data.local.HotspotEntity
-import com.example.ui.theme.BentoBorder
-import com.example.ui.theme.BentoCanvas
+import com.example.data.model.AppLanguage
+import com.example.data.model.Hotspot
+import com.example.data.repository.DefaultData
+import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoCardWhite
 import com.example.ui.theme.BentoPrimaryBlue
+import com.example.ui.theme.BentoSlate200
 import com.example.ui.theme.BentoSlate500
+import com.example.ui.theme.BentoSlate600
 import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
-import kotlin.math.hypot
+import com.example.ui.theme.EmeraldGreen
+import com.example.ui.theme.OceanBlue
+import com.example.ui.theme.OceanBlueDark
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 
-// Balasore district bounding box coordinates
-private const val BALASORE_MIN_LAT = 21.32
-private const val BALASORE_MAX_LAT = 21.72
-private const val BALASORE_MIN_LNG = 86.58
-private const val BALASORE_MAX_LNG = 87.58
+/**
+ * Unified data representation for Google Maps markers in Balasore.
+ * Represents either a Tourist Hotspot or a Cyclone Shelter.
+ */
+sealed class BalasoreMapItem {
+    abstract val id: String
+    abstract val name: String
+    abstract val odiaName: String
+    abstract val latitude: Double
+    abstract val longitude: Double
+    abstract val distanceKm: Double
+    abstract val isShelter: Boolean
 
-// Center point: Balasore Town
-private const val CENTER_LAT = 21.4934
-private const val CENTER_LNG = 86.9325
+    data class TouristSpot(
+        override val id: String,
+        override val name: String,
+        override val odiaName: String,
+        val category: String,
+        val shortDesc: String,
+        val timings: String,
+        val highlights: String,
+        override val latitude: Double,
+        override val longitude: Double,
+        override val distanceKm: Double
+    ) : BalasoreMapItem() {
+        override val isShelter: Boolean get() = false
+    }
 
+    data class CycloneShelterSpot(
+        override val id: String,
+        override val name: String,
+        override val odiaName: String,
+        val block: String,
+        val capacity: Int,
+        val phone: String,
+        val locationDesc: String,
+        val elevationMeters: Double,
+        val hasSolarBackup: Boolean,
+        override val latitude: Double,
+        override val longitude: Double,
+        override val distanceKm: Double
+    ) : BalasoreMapItem() {
+        override val isShelter: Boolean get() = true
+    }
+}
+
+/**
+ * Pre-defined coordinates and attributes for Cyclone Shelters in Balasore district.
+ */
+val defaultCycloneSheltersMapData = listOf(
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_1",
+        name = "Chandipur Coastal Multipurpose Shelter",
+        odiaName = "ଚାନ୍ଦିପୁର ବହୁମୁଖୀ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Chandipur Coastal",
+        capacity = 1800,
+        phone = "06782262234",
+        locationDesc = "Near Marine Police Station, Chandipur",
+        elevationMeters = 9.2,
+        hasSolarBackup = true,
+        latitude = 21.4682,
+        longitude = 87.0163,
+        distanceKm = 1.2
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_2",
+        name = "Bhograi Coastal Disaster Shelter",
+        odiaName = "ଭୋଗରାଇ ଉପକୂଳ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Bhograi",
+        capacity = 2400,
+        phone = "06781238210",
+        locationDesc = "Talasari Beach Embankment, Bhograi",
+        elevationMeters = 9.5,
+        hasSolarBackup = true,
+        latitude = 21.5892,
+        longitude = 87.4582,
+        distanceKm = 48.0
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_3",
+        name = "Remuna High School Disaster Shelter",
+        odiaName = "ରେମୁଣା ଉଚ୍ଚ ବିଦ୍ୟାଳୟ ଆଶ୍ରୟ କେନ୍ଦ୍ର",
+        block = "Remuna",
+        capacity = 1400,
+        phone = "06782252115",
+        locationDesc = "Near Khirachora Gopinath Temple, Remuna",
+        elevationMeters = 8.0,
+        hasSolarBackup = true,
+        latitude = 21.5284,
+        longitude = 86.8647,
+        distanceKm = 9.5
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_4",
+        name = "Kasafal Fishermen Disaster Safe Haven",
+        odiaName = "କସାଫଳ ମତ୍ସ୍ୟଜୀବୀ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Chandipur / Sadar",
+        capacity = 1600,
+        phone = "06782260100",
+        locationDesc = "Kasafal Sea Mouth, Balasore",
+        elevationMeters = 8.8,
+        hasSolarBackup = true,
+        latitude = 21.5200,
+        longitude = 87.1100,
+        distanceKm = 14.2
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_5",
+        name = "Bahanaga Relief Multipurpose Center",
+        odiaName = "ବାହାନଗା ବିପର୍ଯ୍ୟୟ ରିଲିଫ କେନ୍ଦ୍ର",
+        block = "Bahanaga",
+        capacity = 1500,
+        phone = "06782275420",
+        locationDesc = "Bahanaga Bazar, NH-16",
+        elevationMeters = 7.5,
+        hasSolarBackup = true,
+        latitude = 21.3150,
+        longitude = 86.8050,
+        distanceKm = 24.5
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_6",
+        name = "Baliapal Subarnarekha Basin Shelter",
+        odiaName = "ବାଲିଆପାଳ ସୁବର୍ଣ୍ଣରେଖା ଅବବାହିକା ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Baliapal",
+        capacity = 2100,
+        phone = "06781254300",
+        locationDesc = "Chaumukh River Embankment, Baliapal",
+        elevationMeters = 9.0,
+        hasSolarBackup = true,
+        latitude = 21.6420,
+        longitude = 87.2890,
+        distanceKm = 36.8
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_7",
+        name = "Soro High School Elevated Cyclone Shelter",
+        odiaName = "ସୋରୋ ଉଚ୍ଚ ବିଦ୍ୟାଳୟ ବାତ୍ୟା ଆଶ୍ରୟ କେନ୍ଦ୍ର",
+        block = "Soro",
+        capacity = 1300,
+        phone = "06782281200",
+        locationDesc = "Soro Town, Balasore",
+        elevationMeters = 7.8,
+        hasSolarBackup = true,
+        latitude = 21.2850,
+        longitude = 86.6920,
+        distanceKm = 38.0
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_8",
+        name = "Nilagiri Hill-Slope Disaster Relief Center",
+        odiaName = "ନୀଳଗିରି ପାହାଡ଼ ତଳ ବିପର୍ଯ୍ୟୟ କେନ୍ଦ୍ର",
+        block = "Nilagiri",
+        capacity = 1200,
+        phone = "06782233215",
+        locationDesc = "Near Nilagiri Palace, Nilagiri",
+        elevationMeters = 18.5,
+        hasSolarBackup = true,
+        latitude = 21.4550,
+        longitude = 86.7620,
+        distanceKm = 22.0
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_9",
+        name = "Jaleswar Subarnarekha Multi-purpose Shelter",
+        odiaName = "ଜଳେଶ୍ୱର ସୁବର୍ଣ୍ଣରେଖା ବହୁମୁଖୀ ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Jaleswar",
+        capacity = 1700,
+        phone = "06781222400",
+        locationDesc = "Station Road, Jaleswar",
+        elevationMeters = 8.2,
+        hasSolarBackup = true,
+        latitude = 21.8020,
+        longitude = 87.2150,
+        distanceKm = 52.0
+    ),
+    BalasoreMapItem.CycloneShelterSpot(
+        id = "cs_10",
+        name = "Simulia Canal Embankment Relief Shelter",
+        odiaName = "ସିମୁଳିଆ କେନାଲ ବନ୍ଧ ରିଲିଫ ଆଶ୍ରୟସ୍ଥଳ",
+        block = "Simulia",
+        capacity = 1100,
+        phone = "06782294100",
+        locationDesc = "Simulia Block Headquarters",
+        elevationMeters = 7.2,
+        hasSolarBackup = false,
+        latitude = 21.1550,
+        longitude = 86.5820,
+        distanceKm = 46.0
+    )
+)
+
+/**
+ * Builds Tourist Hotspot map items from DefaultData repository.
+ */
+fun buildTouristSpotsMapData(): List<BalasoreMapItem.TouristSpot> {
+    val initialHotspots = DefaultData.getInitialHotspots()
+    return initialHotspots.map { spot ->
+        BalasoreMapItem.TouristSpot(
+            id = spot.id,
+            name = spot.name,
+            odiaName = spot.odiaName,
+            category = spot.category,
+            shortDesc = spot.shortDescription,
+            timings = spot.timings,
+            highlights = spot.highlights,
+            latitude = spot.latitude,
+            longitude = spot.longitude,
+            distanceKm = spot.distanceKmFromBls.toDouble()
+        )
+    }
+}
+
+/**
+ * Google Maps view integrating real-time markers for cyclone shelters and major tourist hotspots in Balasore.
+ * Includes a smooth camera zoom animation to center the view whenever a marker or card is clicked.
+ */
 @Composable
 fun HotspotsMapView(
-    hotspots: List<HotspotEntity>,
-    selectedHotspot: HotspotEntity?,
-    onSelectHotspot: (HotspotEntity?) -> Unit,
-    onViewHotspotDetails: (HotspotEntity) -> Unit,
+    hotspots: List<HotspotEntity> = emptyList(),
+    selectedHotspot: HotspotEntity? = null,
+    onSelectHotspot: (HotspotEntity?) -> Unit = {},
+    onViewHotspotDetails: (HotspotEntity) -> Unit = {},
+    language: AppLanguage = AppLanguage.ENGLISH,
+    onClose: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Markers state
+    val touristSpots = remember { buildTouristSpotsMapData() }
+    val cycloneShelters = remember { defaultCycloneSheltersMapData }
+
     var selectedCategory by remember { mutableStateOf("All") }
+    var selectedItem by remember { mutableStateOf<BalasoreMapItem?>(null) }
+    var googleMapInstance by remember { mutableStateOf<GoogleMap?>(null) }
+    var currentMapType by remember { mutableStateOf(GoogleMap.MAP_TYPE_NORMAL) }
 
-    // Map Pan & Zoom states
-    var zoomScale by remember { mutableFloatStateOf(1.0f) }
-    var panOffsetX by remember { mutableFloatStateOf(0f) }
-    var panOffsetY by remember { mutableFloatStateOf(0f) }
+    // Map marker tracking
+    val markerToItemMap = remember { mutableStateMapOf<Marker, BalasoreMapItem>() }
 
-    // Filter hotspots
-    val visibleHotspots = remember(hotspots, selectedCategory) {
-        if (selectedCategory == "All") hotspots
-        else hotspots.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+    // Filtered items
+    val filteredItems = remember(selectedCategory, touristSpots, cycloneShelters) {
+        when (selectedCategory) {
+            "All" -> touristSpots + cycloneShelters
+            "Tourist Hotspots" -> touristSpots
+            "Cyclone Shelters" -> cycloneShelters
+            "Beach" -> touristSpots.filter { it.category.contains("Beach", ignoreCase = true) }
+            "Temple" -> touristSpots.filter { it.category.contains("Temple", ignoreCase = true) }
+            "Nature & Heritage" -> touristSpots.filter { !it.category.contains("Beach", ignoreCase = true) && !it.category.contains("Temple", ignoreCase = true) }
+            else -> touristSpots + cycloneShelters
+        }
     }
 
-    // Pulse animation for selected pin
-    val infiniteTransition = rememberInfiniteTransition(label = "marker_pulse")
-    val pulseRadius by infiniteTransition.animateFloat(
-        initialValue = 18f,
-        targetValue = 38f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "pulse_radius"
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.8f,
-        targetValue = 0.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "pulse_alpha"
-    )
+    // Initialize MapView lifecycle
+    val mapView = remember {
+        MapView(context).apply {
+            onCreate(Bundle())
+        }
+    }
 
-    val categories = listOf("All", "Beach", "Temple", "Wildlife", "Heritage", "Port")
-
-    Box(modifier = modifier.fillMaxSize().background(BentoCanvas)) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val widthPx = constraints.maxWidth.toFloat()
-            val heightPx = constraints.maxHeight.toFloat()
-
-            // Function to map GPS (lat, lng) to canvas pixels
-            fun geoToPixel(lat: Double, lng: Double): Offset {
-                val normalizedX = (lng - BALASORE_MIN_LNG) / (BALASORE_MAX_LNG - BALASORE_MIN_LNG)
-                val normalizedY = 1.0 - ((lat - BALASORE_MIN_LAT) / (BALASORE_MAX_LAT - BALASORE_MIN_LAT))
-
-                val baseX = (normalizedX * widthPx).toFloat()
-                val baseY = (normalizedY * heightPx).toFloat()
-
-                // Center-based zoom transform
-                val centerX = widthPx / 2f
-                val centerY = heightPx / 2f
-
-                val transformedX = centerX + (baseX - centerX + panOffsetX) * zoomScale
-                val transformedY = centerY + (baseY - centerY + panOffsetY) * zoomScale
-                return Offset(transformedX, transformedY)
+    DisposableEffect(lifecycleOwner, mapView) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> mapView.onStart()
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                Lifecycle.Event.ON_STOP -> mapView.onStop()
+                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                else -> {}
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            try {
+                mapView.onDestroy()
+            } catch (_: Exception) {}
+        }
+    }
 
-            // Interactive Map Canvas
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            zoomScale = (zoomScale * zoom).coerceIn(0.7f, 3.5f)
-                            panOffsetX += pan.x / zoomScale
-                            panOffsetY += pan.y / zoomScale
-                        }
-                    }
-                    .pointerInput(visibleHotspots, zoomScale, panOffsetX, panOffsetY) {
-                        detectTapGestures { tapOffset ->
-                            // Check if tapped near any hotspot marker
-                            var foundHotspot: HotspotEntity? = null
-                            for (hotspot in visibleHotspots) {
-                                val markerPos = geoToPixel(hotspot.latitude, hotspot.longitude)
-                                val distance = hypot(tapOffset.x - markerPos.x, tapOffset.y - markerPos.y)
-                                if (distance <= 45f * zoomScale.coerceAtLeast(0.9f)) {
-                                    foundHotspot = hotspot
-                                    break
-                                }
-                            }
-                            onSelectHotspot(foundHotspot)
-                        }
-                    }
-                    .testTag("interactive_map_canvas")
-            ) {
-                // 1. Draw Land and District Contours
-                drawDistrictLandscape(
-                    width = size.width,
-                    height = size.height,
-                    zoom = zoomScale,
-                    panX = panOffsetX,
-                    panY = panOffsetY
+    /**
+     * Helper to perform smooth camera zoom animation to a specified LatLng with desired zoom level.
+     */
+    fun animateCameraToLocation(lat: Double, lng: Double, zoom: Float = 15.5f) {
+        googleMapInstance?.let { map ->
+            val target = LatLng(lat, lng)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(target, zoom)
+            map.animateCamera(cameraUpdate, 900, null)
+        }
+    }
+
+    // Refresh markers on the Google Map whenever filteredItems or map instance changes
+    LaunchedEffect(googleMapInstance, filteredItems) {
+        val map = googleMapInstance ?: return@LaunchedEffect
+        map.clear()
+        markerToItemMap.clear()
+
+        filteredItems.forEach { item ->
+            val latLng = LatLng(item.latitude, item.longitude)
+            val markerOptions = MarkerOptions().position(latLng)
+                .title(item.name)
+                .snippet(
+                    if (item is BalasoreMapItem.CycloneShelterSpot) {
+                        "Cyclone Shelter (Cap: ${item.capacity}) • ${item.block}"
+                    } else if (item is BalasoreMapItem.TouristSpot) {
+                        "${item.category} • ${item.shortDesc.take(45)}..."
+                    } else ""
                 )
 
-                // 2. Draw Transport Corridors (NH-16 & Railways)
-                drawHighwaysAndTransit(::geoToPixel, zoomScale)
-
-                // 3. Draw Hotspot Markers
-                for (hotspot in visibleHotspots) {
-                    val pos = geoToPixel(hotspot.latitude, hotspot.longitude)
-                    val isSelected = hotspot.id == selectedHotspot?.id
-
-                    // Marker Pulse if selected
-                    if (isSelected) {
-                        drawCircle(
-                            color = BentoPrimaryBlue.copy(alpha = pulseAlpha),
-                            radius = pulseRadius * zoomScale.coerceAtLeast(0.8f),
-                            center = pos
-                        )
-                    }
-
-                    // Marker Outer Ring
-                    val markerColor = getCategoryColor(hotspot.category)
-                    drawCircle(
-                        color = Color.White,
-                        radius = (if (isSelected) 18f else 14f) * zoomScale.coerceAtLeast(0.8f),
-                        center = pos
-                    )
-                    drawCircle(
-                        color = markerColor,
-                        radius = (if (isSelected) 15f else 11f) * zoomScale.coerceAtLeast(0.8f),
-                        center = pos
-                    )
-
-                    // Small center dot
-                    drawCircle(
-                        color = Color.White,
-                        radius = (if (isSelected) 6f else 4f) * zoomScale.coerceAtLeast(0.8f),
-                        center = pos
-                    )
-                }
+            if (item.isShelter) {
+                // High-visibility Orange/Red marker for cyclone emergency shelters
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+            } else {
+                // Azure / Blue marker for tourist destinations and heritage sites
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             }
 
-            // Category Filter Chips (Top Bar)
+            val marker = map.addMarker(markerOptions)
+            if (marker != null) {
+                markerToItemMap[marker] = item
+            }
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("balasore_google_map_container")
+    ) {
+        // 1. Interactive Google Map View via AndroidView
+        AndroidView(
+            factory = {
+                mapView.apply {
+                    getMapAsync { map ->
+                        googleMapInstance = map
+                        map.mapType = currentMapType
+                        map.uiSettings.isZoomControlsEnabled = false
+                        map.uiSettings.isCompassEnabled = true
+                        map.uiSettings.isMapToolbarEnabled = true
+                        map.uiSettings.isMyLocationButtonEnabled = false
+
+                        // Center view on Balasore district town
+                        val centerBalasore = LatLng(21.4934, 86.9135)
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerBalasore, 11.2f))
+
+                        // Smooth camera zoom animation on marker click:
+                        map.setOnMarkerClickListener { clickedMarker ->
+                            val item = markerToItemMap[clickedMarker]
+                            if (item != null) {
+                                selectedItem = item
+                                // Smooth camera zoom animation centering the view on the clicked location
+                                animateCameraToLocation(item.latitude, item.longitude, 15.5f)
+                            }
+                            // Show standard info window as well
+                            false
+                        }
+
+                        map.setOnMapClickListener {
+                            selectedItem = null
+                        }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 2. Top Header & Category Filter Overlay
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Black.copy(alpha = 0.75f), Color.Transparent)
+                    )
+                )
+                .padding(top = 16.dp, bottom = 8.dp)
+        ) {
+            // Header Row with Title, Counts & Close
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .horizontalScroll(rememberScrollState())
-                    .align(Alignment.TopStart),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                categories.forEach { category ->
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = { selectedCategory = category },
-                        label = {
-                            Text(
-                                text = when (category) {
-                                    "Beach" -> "🏖️ Beaches"
-                                    "Temple" -> "🛕 Temples"
-                                    "Wildlife" -> "🐘 Wildlife"
-                                    "Heritage" -> "🚀 Heritage"
-                                    "Port" -> "⚓ Ports"
-                                    else -> "All Spots (${hotspots.size})"
-                                },
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = BentoPrimaryBlue,
-                            selectedLabelColor = Color.White,
-                            containerColor = BentoCardWhite
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            borderColor = BentoBorder,
-                            selectedBorderColor = BentoPrimaryBlue,
-                            enabled = true,
-                            selected = selectedCategory == category
-                        ),
-                        shape = RoundedCornerShape(14.dp)
-                    )
-                }
-            }
-
-            // Zoom & Location Controls (Right Side)
-            Column(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Reset to Balasore Center
-                FloatingActionButton(
-                    onClick = {
-                        zoomScale = 1.0f
-                        panOffsetX = 0f
-                        panOffsetY = 0f
-                        Toast.makeText(context, "Centered on Balasore Town", Toast.LENGTH_SHORT).show()
-                    },
-                    shape = CircleShape,
-                    containerColor = BentoCardWhite,
-                    contentColor = BentoPrimaryBlue,
-                    modifier = Modifier.size(44.dp).testTag("map_center_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MyLocation,
-                        contentDescription = "Center on Balasore",
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                // Zoom In
-                FloatingActionButton(
-                    onClick = { zoomScale = (zoomScale * 1.3f).coerceAtMost(3.5f) },
-                    shape = CircleShape,
-                    containerColor = BentoCardWhite,
-                    contentColor = BentoSlate900,
-                    modifier = Modifier.size(44.dp).testTag("map_zoom_in")
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Zoom In")
-                }
-
-                // Zoom Out
-                FloatingActionButton(
-                    onClick = { zoomScale = (zoomScale / 1.3f).coerceAtLeast(0.7f) },
-                    shape = CircleShape,
-                    containerColor = BentoCardWhite,
-                    contentColor = BentoSlate900,
-                    modifier = Modifier.size(44.dp).testTag("map_zoom_out")
-                ) {
-                    Icon(imageVector = Icons.Default.Remove, contentDescription = "Zoom Out")
-                }
-            }
-
-            // Legend / Scale info banner (Bottom Left)
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = BentoCardWhite.copy(alpha = 0.9f),
-                border = BorderStroke(1.dp, BentoBorder),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 16.dp, bottom = if (selectedHotspot != null) 170.dp else 24.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Explore,
-                        contentDescription = null,
-                        tint = BentoPrimaryBlue,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Balasore District • Bay of Bengal",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = BentoSlate700
-                    )
-                }
-            }
-
-            // Selected Hotspot Preview Bento Card (Bottom Sheet Card)
-            AnimatedVisibility(
-                visible = selectedHotspot != null,
-                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
-                if (selectedHotspot != null) {
-                    HotspotMapPreviewCard(
-                        hotspot = selectedHotspot,
-                        onClose = { onSelectHotspot(null) },
-                        onGetDirections = {
-                            launchNavigationIntent(context, selectedHotspot)
-                        },
-                        onViewDetails = { onViewHotspotDetails(selectedHotspot) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HotspotMapPreviewCard(
-    hotspot: HotspotEntity,
-    onClose: () -> Unit,
-    onGetDirections: () -> Unit,
-    onViewDetails: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = BentoCardWhite,
-        border = BorderStroke(1.5.dp, BentoBorder),
-        shadowElevation = 8.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("hotspot_map_preview_card")
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header Row: Category Badge, Distance & Close
-            Row(
-                modifier = Modifier.fillMaxWidth(),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = getCategoryColor(hotspot.category).copy(alpha = 0.15f)
-                    ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = OceanBlue,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Explore,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "${getCategoryEmoji(hotspot.category)} ${hotspot.category}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = getCategoryColor(hotspot.category),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ମାନଚିତ୍ର" else "Balasore Interactive Map",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${hotspot.distanceKmFromBls} km from Balasore",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = BentoSlate500
+                        text = "${cycloneShelters.size} Shelters • ${touristSpots.size} Hotspots Active",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 11.sp
+                        ),
+                        modifier = Modifier.padding(start = 36.dp)
                     )
                 }
 
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = BentoSlate500,
-                        modifier = Modifier.size(18.dp)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Map Type Toggle Button (Normal / Satellite)
+                    IconButton(
+                        onClick = {
+                            val nextType = if (currentMapType == GoogleMap.MAP_TYPE_NORMAL) {
+                                GoogleMap.MAP_TYPE_HYBRID
+                            } else {
+                                GoogleMap.MAP_TYPE_NORMAL
+                            }
+                            currentMapType = nextType
+                            googleMapInstance?.mapType = nextType
+                        },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Layers,
+                            contentDescription = "Toggle Map Type",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    IconButton(
+                        onClick = onClose,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close Map",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Title and Odia Name
-            Text(
-                text = hotspot.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = BentoSlate900,
-                maxLines = 1
-            )
-            Text(
-                text = hotspot.odiaName,
-                style = MaterialTheme.typography.bodySmall,
-                color = BentoSlate500
+            // Filter Chips Carousel
+            val categories = listOf(
+                "All",
+                "Tourist Hotspots",
+                "Cyclone Shelters",
+                "Beach",
+                "Temple",
+                "Nature & Heritage"
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = hotspot.shortDescription,
-                style = MaterialTheme.typography.bodySmall,
-                color = BentoSlate700,
-                maxLines = 2
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Action Buttons: Get Directions & Full Details
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
-                    onClick = onGetDirections,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("get_directions_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.NearMe,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                categories.forEach { category ->
+                    val isSelected = selectedCategory == category
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = {
+                            selectedCategory = category
+                            selectedItem = null
+                        },
+                        label = {
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = Color.White.copy(alpha = 0.2f),
+                            labelColor = Color.White,
+                            selectedContainerColor = if (category == "Cyclone Shelters") AmberGold else OceanBlue,
+                            selectedLabelColor = Color.White
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSelected) Color.White else Color.White.copy(alpha = 0.3f)
+                        )
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Directions", fontWeight = FontWeight.Bold)
-                }
-
-                OutlinedButton(
-                    onClick = onViewDetails,
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, BentoPrimaryBlue),
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("view_details_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = BentoPrimaryBlue,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Details", color = BentoPrimaryBlue, fontWeight = FontWeight.Bold)
                 }
             }
         }
-    }
-}
 
-// Function to open Google Maps or installed navigation app
-private fun launchNavigationIntent(context: Context, hotspot: HotspotEntity) {
-    try {
-        val geoUri = Uri.parse("geo:${hotspot.latitude},${hotspot.longitude}?q=${hotspot.latitude},${hotspot.longitude}(${Uri.encode(hotspot.name)})")
-        val mapIntent = Intent(Intent.ACTION_VIEW, geoUri)
-        val chooser = Intent.createChooser(mapIntent, "Open Navigation to ${hotspot.name}")
-        context.startActivity(chooser)
-    } catch (e: Exception) {
-        // Fallback to Google Maps Web URL
-        try {
-            val webUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${hotspot.latitude},${hotspot.longitude}")
-            val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-            context.startActivity(webIntent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "Unable to launch map navigation", Toast.LENGTH_SHORT).show()
+        // 3. Floating Map Controls (Zoom In, Zoom Out, Recenter)
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Recenter Balasore Town
+            FloatingActionButton(
+                onClick = {
+                    animateCameraToLocation(21.4934, 86.9135, 11.2f)
+                    Toast.makeText(context, "Centered on Balasore Town", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .testTag("map_recenter_button"),
+                shape = CircleShape,
+                containerColor = Color.White,
+                contentColor = OceanBlueDark,
+                elevation = FloatingActionButtonDefaults.elevation(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = "Center Balasore",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Smooth Zoom In (+)
+            FloatingActionButton(
+                onClick = {
+                    googleMapInstance?.animateCamera(CameraUpdateFactory.zoomIn(), 400, null)
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .testTag("map_zoom_in_button"),
+                shape = CircleShape,
+                containerColor = Color.White,
+                contentColor = BentoSlate900,
+                elevation = FloatingActionButtonDefaults.elevation(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Zoom In",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Smooth Zoom Out (-)
+            FloatingActionButton(
+                onClick = {
+                    googleMapInstance?.animateCamera(CameraUpdateFactory.zoomOut(), 400, null)
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .testTag("map_zoom_out_button"),
+                shape = CircleShape,
+                containerColor = Color.White,
+                contentColor = BentoSlate900,
+                elevation = FloatingActionButtonDefaults.elevation(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = "Zoom Out",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
-    }
-}
 
-// Custom Cartographic Canvas Drawing Helpers
-private fun DrawScope.drawDistrictLandscape(
-    width: Float,
-    height: Float,
-    zoom: Float,
-    panX: Float,
-    panY: Float
-) {
-    // 1. Base District Land
-    drawRect(
-        brush = Brush.linearGradient(
-            colors = listOf(Color(0xFFEFF5FB), Color(0xFFE5EEF8))
-        ),
-        size = size
-    )
+        // 4. Bottom Information Card when a Marker is Clicked
+        AnimatedVisibility(
+            visible = selectedItem != null,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        ) {
+            selectedItem?.let { item ->
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(
+                        1.5.dp,
+                        if (item.isShelter) AmberGold.copy(alpha = 0.5f) else BentoPrimaryBlue.copy(alpha = 0.3f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(12.dp, RoundedCornerShape(24.dp))
+                        .testTag("selected_marker_detail_card")
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp)
+                    ) {
+                        // Header Row: Type Badge + Distance + Close
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (item.isShelter) AmberGold.copy(alpha = 0.15f) else OceanBlue.copy(alpha = 0.12f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (item.isShelter) AmberGold.copy(alpha = 0.4f) else OceanBlue.copy(alpha = 0.3f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = if (item.isShelter) Icons.Default.Shield else Icons.Default.Place,
+                                        contentDescription = null,
+                                        tint = if (item.isShelter) AmberGold else OceanBlue,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = if (item.isShelter) "CYCLONE SHELTER" else (item as BalasoreMapItem.TouristSpot).category.uppercase(),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 10.sp,
+                                            color = if (item.isShelter) AmberGold else OceanBlue
+                                        )
+                                    )
+                                }
+                            }
 
-    // 2. Bay of Bengal Ocean Area (Eastern/Southeastern Coast)
-    val seaPath = Path().apply {
-        moveTo(width * 0.58f, 0f)
-        cubicTo(
-            width * 0.62f, height * 0.25f,
-            width * 0.55f, height * 0.55f,
-            width * 0.45f, height * 0.85f
-        )
-        lineTo(width * 0.40f, height)
-        lineTo(width, height)
-        lineTo(width, 0f)
-        close()
-    }
-    drawPath(
-        path = seaPath,
-        brush = Brush.horizontalGradient(
-            colors = listOf(Color(0xFF3B82F6).copy(alpha = 0.45f), Color(0xFF1D4ED8).copy(alpha = 0.65f))
-        )
-    )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = BentoSlate200.copy(alpha = 0.6f)
+                                ) {
+                                    Text(
+                                        text = "${item.distanceKm} km from town",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = BentoSlate700,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 10.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
+                                }
 
-    // Bay of Bengal gentle wave contours
-    val coastLinePath = Path().apply {
-        moveTo(width * 0.58f, 0f)
-        cubicTo(
-            width * 0.62f, height * 0.25f,
-            width * 0.55f, height * 0.55f,
-            width * 0.45f, height * 0.85f
-        )
-        lineTo(width * 0.40f, height)
-    }
-    drawPath(
-        path = coastLinePath,
-        color = Color(0xFF60A5FA),
-        style = Stroke(width = 3.5f * zoom.coerceAtLeast(0.8f))
-    )
+                                Spacer(modifier = Modifier.width(6.dp))
 
-    // 3. Nilagiri Hills and Kuldiha Wildlife Forest Reserve (West & South-West)
-    val forestHillsPath = Path().apply {
-        moveTo(0f, height * 0.35f)
-        cubicTo(
-            width * 0.20f, height * 0.40f,
-            width * 0.28f, height * 0.65f,
-            width * 0.22f, height
-        )
-        lineTo(0f, height)
-        close()
-    }
-    drawPath(
-        path = forestHillsPath,
-        brush = Brush.radialGradient(
-            colors = listOf(Color(0xFF10B981).copy(alpha = 0.25f), Color(0xFF059669).copy(alpha = 0.12f)),
-            center = Offset(width * 0.1f, height * 0.6f),
-            radius = width * 0.4f
-        )
-    )
+                                IconButton(
+                                    onClick = { selectedItem = null },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Dismiss",
+                                        tint = BentoSlate500,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
 
-    // 4. Budhabalanga River Path (cutting from NW into Balaramgadi Port)
-    val budhabalangaPath = Path().apply {
-        moveTo(width * 0.18f, height * 0.30f)
-        cubicTo(
-            width * 0.32f, height * 0.38f,
-            width * 0.40f, height * 0.48f,
-            width * 0.55f, height * 0.56f
-        )
-    }
-    drawPath(
-        path = budhabalangaPath,
-        color = Color(0xFF60A5FA),
-        style = Stroke(width = 2.5f * zoom.coerceAtLeast(0.8f), cap = StrokeCap.Round)
-    )
+                        Spacer(modifier = Modifier.height(8.dp))
 
-    // 5. Subarnarekha River Estuary (Northeast near Talasari)
-    val subarnarekhaPath = Path().apply {
-        moveTo(width * 0.45f, 0f)
-        cubicTo(
-            width * 0.55f, height * 0.08f,
-            width * 0.70f, height * 0.12f,
-            width * 0.82f, height * 0.18f
-        )
-    }
-    drawPath(
-        path = subarnarekhaPath,
-        color = Color(0xFF60A5FA),
-        style = Stroke(width = 3.0f * zoom.coerceAtLeast(0.8f), cap = StrokeCap.Round)
-    )
-}
+                        // Title & Odia Name
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Text(
+                            text = item.odiaName,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = OceanBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
 
-// Highway & Rail Network
-private fun DrawScope.drawHighwaysAndTransit(
-    geoToPixel: (Double, Double) -> Offset,
-    zoom: Float
-) {
-    // NH-16 Golden Quadrilateral corridor passing through Balasore
-    val northPt = geoToPixel(21.72, 87.12)
-    val blsPt = geoToPixel(21.4934, 86.9325)
-    val southPt = geoToPixel(21.32, 86.75)
+                        Spacer(modifier = Modifier.height(8.dp))
 
-    val highwayPath = Path().apply {
-        moveTo(northPt.x, northPt.y)
-        lineTo(blsPt.x, blsPt.y)
-        lineTo(southPt.x, southPt.y)
-    }
-    drawPath(
-        path = highwayPath,
-        color = Color(0xFF94A3B8),
-        style = Stroke(width = 3.0f * zoom.coerceAtLeast(0.8f), cap = StrokeCap.Round)
-    )
+                        // Detail specs depending on Shelter or Tourist Spot
+                        if (item is BalasoreMapItem.CycloneShelterSpot) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFFEF3C7),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Capacity", fontSize = 10.sp, color = BentoSlate600)
+                                        Text("${item.capacity} People", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BentoSlate900)
+                                    }
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFF1F5F9),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Block / Elev", fontSize = 10.sp, color = BentoSlate600)
+                                        Text("${item.block} • +${item.elevationMeters}m", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BentoSlate900, maxLines = 1)
+                                    }
+                                }
+                            }
+                        } else if (item is BalasoreMapItem.TouristSpot) {
+                            Text(
+                                text = item.shortDesc,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = BentoSlate600,
+                                    fontSize = 12.sp
+                                ),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
 
-    // Balasore Town Center Anchor Point
-    drawCircle(
-        color = Color(0xFF1E293B),
-        radius = 5.0f * zoom.coerceAtLeast(0.8f),
-        center = blsPt
-    )
-}
+                        Spacer(modifier = Modifier.height(14.dp))
 
-private fun getCategoryColor(category: String): Color {
-    return when (category.lowercase()) {
-        "beach" -> Color(0xFF0284C7)
-        "temple" -> Color(0xFFD97706)
-        "wildlife" -> Color(0xFF16A34A)
-        "heritage" -> Color(0xFF4F46E5)
-        "port" -> Color(0xFF0D9488)
-        else -> BentoPrimaryBlue
-    }
-}
+                        // Action Buttons: Directions, Call / Details, Smooth Zoom
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Directions via Google Maps Intent
+                            Button(
+                                onClick = {
+                                    val uri = Uri.parse("geo:${item.latitude},${item.longitude}?q=${item.latitude},${item.longitude}(${Uri.encode(item.name)})")
+                                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+                                    try {
+                                        context.startActivity(mapIntent)
+                                    } catch (_: Exception) {
+                                        val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}")
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (item.isShelter) AmberGold else OceanBlue
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Directions,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Directions", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
 
-private fun getCategoryEmoji(category: String): String {
-    return when (category.lowercase()) {
-        "beach" -> "🏖️"
-        "temple" -> "🛕"
-        "wildlife" -> "🐘"
-        "heritage" -> "🚀"
-        "port" -> "⚓"
-        else -> "📍"
+                            // If Cyclone shelter: direct Call button
+                            if (item is BalasoreMapItem.CycloneShelterSpot && item.phone.isNotBlank()) {
+                                OutlinedButton(
+                                    onClick = {
+                                        val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${item.phone}"))
+                                        context.startActivity(dialIntent)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(1.dp, EmeraldGreen),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldGreen),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Call,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(15.dp),
+                                        tint = EmeraldGreen
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Call Control", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                            } else {
+                                // Smooth Zoom In & Center Button
+                                OutlinedButton(
+                                    onClick = {
+                                        animateCameraToLocation(item.latitude, item.longitude, 16.5f)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(1.dp, BentoPrimaryBlue),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.NearMe,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(15.dp),
+                                        tint = OceanBlue
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Zoom Closer", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = OceanBlue)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. Quick Horizontal Carousel at bottom when no marker is selected
+        if (selectedItem == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))
+                        )
+                    )
+                    .padding(bottom = 16.dp, top = 8.dp)
+            ) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(filteredItems, key = { it.id }) { item ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color.White,
+                            border = BorderStroke(
+                                1.dp,
+                                if (item.isShelter) AmberGold.copy(alpha = 0.5f) else BentoSlate200
+                            ),
+                            shadowElevation = 3.dp,
+                            modifier = Modifier
+                                .width(210.dp)
+                                .clickable {
+                                    selectedItem = item
+                                    // Smooth camera zoom animation centering the view on the selected card
+                                    animateCameraToLocation(item.latitude, item.longitude, 15.5f)
+                                }
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = if (item.isShelter) AmberGold.copy(alpha = 0.15f) else OceanBlue.copy(alpha = 0.12f)
+                                    ) {
+                                        Text(
+                                            text = if (item.isShelter) "SHELTER" else (item as BalasoreMapItem.TouristSpot).category,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (item.isShelter) AmberGold else OceanBlue,
+                                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = "${item.distanceKm} km",
+                                        fontSize = 10.sp,
+                                        color = BentoSlate500,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = item.name,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = "Tap to zoom on map",
+                                    fontSize = 10.sp,
+                                    color = OceanBlue
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

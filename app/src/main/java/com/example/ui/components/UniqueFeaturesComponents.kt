@@ -52,7 +52,7 @@ fun DailyAutoUpdateCard(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("daily_auto_update_card"),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.5.dp, Color(0xFFBAE6FD)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -116,7 +116,7 @@ fun DailyAutoUpdateCard(
                 text = dailyPulse.formattedDate,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
 
@@ -525,6 +525,7 @@ fun DailyAutoUpdateCard(
 @Composable
 fun UniqueFeaturesPillGrid(
     onFeatureClick: (UniqueFeatureSheetType) -> Unit,
+    onOpenAllFeatures: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -543,7 +544,10 @@ fun UniqueFeaturesPillGrid(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = if (onOpenAllFeatures != null) Modifier.clickable { onOpenAllFeatures() } else Modifier
+                ) {
                     Box(
                         modifier = Modifier
                             .size(28.dp)
@@ -569,17 +573,31 @@ fun UniqueFeaturesPillGrid(
                 }
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF1F5F9)
+                    color = Color(0xFFF1F5F9),
+                    modifier = if (onOpenAllFeatures != null) Modifier.clickable { onOpenAllFeatures() } else Modifier
                 ) {
-                    Text(
-                        text = "29 LIVE HUBS",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 9.sp,
-                            color = Color(0xFF0284C7)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "31 LIVE HUBS",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp,
+                                color = Color(0xFF0284C7)
+                            )
                         )
-                    )
+                        if (onOpenAllFeatures != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "View Menu",
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(10.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -1035,6 +1053,42 @@ fun UniqueFeaturesPillGrid(
                     onClick = { onFeatureClick(UniqueFeatureSheetType.ELEPHANT_PASSPORT) }
                 )
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Section 8: 🌊 Hydrology & Artisan Marketplace (Daily Auto-Updated)
+            Text(
+                text = "🌊 HYDROLOGY & ARTISAN GUILDS",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F766E),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                UniqueFeatureChip(
+                    icon = "🌊",
+                    label = "River Flood Telemetry",
+                    sub = "Subarnarekha Gauges",
+                    color = Color(0xFFF0FDFA),
+                    borderColor = Color(0xFF99F6E4),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.RIVER_FLOOD_TELEMETRY) }
+                )
+                UniqueFeatureChip(
+                    icon = "🎨",
+                    label = "Mati O Manisha",
+                    sub = "Lac Bangles & Crafts",
+                    color = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFeatureClick(UniqueFeatureSheetType.MATI_MANISHA_ARTISANS) }
+                )
+            }
         }
     }
 }
@@ -1434,6 +1488,7 @@ fun DefenseTrailSheet(
             ) {
                 // Live Maritime Exclusion Radar Card
                 item {
+                    val dailyPulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
@@ -1500,6 +1555,46 @@ fun DefenseTrailSheet(
                                     fontSize = 11.sp
                                 )
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            // Daily Auto-Updated Airspace NOTAM Bulletin
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFF1E293B),
+                                border = BorderStroke(1.dp, Color(0xFF475569))
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "📡 AIRSPACE STATUS: ${dailyPulse.itrAirspaceStatus}",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = Color(0xFF38BDF8),
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 10.sp
+                                            )
+                                        )
+                                        Text(
+                                            text = "TODAY",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = Color(0xFF94A3B8),
+                                                fontSize = 9.sp
+                                            )
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = dailyPulse.itrNotamAdvisory,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = Color(0xFFE2E8F0),
+                                            fontSize = 11.sp,
+                                            lineHeight = 15.sp
+                                        )
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

@@ -23,6 +23,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Flood
@@ -97,6 +102,7 @@ fun EmergencyAlertCard(
 ) {
     val context = LocalContext.current
     var isExpanded by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
 
     val isCyclone = alert.type.contains("CYCLONE", ignoreCase = true)
     val isRiverSpike = alert.type.contains("RIVER", ignoreCase = true)
@@ -265,13 +271,38 @@ fun EmergencyAlertCard(
                 }
             }
 
-            // Quick action buttons: Emergency Helpline Dial + Shelter / More Info
+            // Quick action buttons: View Details + Emergency Helpline Dial + Shelter / More Info
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // View Details Button to open full scrollable dialog
+                androidx.compose.material3.Button(
+                    onClick = { showDetailsDialog = true },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .testTag("view_details_button_${alert.id}")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "View Details",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
                 OutlinedButton(
                     onClick = {
                         val dialIntent = Intent(Intent.ACTION_DIAL).apply {
@@ -282,32 +313,37 @@ fun EmergencyAlertCard(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor),
                     border = BorderStroke(1.dp, accentColor),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .testTag("emergency_helpline_button_${alert.id}")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Phone,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(13.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = "Control Room: ${alert.emergencyHelpline}",
+                        text = "Helpline",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 if (isCyclone) {
-                    androidx.compose.material3.Button(
+                    OutlinedButton(
                         onClick = onOpenShelters,
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor),
+                        border = BorderStroke(1.dp, accentColor),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier
+                            .height(32.dp)
+                            .testTag("open_shelters_button_${alert.id}")
                     ) {
                         Text(
-                            text = "Find Shelters",
+                            text = "Shelters",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -315,5 +351,257 @@ fun EmergencyAlertCard(
                 }
             }
         }
+    }
+
+    // Mini-dialog displaying full scrollable text for coastal defense and emergency advisories
+    if (showDetailsDialog) {
+        val scrollState = rememberScrollState()
+        AlertDialog(
+            onDismissRequest = { showDetailsDialog = false },
+            modifier = Modifier.testTag("emergency_alert_details_dialog_${alert.id}"),
+            icon = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(accentColor)
+                ) {
+                    Icon(
+                        imageVector = if (isCyclone) Icons.Default.Warning else Icons.Default.Flood,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            },
+            title = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = alert.title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                    if (alert.odiaTitle.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = alert.odiaTitle,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = accentColor,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Advisory Severity & Status Header
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = containerBg,
+                        border = BorderStroke(1.dp, borderColor),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "ADVISORY SEVERITY",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = accentColor,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Text(
+                                    text = alert.severity,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E293B)
+                                )
+                            }
+                            if (alert.windSpeedKmph != null) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF7F1D1D)
+                                ) {
+                                    Text(
+                                        text = "${alert.windSpeedKmph} km/h Gusts",
+                                        color = Color.White,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+                            if (alert.waterLevelMeters != null && alert.dangerLevelMeters != null) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF1E3A8A)
+                                ) {
+                                    Text(
+                                        text = "Level: ${alert.waterLevelMeters}m / Danger: ${alert.dangerLevelMeters}m",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Affected Areas
+                    if (alert.affectedArea.isNotBlank()) {
+                        Column {
+                            Text(
+                                text = "AFFECTED COASTAL & BASIN ZONES",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = alert.affectedArea,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    }
+
+                    // Full Long-Form Details (Coastal Defense & Cyclone Advisory)
+                    Column {
+                        Text(
+                            text = "OFFICIAL DEFENSE & METEOROLOGICAL ADVISORY",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = alert.details.ifBlank { alert.summary },
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 12.5.sp,
+                                color = Color(0xFF334155),
+                                lineHeight = 18.sp
+                            )
+                        )
+                    }
+
+                    // Actionable Mandates
+                    if (alert.actionRequired.isNotBlank()) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isCyclone) Color(0xFFFFE4E6) else Color(0xFFDBEAFE),
+                            border = BorderStroke(0.5.dp, borderColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text(
+                                    text = "SAFETY INSTRUCTIONS & MANDATES",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (isCyclone) Color(0xFF991B1B) else Color(0xFF1E40AF),
+                                    letterSpacing = 0.5.sp
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = alert.actionRequired,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 11.5.sp,
+                                        color = if (isCyclone) Color(0xFF7F1D1D) else Color(0xFF172554)
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // Control Room Helpline Contact
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Emergency Control Room:",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = alert.emergencyHelpline,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.Button(
+                    onClick = {
+                        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:${alert.emergencyHelpline}")
+                        }
+                        context.startActivity(dialIntent)
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Call Control Room",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDetailsDialog = false },
+                    modifier = Modifier.testTag("close_alert_details_dialog_${alert.id}")
+                ) {
+                    Text(
+                        text = "Close",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
     }
 }

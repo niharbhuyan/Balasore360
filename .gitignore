@@ -16,3 +16,11 @@
 local.properties
 .env
 debug.keystore
+*.apk
+*.aab
+*.zip
+*.log
+*.jks
+.build-outputs/
+downloads/
+download_dist/

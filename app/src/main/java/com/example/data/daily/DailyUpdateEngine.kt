@@ -62,7 +62,17 @@ data class DailyBalasorePulse(
     val medicineStoreEmergencyDuty: String = "DHH Campus, FMMCH Gate 2, Station Bazar & Soro 24h",
     val polyclinicSampleCollectionStatus: String = "Fasting Blood Draws Open (06:30 AM - 10:30 AM)",
     val antiVenomStockAdvisory: String = "Anti-Snake Venom (ASV) & ARV fully stocked at DHH & FMMCH",
-    val todaySpecialistOPDStatus: String = "Medicine, Cardiology, Pediatrics & Ortho Chambers Active Today"
+    val todaySpecialistOPDStatus: String = "Medicine, Cardiology, Pediatrics & Ortho Chambers Active Today",
+    // 6 Next-Gen Unique Auto-Updated Metrics
+    val chandipurLowTideWindow: String = "10:15 AM - 02:45 PM",
+    val chandipurNextHighTide: String = "05:30 PM",
+    val isChandipurWalkSafeNow: Boolean = true,
+    val itrAirspaceStatus: String = "Green (Clear Coastal Airspace & Maritime Channel)",
+    val itrNotamAdvisory: String = "No Active Airspace Restriction • Civilian Fishermen Channel Open",
+    val aquacultureVannameiRateKg: Int = 380,
+    val aquacultureTigerPrawnRateKg: Int = 740,
+    val subarnarekhaBasinRisk: String = "Normal Safe Band (Rajghat 8.65m / Danger 10.36m)",
+    val artisanShowcaseOfTheDay: String = "Motiganj Lac Bangles (ଲାଖ ଶଙ୍ଖା) & Remuna Bell Metal"
 )
 
 object DailyUpdateEngine {
@@ -388,7 +398,20 @@ object DailyUpdateEngine {
             medicineStoreEmergencyDuty = "DHH Campus, FMMCH Gate 2, Station Bazar & Soro 24h",
             polyclinicSampleCollectionStatus = polyclinicCollectionStatus,
             antiVenomStockAdvisory = antiVenomAdvisory,
-            todaySpecialistOPDStatus = opdStatus
+            todaySpecialistOPDStatus = opdStatus,
+            chandipurLowTideWindow = String.format(Locale.getDefault(), "%02d:15 AM - %02d:45 PM", morningStartHour, morningStartHour + 4),
+            chandipurNextHighTide = String.format(Locale.getDefault(), "%02d:30 PM", eveningStartHour % 12 + 5),
+            isChandipurWalkSafeNow = hour in (morningStartHour..(morningStartHour + 3)) || hour in (eveningStartHour..(eveningStartHour + 2)),
+            itrAirspaceStatus = if (dayOfYear % 14 == 0) "Yellow (Scheduled Telemetry Tracking Window)" else "Green (Clear Coastal Airspace & Maritime Channel)",
+            itrNotamAdvisory = if (dayOfYear % 14 == 0) "NOTAM Active: 14:00 - 18:00 IST for scientific flight corridor" else "No Active Airspace Restriction • Civilian Fishermen Channel Open",
+            aquacultureVannameiRateKg = 360 + (dayOfYear % 40),
+            aquacultureTigerPrawnRateKg = 720 + (dayOfYear % 60),
+            subarnarekhaBasinRisk = if (dayOfYear in 180..280) "Monsoon Watch (Rajghat 9.10m / Warning 9.45m)" else "Normal Safe Band (Rajghat 8.65m / Danger 10.36m)",
+            artisanShowcaseOfTheDay = when (dayOfYear % 3) {
+                0 -> "Motiganj Master Lac Bangles (ଲାଖ ଶଙ୍ଖା) & Mina Craft"
+                1 -> "Remuna Kansari Brass & Bell Metal Holy Utensils"
+                else -> "Nilagiri Black Granite Mortar & Sabai Grass Handicrafts"
+            }
         )
     }
 }

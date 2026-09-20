@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,6 +116,110 @@ fun BalaramgadiEstuarySheet(
                         color = Color(0xFF0369A1)
                     )
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Daily Auto-Updated Coastal Aquaculture & Fishery Rate Ticker
+        val dailyPulse = remember { com.example.data.daily.DailyUpdateEngine.getDailyPulse() }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0C4A6E)),
+            border = BorderStroke(1.dp, Color(0xFF0284C7))
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF38BDF8),
+                            modifier = Modifier.size(8.dp)
+                        ) {}
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "AQUACULTURE & HARBOR TICKER",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF7DD3FC),
+                                letterSpacing = 1.sp
+                            )
+                        )
+                    }
+                    Text(
+                        text = dailyPulse.formattedDate,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color(0xFFBAE6FD),
+                            fontSize = 10.sp
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF075985),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text("Vannamei White Prawn", fontSize = 10.sp, color = Color(0xFFBAE6FD))
+                            Text(
+                                text = "₹${dailyPulse.aquacultureVannameiRateKg} / kg",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text("30 Count Grade • Harbor Spot", fontSize = 8.sp, color = Color(0xFF7DD3FC))
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF075985),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text("Black Tiger Shrimp", fontSize = 10.sp, color = Color(0xFFBAE6FD))
+                            Text(
+                                text = "₹${dailyPulse.aquacultureTigerPrawnRateKg} / kg",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFDE047)
+                            )
+                            Text("Export Quality 15 Count", fontSize = 8.sp, color = Color(0xFF7DD3FC))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Ilish (Hilsa): ₹850-1,100/kg",
+                        style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFFE0F2FE), fontSize = 10.sp)
+                    )
+                    Text(
+                        text = "Mud Crab: ₹520/kg",
+                        style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFFE0F2FE), fontSize = 10.sp)
+                    )
+                    Text(
+                        text = "Pomfret: ₹680/kg",
+                        style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFFE0F2FE), fontSize = 10.sp)
+                    )
+                }
             }
         }
 

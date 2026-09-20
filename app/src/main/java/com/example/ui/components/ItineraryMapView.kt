@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.OfflinePin
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -222,6 +223,33 @@ fun ItineraryMapView(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        // Offline Map Tiles Cached Badge
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFDCFCE7)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.OfflinePin,
+                                    contentDescription = "Tiles Cached Offline",
+                                    tint = Color(0xFF166534),
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = "Offline Cached",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF166534)
+                                    )
+                                )
+                            }
+                        }
+
                         // Badge showing total pinned stops
                         Surface(
                             shape = RoundedCornerShape(6.dp),
