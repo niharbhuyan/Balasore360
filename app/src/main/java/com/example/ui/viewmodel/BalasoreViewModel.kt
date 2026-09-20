@@ -19,6 +19,8 @@ import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
 import com.example.data.repository.TravelJournalRepository
 import com.example.data.repository.UniqueFeaturesRepository
+import com.example.ui.components.WatermarkOpacity
+import com.example.ui.components.WatermarkStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -80,7 +82,11 @@ data class BalasoreUiState(
     val liveEmergencyAlerts: List<EmergencyAlertDto> = DefaultData.getDefaultEmergencyAlerts(),
     val dismissedAlertIds: Set<String> = emptySet(),
     // Daily Auto-Update Pulse
-    val dailyPulse: com.example.data.daily.DailyBalasorePulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+    val dailyPulse: com.example.data.daily.DailyBalasorePulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse(),
+    // Full App Watermark (App Name & Official Logo)
+    val isWatermarkEnabled: Boolean = true,
+    val watermarkStyle: WatermarkStyle = WatermarkStyle.CENTER_EMBLEM,
+    val watermarkOpacity: WatermarkOpacity = WatermarkOpacity.MEDIUM
 )
 
 enum class UniqueFeatureSheetType {
@@ -566,5 +572,26 @@ class BalasoreViewModel : ViewModel() {
             ThemeMode.DARK -> ThemeMode.SYSTEM
         }
         _uiState.value = _uiState.value.copy(themeMode = next)
+    }
+
+    fun setWatermarkEnabled(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(isWatermarkEnabled = enabled)
+    }
+
+    fun setWatermarkStyle(style: WatermarkStyle) {
+        _uiState.value = _uiState.value.copy(watermarkStyle = style)
+    }
+
+    fun setWatermarkOpacity(opacity: WatermarkOpacity) {
+        _uiState.value = _uiState.value.copy(watermarkOpacity = opacity)
+    }
+
+    fun cycleWatermarkStyle() {
+        val next = when (_uiState.value.watermarkStyle) {
+            WatermarkStyle.CENTER_EMBLEM -> WatermarkStyle.DIAGONAL_TILES
+            WatermarkStyle.DIAGONAL_TILES -> WatermarkStyle.CORNER_STAMP
+            WatermarkStyle.CORNER_STAMP -> WatermarkStyle.CENTER_EMBLEM
+        }
+        _uiState.value = _uiState.value.copy(watermarkStyle = next)
     }
 }

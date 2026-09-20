@@ -83,6 +83,7 @@ import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.BalasoreViewModel
 import com.example.ui.viewmodel.UniqueFeatureSheetType
+import com.example.ui.components.AppWatermarkOverlay
 import com.example.ui.components.CycloneResilienceSheet
 import com.example.ui.components.DefenseTrailSheet
 import com.example.ui.components.ElephantPassportSheet
@@ -490,83 +491,98 @@ fun BalasoreApp(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                when (uiState.selectedTab) {
-                    0 -> TourismScreen(
-                        hotspots = uiState.hotspots,
-                        templeRitualInfo = uiState.templeRitualInfo,
-                        literaryTrailPoints = uiState.literaryTrailPoints,
-                        dailyIdiom = uiState.dailyIdiom,
-                        selectedCategory = uiState.selectedHotspotCategory,
-                        searchQuery = uiState.hotspotSearchQuery,
-                        language = uiState.language,
-                        favoriteIds = uiState.favoriteHotspotIds,
-                        weather = uiState.weather,
-                        forecastDays = uiState.forecastDays,
-                        weatherAlerts = uiState.weatherAlerts,
-                        isFahrenheit = uiState.isFahrenheit,
-                        selectedForecastIndex = uiState.selectedForecastDayIndex,
-                        onCategorySelected = { viewModel.setHotspotCategory(it) },
-                        onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
-                        onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) },
-                        onToggleTempUnit = { viewModel.toggleTemperatureUnit() },
-                        onSelectForecastDay = { viewModel.selectForecastDay(it) },
-                        onAcknowledgeAlert = { viewModel.acknowledgeAlert(it) },
-                        onNavigateToWeather = { viewModel.selectTab(3) },
-                        onNavigateToSpecialFeatures = { viewModel.selectTab(1) },
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
-                        itineraryItems = uiState.itineraryItems,
-                        liveEmergencyAlerts = uiState.liveEmergencyAlerts,
-                        dismissedAlertIds = uiState.dismissedAlertIds,
-                        onDismissAlert = { viewModel.dismissEmergencyAlert(it) },
-                        onAddToItinerary = { spot, day, time, notes ->
-                            viewModel.addToItinerary(spot, day, time, notes)
-                        },
-                        onRemoveFromItinerary = { viewModel.removeFromItinerary(it) },
-                        onClearItinerary = { viewModel.clearItinerary() },
-                        dailyPulse = uiState.dailyPulse,
-                        onRefreshDailyPulse = { viewModel.refreshDailyPulse() }
-                    )
-                    1 -> SpecialFeaturesScreen(
-                        dailyPulse = uiState.dailyPulse,
-                        language = uiState.language,
-                        onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
-                    )
-                    2 -> NewsScreen(
-                        articles = uiState.newsArticles,
-                        riverGauges = uiState.riverGauges,
-                        cycloneShelters = uiState.cycloneShelters,
-                        selectedCategory = uiState.selectedNewsCategory,
-                        searchQuery = uiState.newsSearchQuery,
-                        language = uiState.language,
-                        bookmarkedIds = uiState.bookmarkedIds,
-                        isRefreshing = uiState.isRefreshing,
-                        onCategorySelected = { viewModel.setNewsCategory(it) },
-                        onSearchQueryChanged = { viewModel.setNewsSearchQuery(it) },
-                        onToggleBookmark = { viewModel.toggleBookmark(it) },
-                        onRefresh = { viewModel.refreshAll() },
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
-                    )
-                    3 -> WeatherScreen(
-                        weather = uiState.weather,
-                        tidalClock = uiState.tidalClock,
-                        drdoAdvisories = uiState.drdoAdvisories,
-                        language = uiState.language,
-                        lastKnownTide = uiState.lastKnownTideForecast,
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
-                    )
-                    4 -> EssentialsScreen(
-                        emergencyContacts = uiState.emergencyContacts,
-                        transitList = uiState.transitList,
-                        seafoodCatches = uiState.seafoodCatches,
-                        language = uiState.language,
-                        updateState = updateState,
-                        themeMode = uiState.themeMode,
-                        onThemeModeChange = { viewModel.setThemeMode(it) },
-                        onCheckForUpdates = { updateManager?.checkForUpdates(updateLauncher, autoStartFlexible = false) },
-                        onTriggerUpdate = { updateManager?.startUpdate(updateLauncher) },
-                        onCompleteUpdate = { updateManager?.completeUpdate() },
-                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when (uiState.selectedTab) {
+                        0 -> TourismScreen(
+                            hotspots = uiState.hotspots,
+                            templeRitualInfo = uiState.templeRitualInfo,
+                            literaryTrailPoints = uiState.literaryTrailPoints,
+                            dailyIdiom = uiState.dailyIdiom,
+                            selectedCategory = uiState.selectedHotspotCategory,
+                            searchQuery = uiState.hotspotSearchQuery,
+                            language = uiState.language,
+                            favoriteIds = uiState.favoriteHotspotIds,
+                            weather = uiState.weather,
+                            forecastDays = uiState.forecastDays,
+                            weatherAlerts = uiState.weatherAlerts,
+                            isFahrenheit = uiState.isFahrenheit,
+                            selectedForecastIndex = uiState.selectedForecastDayIndex,
+                            onCategorySelected = { viewModel.setHotspotCategory(it) },
+                            onSearchChanged = { viewModel.setHotspotSearchQuery(it) },
+                            onToggleFavorite = { viewModel.toggleFavoriteHotspot(it) },
+                            onToggleTempUnit = { viewModel.toggleTemperatureUnit() },
+                            onSelectForecastDay = { viewModel.selectForecastDay(it) },
+                            onAcknowledgeAlert = { viewModel.acknowledgeAlert(it) },
+                            onNavigateToWeather = { viewModel.selectTab(3) },
+                            onNavigateToSpecialFeatures = { viewModel.selectTab(1) },
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
+                            itineraryItems = uiState.itineraryItems,
+                            liveEmergencyAlerts = uiState.liveEmergencyAlerts,
+                            dismissedAlertIds = uiState.dismissedAlertIds,
+                            onDismissAlert = { viewModel.dismissEmergencyAlert(it) },
+                            onAddToItinerary = { spot, day, time, notes ->
+                                viewModel.addToItinerary(spot, day, time, notes)
+                            },
+                            onRemoveFromItinerary = { viewModel.removeFromItinerary(it) },
+                            onClearItinerary = { viewModel.clearItinerary() },
+                            dailyPulse = uiState.dailyPulse,
+                            onRefreshDailyPulse = { viewModel.refreshDailyPulse() }
+                        )
+                        1 -> SpecialFeaturesScreen(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                        )
+                        2 -> NewsScreen(
+                            articles = uiState.newsArticles,
+                            riverGauges = uiState.riverGauges,
+                            cycloneShelters = uiState.cycloneShelters,
+                            selectedCategory = uiState.selectedNewsCategory,
+                            searchQuery = uiState.newsSearchQuery,
+                            language = uiState.language,
+                            bookmarkedIds = uiState.bookmarkedIds,
+                            isRefreshing = uiState.isRefreshing,
+                            onCategorySelected = { viewModel.setNewsCategory(it) },
+                            onSearchQueryChanged = { viewModel.setNewsSearchQuery(it) },
+                            onToggleBookmark = { viewModel.toggleBookmark(it) },
+                            onRefresh = { viewModel.refreshAll() },
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                        )
+                        3 -> WeatherScreen(
+                            weather = uiState.weather,
+                            tidalClock = uiState.tidalClock,
+                            drdoAdvisories = uiState.drdoAdvisories,
+                            language = uiState.language,
+                            lastKnownTide = uiState.lastKnownTideForecast,
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                        )
+                        4 -> EssentialsScreen(
+                            emergencyContacts = uiState.emergencyContacts,
+                            transitList = uiState.transitList,
+                            seafoodCatches = uiState.seafoodCatches,
+                            language = uiState.language,
+                            updateState = updateState,
+                            themeMode = uiState.themeMode,
+                            onThemeModeChange = { viewModel.setThemeMode(it) },
+                            isWatermarkEnabled = uiState.isWatermarkEnabled,
+                            watermarkStyle = uiState.watermarkStyle,
+                            watermarkOpacity = uiState.watermarkOpacity,
+                            onWatermarkToggle = { viewModel.setWatermarkEnabled(it) },
+                            onWatermarkStyleChange = { viewModel.setWatermarkStyle(it) },
+                            onWatermarkOpacityChange = { viewModel.setWatermarkOpacity(it) },
+                            onCheckForUpdates = { updateManager?.checkForUpdates(updateLauncher, autoStartFlexible = false) },
+                            onTriggerUpdate = { updateManager?.startUpdate(updateLauncher) },
+                            onCompleteUpdate = { updateManager?.completeUpdate() },
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                        )
+                    }
+
+                    // Full App Watermark Overlay (Displays App Name & Logo across entire app)
+                    AppWatermarkOverlay(
+                        enabled = uiState.isWatermarkEnabled,
+                        style = uiState.watermarkStyle,
+                        opacity = uiState.watermarkOpacity
                     )
                 }
             }

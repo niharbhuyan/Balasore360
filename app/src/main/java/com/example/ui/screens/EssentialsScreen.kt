@@ -64,6 +64,9 @@ import com.example.data.model.SeafoodCatch
 import com.example.data.model.TransitSchedule
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.components.AdMobVerificationCard
+import com.example.ui.components.AppWatermarkOverlay
+import com.example.ui.components.WatermarkOpacity
+import com.example.ui.components.WatermarkStyle
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate400
@@ -105,6 +108,12 @@ fun EssentialsScreen(
     updateState: UpdateUIState = UpdateUIState.Idle,
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     onThemeModeChange: (ThemeMode) -> Unit = {},
+    isWatermarkEnabled: Boolean = true,
+    watermarkStyle: WatermarkStyle = WatermarkStyle.CENTER_EMBLEM,
+    watermarkOpacity: WatermarkOpacity = WatermarkOpacity.MEDIUM,
+    onWatermarkToggle: (Boolean) -> Unit = {},
+    onWatermarkStyleChange: (WatermarkStyle) -> Unit = {},
+    onWatermarkOpacityChange: (WatermarkOpacity) -> Unit = {},
     onCheckForUpdates: () -> Unit = {},
     onTriggerUpdate: () -> Unit = {},
     onCompleteUpdate: () -> Unit = {},
@@ -593,6 +602,195 @@ fun EssentialsScreen(
                                 .weight(1f)
                                 .testTag("theme_btn_dark")
                         )
+                    }
+                }
+            }
+        }
+
+        // Full App Watermark & Official Logo Branding Setting Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .testTag("watermark_settings_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                androidx.compose.foundation.Image(
+                                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_app_icon_circle),
+                                    contentDescription = "App Watermark Logo",
+                                    modifier = Modifier
+                                        .size(26.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଆପ୍ ୱାଟରମାର୍କ୍ ଓ ଲୋଗୋ" else "Full App Watermark",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଆପ୍ ନାମ ଓ ସରକାରୀ ଲୋଗୋ ସମଗ୍ର ସ୍କ୍ରିନ୍ରେ ସ୍ୱଚ୍ଛ ଭାବେ ପ୍ରଦର୍ଶିତ" else "Translucent name & logo watermark across full app",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
+                        }
+
+                        androidx.compose.material3.Switch(
+                            checked = isWatermarkEnabled,
+                            onCheckedChange = onWatermarkToggle,
+                            modifier = Modifier.testTag("watermark_toggle_switch")
+                        )
+                    }
+
+                    if (isWatermarkEnabled) {
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ୱାଟରମାର୍କ୍ ଶୈଳୀ (Style):" else "Watermark Presentation Style:",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Style selector pills
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            WatermarkOptionPill(
+                                title = if (language == AppLanguage.ODIA) "କେନ୍ଦ୍ର ସିଲ୍" else "Center Seal",
+                                isSelected = watermarkStyle == WatermarkStyle.CENTER_EMBLEM,
+                                onClick = { onWatermarkStyleChange(WatermarkStyle.CENTER_EMBLEM) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_style_emblem")
+                            )
+                            WatermarkOptionPill(
+                                title = if (language == AppLanguage.ODIA) "ଡାଇଗୋନାଲ୍" else "Diagonal",
+                                isSelected = watermarkStyle == WatermarkStyle.DIAGONAL_TILES,
+                                onClick = { onWatermarkStyleChange(WatermarkStyle.DIAGONAL_TILES) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_style_diagonal")
+                            )
+                            WatermarkOptionPill(
+                                title = if (language == AppLanguage.ODIA) "କୋଣ ଷ୍ଟାମ୍ପ" else "Stamp",
+                                isSelected = watermarkStyle == WatermarkStyle.CORNER_STAMP,
+                                onClick = { onWatermarkStyleChange(WatermarkStyle.CORNER_STAMP) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_style_stamp")
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଦୃଶ୍ୟମାନତା ଓ ସ୍ୱଚ୍ଛତା (Opacity):" else "Visibility & Opacity:",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Opacity selector pills
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            WatermarkOptionPill(
+                                title = "Subtle 4.5%",
+                                isSelected = watermarkOpacity == WatermarkOpacity.SUBTLE,
+                                onClick = { onWatermarkOpacityChange(WatermarkOpacity.SUBTLE) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_opacity_subtle")
+                            )
+                            WatermarkOptionPill(
+                                title = "Standard 8.5%",
+                                isSelected = watermarkOpacity == WatermarkOpacity.MEDIUM,
+                                onClick = { onWatermarkOpacityChange(WatermarkOpacity.MEDIUM) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_opacity_medium")
+                            )
+                            WatermarkOptionPill(
+                                title = "Clear 14%",
+                                isSelected = watermarkOpacity == WatermarkOpacity.PROMINENT,
+                                onClick = { onWatermarkOpacityChange(WatermarkOpacity.PROMINENT) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("watermark_opacity_prominent")
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Interactive live watermark preview box
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(110.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                                .testTag("watermark_preview_box"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AppWatermarkOverlay(
+                                enabled = true,
+                                style = watermarkStyle,
+                                opacity = watermarkOpacity
+                            )
+                            Text(
+                                text = "Preview: Active on all screens & tabs",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -1385,6 +1583,37 @@ private fun ThemeOptionPill(
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
+            )
+        }
+    }
+}
+
+@Composable
+private fun WatermarkOptionPill(
+    title: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        modifier = modifier.height(36.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.sp
+                ),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 1
             )
         }
     }
