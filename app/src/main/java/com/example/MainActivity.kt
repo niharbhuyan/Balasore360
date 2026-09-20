@@ -59,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -130,6 +131,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import com.example.data.sync.SyncManager
 import com.example.util.PlayStoreUpdateManager
 import com.example.util.UpdateUIState
 
@@ -159,6 +161,13 @@ class MainActivity : ComponentActivity() {
             AdMobManager.initialize(applicationContext)
         } catch (t: Throwable) {
             Log.e("MainActivity", "Safe AdMob init catch: ${t.message}")
+        }
+
+        // Schedule WorkManager periodic data sync and cache maintenance
+        try {
+            SyncManager.schedulePeriodicSync(applicationContext)
+        } catch (t: Throwable) {
+            Log.w("MainActivity", "SyncManager schedulePeriodicSync fallback: ${t.message}")
         }
 
         setContent {
@@ -194,6 +203,7 @@ fun BalasoreApp(
     viewModel: BalasoreViewModel,
     updateManager: PlayStoreUpdateManager? = null
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val updateState = updateManager?.updateState?.collectAsState()?.value ?: UpdateUIState.Idle
 
@@ -571,6 +581,16 @@ fun BalasoreApp(
                             onWatermarkToggle = { viewModel.setWatermarkEnabled(it) },
                             onWatermarkStyleChange = { viewModel.setWatermarkStyle(it) },
                             onWatermarkOpacityChange = { viewModel.setWatermarkOpacity(it) },
+                            isHourlyAutoRefreshEnabled = uiState.isHourlyAutoRefreshEnabled,
+                            lastHourlyRefreshTimestamp = uiState.lastHourlyRefreshTimestamp,
+                            nextHourlyRefreshMinutesRemaining = uiState.nextHourlyRefreshMinutesRemaining,
+                            autoRefreshCycleCount = uiState.autoRefreshCycleCount,
+                            onHourlyAutoRefreshToggle = { viewModel.setHourlyAutoRefreshEnabled(it) },
+                            onTriggerManualHourlyRefresh = {
+                                viewModel.triggerHourlyAutoRefresh()
+                                // Also trigger WorkManager background sync cache
+                                SyncManager.triggerImmediateSync(context)
+                            },
                             onCheckForUpdates = { updateManager?.checkForUpdates(updateLauncher, autoStartFlexible = false) },
                             onTriggerUpdate = { updateManager?.startUpdate(updateLauncher) },
                             onCompleteUpdate = { updateManager?.completeUpdate() },

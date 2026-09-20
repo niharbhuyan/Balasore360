@@ -86,7 +86,12 @@ data class BalasoreUiState(
     // Full App Watermark (App Name & Official Logo)
     val isWatermarkEnabled: Boolean = true,
     val watermarkStyle: WatermarkStyle = WatermarkStyle.CENTER_EMBLEM,
-    val watermarkOpacity: WatermarkOpacity = WatermarkOpacity.MEDIUM
+    val watermarkOpacity: WatermarkOpacity = WatermarkOpacity.MEDIUM,
+    // Hourly Auto-Refresh & Synchronization
+    val isHourlyAutoRefreshEnabled: Boolean = true,
+    val lastHourlyRefreshTimestamp: Long = System.currentTimeMillis(),
+    val nextHourlyRefreshMinutesRemaining: Int = 60,
+    val autoRefreshCycleCount: Int = 0
 )
 
 enum class UniqueFeatureSheetType {
@@ -177,11 +182,26 @@ class BalasoreViewModel : ViewModel() {
             if (android.os.Looper.getMainLooper() != null) {
                 fetchLiveEmergencyAlerts()
                 fetchRealTimeWeather()
-                // Periodic auto-update ticker for daily data variance (every 60 seconds)
+                // Periodic auto-update ticker:
+                // 1) Refreshes daily pulse every 60s
+                // 2) Ticks countdown for the hourly refresh
+                // 3) Automatically triggers full data refresh every 60 minutes (1 hour)
                 viewModelScope.launch {
                     while (true) {
                         delay(60_000L)
                         refreshDailyPulse()
+                        if (_uiState.value.isHourlyAutoRefreshEnabled) {
+                            val elapsedMillis = System.currentTimeMillis() - _uiState.value.lastHourlyRefreshTimestamp
+                            val elapsedMinutes = (elapsedMillis / (1000 * 60)).toInt()
+                            val remaining = (60 - elapsedMinutes).coerceAtLeast(0)
+                            if (remaining <= 0) {
+                                triggerHourlyAutoRefresh()
+                            } else {
+                                _uiState.value = _uiState.value.copy(
+                                    nextHourlyRefreshMinutesRemaining = remaining
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -593,5 +613,35 @@ class BalasoreViewModel : ViewModel() {
             WatermarkStyle.CORNER_STAMP -> WatermarkStyle.CENTER_EMBLEM
         }
         _uiState.value = _uiState.value.copy(watermarkStyle = next)
+    }
+
+    /**
+     * Executes the hourly automatic refresh of weather, alerts, daily pulse, and synchronizes caches.
+     */
+    fun triggerHourlyAutoRefresh() {
+        _uiState.value = _uiState.value.copy(
+            lastHourlyRefreshTimestamp = System.currentTimeMillis(),
+            nextHourlyRefreshMinutesRemaining = 60,
+            autoRefreshCycleCount = _uiState.value.autoRefreshCycleCount + 1
+        )
+        try {
+            viewModelScope.launch {
+                _uiState.value = _uiState.value.copy(isRefreshing = true)
+                fetchRealTimeWeather()
+                fetchLiveEmergencyAlerts()
+                refreshDailyPulse()
+                delay(800)
+                _uiState.value = _uiState.value.copy(isRefreshing = false)
+            }
+        } catch (_: Throwable) {
+            // Safe fallback for JVM unit test environments without Dispatchers.Main
+        }
+    }
+
+    fun setHourlyAutoRefreshEnabled(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            isHourlyAutoRefreshEnabled = enabled,
+            nextHourlyRefreshMinutesRemaining = if (enabled) 60 else 0
+        )
     }
 }

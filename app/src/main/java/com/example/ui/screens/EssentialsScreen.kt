@@ -90,6 +90,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
@@ -98,6 +99,9 @@ import com.example.ui.viewmodel.ThemeMode
 import com.example.ui.viewmodel.UniqueFeatureSheetType
 import com.example.util.PlayStoreUpdateManager
 import com.example.util.UpdateUIState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun EssentialsScreen(
@@ -114,6 +118,12 @@ fun EssentialsScreen(
     onWatermarkToggle: (Boolean) -> Unit = {},
     onWatermarkStyleChange: (WatermarkStyle) -> Unit = {},
     onWatermarkOpacityChange: (WatermarkOpacity) -> Unit = {},
+    isHourlyAutoRefreshEnabled: Boolean = true,
+    lastHourlyRefreshTimestamp: Long = System.currentTimeMillis(),
+    nextHourlyRefreshMinutesRemaining: Int = 60,
+    autoRefreshCycleCount: Int = 0,
+    onHourlyAutoRefreshToggle: (Boolean) -> Unit = {},
+    onTriggerManualHourlyRefresh: () -> Unit = {},
     onCheckForUpdates: () -> Unit = {},
     onTriggerUpdate: () -> Unit = {},
     onCompleteUpdate: () -> Unit = {},
@@ -1131,6 +1141,146 @@ fun EssentialsScreen(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // Hourly Auto-Refresh & Background Data Sync Status Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .testTag("hourly_auto_refresh_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.tertiaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Schedule,
+                                    contentDescription = "Hourly Refresh",
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ପ୍ରତି ଘଣ୍ଟା ସ୍ୱୟଂକ୍ରିୟ ରିଫ୍ରେଶ୍" else "Hourly Auto-Refresh",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Text(
+                                    text = if (language == AppLanguage.ODIA)
+                                        "ପାଣିପାଗ, ଜରୁରୀ ସୂଚନା ଓ ଦୈନିକ ତଥ୍ୟ ପ୍ରତି ଘଣ୍ଟାରେ ସ୍ୱୟଂ ଅପଡେଟ୍ ହୁଏ"
+                                    else
+                                        "Auto-refreshes weather, emergency alerts & daily pulse every 60 min",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = isHourlyAutoRefreshEnabled,
+                            onCheckedChange = onHourlyAutoRefreshToggle,
+                            modifier = Modifier.testTag("hourly_auto_refresh_switch")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Status pill row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val timeStr = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(lastHourlyRefreshTimestamp))
+                            Text(
+                                text = "Last Sync: $timeStr",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = BentoSlate600,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                            if (autoRefreshCycleCount > 0) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "• Cycle #$autoRefreshCycleCount",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(
+                                    if (isHourlyAutoRefreshEnabled) Color(0xFFEFF6FF) else Color(0xFFF1F5F9)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isHourlyAutoRefreshEnabled) "Next in: ${nextHourlyRefreshMinutesRemaining}m" else "Paused",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isHourlyAutoRefreshEnabled) Color(0xFF1D4ED8) else BentoSlate500,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = onTriggerManualHourlyRefresh,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("trigger_hourly_refresh_now_btn"),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ବର୍ତ୍ତମାନ ରିଫ୍ରେଶ୍ କରନ୍ତୁ" else "Refresh All Data Now (Hourly Sync)",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         )
                     }
