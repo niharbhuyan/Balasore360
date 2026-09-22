@@ -44,25 +44,43 @@ fun MedicineStoresDirectorySheet(
     var selectedFilter by remember { mutableStateOf("All") }
 
     val filterOptions = remember {
-        listOf("All", "24x7 Open", "Jan Aushadhi Generic", "Home Delivery", "DHH & FMMCH", "Town Bazar", "Highway & Outstation")
+        listOf(
+            "All",
+            "10 km Town Locality",
+            "24x7 Open",
+            "Jan Aushadhi Generic",
+            "Home Delivery",
+            "Kuruda & Remuna",
+            "Station & OT Road",
+            "DHH & Hospitals"
+        )
     }
 
     val filteredStores = remember(searchQuery, selectedFilter) {
         allStores.filter { store ->
             val matchesFilter = when (selectedFilter) {
+                "10 km Town Locality" -> {
+                    // Balasore central latitude 21.4934, longitude 86.9325.
+                    // Stores within town locality: Station, OT Road, Azimabad, Remuna, Kuruda, Sovarampur, Nayabazar, Manikhamb, DHH, FMMCH
+                    !store.areaLocation.contains("Soro", ignoreCase = true) &&
+                    !store.areaLocation.contains("Jaleswar", ignoreCase = true) &&
+                    !store.areaLocation.contains("Nilagiri", ignoreCase = true)
+                }
                 "24x7 Open" -> store.is24x7
                 "Jan Aushadhi Generic" -> store.isJanAushadhiGeneric
                 "Home Delivery" -> store.hasHomeDelivery
-                "DHH & FMMCH" -> store.areaLocation.contains("DHH", ignoreCase = true) || store.areaLocation.contains("FMMCH", ignoreCase = true)
-                "Town Bazar" -> store.areaLocation.contains("Station", ignoreCase = true) || store.areaLocation.contains("Cinema", ignoreCase = true) || store.areaLocation.contains("Motiganj", ignoreCase = true)
-                "Highway & Outstation" -> store.areaLocation.contains("Soro", ignoreCase = true) || store.areaLocation.contains("Jaleswar", ignoreCase = true) || store.areaLocation.contains("Nilagiri", ignoreCase = true)
+                "Kuruda & Remuna" -> store.areaLocation.contains("Kuruda", ignoreCase = true) || store.areaLocation.contains("Remuna", ignoreCase = true)
+                "Station & OT Road" -> store.areaLocation.contains("Station", ignoreCase = true) || store.areaLocation.contains("OT Road", ignoreCase = true) || store.areaLocation.contains("Azimabad", ignoreCase = true)
+                "DHH & Hospitals" -> store.areaLocation.contains("DHH", ignoreCase = true) || store.areaLocation.contains("FMMCH", ignoreCase = true) || store.areaLocation.contains("Hospital", ignoreCase = true)
                 else -> true
             }
 
             val matchesSearch = searchQuery.isBlank() ||
                     store.name.contains(searchQuery, ignoreCase = true) ||
+                    store.odiaName.contains(searchQuery, ignoreCase = true) ||
                     store.areaLocation.contains(searchQuery, ignoreCase = true) ||
                     store.fullAddress.contains(searchQuery, ignoreCase = true) ||
+                    store.licensedPharmacistName.contains(searchQuery, ignoreCase = true) ||
                     store.emergencyMedicines.any { it.contains(searchQuery, ignoreCase = true) }
 
             matchesFilter && matchesSearch
@@ -179,6 +197,13 @@ fun MedicineStoresDirectorySheet(
                     text = "📍 Night Shift Duty: ${dailyPulse.medicineStoreEmergencyDuty}",
                     fontSize = 11.sp,
                     color = Color(0xFF2563EB)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "🛵 10 km Radius Locality: Station Road, OT Road, Azimabad, Kuruda, Remuna, Sovarampur, Nayabazar, Chandipur Road & FMMCH.",
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1D4ED8)
                 )
             }
         }
@@ -428,6 +453,30 @@ fun MedicineStoreCardItem(
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Pharmacist details & Alternate Contact
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "💊 Regd. Pharmacist: ${store.licensedPharmacistName}",
+                    fontSize = 10.sp,
+                    color = Color(0xFF64748B),
+                    fontWeight = FontWeight.Medium
+                )
+                if (store.alternatePhone != null) {
+                    Text(
+                        text = "Alt: ${store.alternatePhone}",
+                        fontSize = 10.sp,
+                        color = Color(0xFF0284C7),
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
 

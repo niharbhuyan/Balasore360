@@ -437,6 +437,18 @@ fun SpecialFeaturesScreen(
                 borderColor = Color(0xFFBAE6FD)
             ),
             SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.PRIVATE_HOSPITAL_DIRECTORY,
+                titleEn = "Private Hospitals & Nursing Homes",
+                titleOd = "ବେସରକାରୀ ହସ୍ପିଟାଲ ଓ ନର୍ସିଂହୋମ୍",
+                category = "Health & Medical",
+                iconEmoji = "🏥",
+                descriptionEn = "24x7 emergency admissions, ICU/NICU beds, BSKY cashless desks, and specialty surgeons.",
+                descriptionOd = "ଜରୁରୀକାଳୀନ ଆଇସିୟୁ, ବିଏସକେୱାଇ କ୍ୟାସଲେସ୍ ଏବଂ ପ୍ରମୁଖ ସର୍ଜନଙ୍କ ଡାଇରେକ୍ଟୋରି।",
+                tagText = "24/7 ICU & SURGERY",
+                primaryColor = Color(0xFFF0F9FF),
+                borderColor = Color(0xFFBAE6FD)
+            ),
+            SpecialFeatureItem(
                 sheetType = UniqueFeatureSheetType.MEDICINE_STORES_DIRECTORY,
                 titleEn = "24x7 Pharmacies & Anti-Venom Stocks",
                 titleOd = "୨୪ ଘଣ୍ଟିଆ ଔଷଧ ଦୋକାନ ଓ ସାପ ବିଷ ପ୍ରତିଷେଧକ",
@@ -533,18 +545,153 @@ fun SpecialFeaturesScreen(
                 tagText = "PERSONAL JOURNAL",
                 primaryColor = Color(0xFFF0F9FF),
                 borderColor = Color(0xFFBAE6FD)
+            ),
+            // 6 Extended Unique Suites with Auto-Updating Telemetry
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.SALT_PAN_HERITAGE,
+                titleEn = "Inchudi Salt Satyagraha & Pans",
+                titleOd = "ଇଞ୍ଚୁଡ଼ି ଲବଣ ସତ୍ୟାଗ୍ରହ ଓ ସୌର ଲୁଣ କିଆରୀ",
+                category = "Coastal & Estuary",
+                iconEmoji = "🧂",
+                descriptionEn = "1930 historic salt defiance memorial, solar brine Baumé density & mirror reflection windows.",
+                descriptionOd = "୧୯୩୦ ମସିହାର ଐତିହାସିକ ଲବଣ ସତ୍ୟାଗ୍ରହ ସ୍ମୃତି ଏବଂ ସୌର ଲୁଣ ଉତ୍ପାଦନ ତଥ୍ୟ।",
+                tagText = "SOLAR BRINE TELEMETRY",
+                primaryColor = Color(0xFFF0F9FF),
+                borderColor = Color(0xFFBAE6FD)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.HILSA_MIGRATION,
+                titleEn = "Subarnarekha Hilsa Run & Marine Migration",
+                titleOd = "ସୁବର୍ଣ୍ଣରେଖା ଇଲିଶି ମାଛ ଚଳାଚଳ ଓ ଦର",
+                category = "Daily Pulse",
+                iconEmoji = "🐟",
+                descriptionEn = "Monsoon brackish salinity gradient, live Kirtania beach landing clocks and authentic Besara cooking.",
+                descriptionOd = "ସୁବର୍ଣ୍ଣରେଖା ମୁହାଣରେ ଇଲିଶି ମାଛର ଆଗମନ, କୀର୍ତ୍ତନିଆ ବନ୍ଦର ଦର ଓ ପ୍ରସ୍ତୁତି ଶୈଳୀ।",
+                tagText = "ESTUARY RUN TELEMETRY",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFFBFDBFE)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.KULDIHA_ELEPHANT_CORRIDOR,
+                titleEn = "Kuldiha Elephant Corridor Radar",
+                titleOd = "କୁଲଡିହା ହାତୀ କରିଡର ସୁରକ୍ଷା ଓ ରାଡାର୍",
+                category = "Defense & Wildlife",
+                iconEmoji = "🐘",
+                descriptionEn = "Live forest crossing alert level, Nilagiri transit speeds and watchtower viewing windows.",
+                descriptionOd = "ନୀଳଗିରି-ମିତ୍ରପୁର ହାତୀ ଚଳାଚଳ ସୂଚକ, ରାତ୍ରୀକାଳୀନ ସୁରକ୍ଷା ଏବଂ ଟାୱାର ଦୃଶ୍ୟ।",
+                tagText = "SANCTUARY RADAR ADVISORY",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFFBBF7D0)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.CHHENA_GAJA_HOT_BATCH,
+                titleEn = "Balasori Chhena Gaja Hot Batch Clock",
+                titleOd = "ବାଲେଶ୍ୱରୀ କାଠ ଚୁଲା ଛେନା ଗଜା",
+                category = "Agro & Food",
+                iconEmoji = "🍮",
+                descriptionEn = "Live wood-fired oven batch timer, cardamom syrup immersion and historic Motiganj halwais.",
+                descriptionOd = "କାଠ ଚୁଲାରେ ପ୍ରସ୍ତୁତ ତାଜା ଛେନା ଗଜା ବାହାରିବା ସମୟ ଓ ଐତିହାସିକ ମିଠା ଦୋକାନ ସୂଚୀ।",
+                tagText = "WOOD-FIRED KILN CLOCK",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.RIVER_FERRY_SCHEDULE,
+                titleEn = "Subarnarekha & Budhabalanga Passenger Ferry",
+                titleOd = "ନଦୀ ଡଙ୍ଗା ଘାଟ ଓ ନୌକା ଚଳାଚଳ ସମୟସାରଣୀ",
+                category = "Emergency & Transit",
+                iconEmoji = "⛴️",
+                descriptionEn = "Live tidal current crossability, Chaumukh-Kirtania country boat ghats & tariff guide.",
+                descriptionOd = "ଚୌମୁଖ ଓ କୀର୍ତ୍ତନିଆ ଡଙ୍ଗା ଘାଟରେ ଯାତ୍ରୀବାହୀ ନୌକା ଚଳାଚଳ ଓ ଭଡ଼ା ସୂଚୀ।",
+                tagText = "LIVE GHAT TELEMETRY",
+                primaryColor = Color(0xFFF0FDFA),
+                borderColor = Color(0xFF99F6E4)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ODIA_SAHITYA_REVIVAL,
+                titleEn = "Odia Sahitya Revival & Utkal Press Trail",
+                titleOd = "ବ୍ୟାସକବି ଫକୀର ମୋହନ ଓ ଶାନ୍ତି କାନନ ସାହିତ୍ୟ ଧାରା",
+                category = "Artisans & Heritage",
+                iconEmoji = "📜",
+                descriptionEn = "Daily classic literature excerpt, 1868 Utkal Press printing revolution & Shanti Kanan museum.",
+                descriptionOd = "ଦୈନିକ ସାହିତ୍ୟ ପଂକ୍ତି, ବାଲେଶ୍ୱର ଉତ୍କଳ ପ୍ରେସ ମୁଦ୍ରଣ ବିପ୍ଳବ ଓ ଶାନ୍ତି କାନନ ସ୍ମୃତି।",
+                tagText = "DAILY LITERARY PASSAGE",
+                primaryColor = Color(0xFFFAF5FF),
+                borderColor = Color(0xFFE9D5FF)
+            ),
+            // Cutting-Edge Suggested Innovations:
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ASK_BALASORE_AI,
+                titleEn = "Ask Balasore AI Companion & Lyria Music",
+                titleOd = "ବାଲେଶ୍ୱର AI ସହାୟକ ଓ ଲିରିଆ ସଙ୍ଗୀତ ରଚନା",
+                category = "AI Innovations",
+                iconEmoji = "✨",
+                descriptionEn = "Multi-turn Gemini 3.5 Flash / Pro conversation, Google Search & Maps grounding, and Lyria ambient coastal music generator.",
+                descriptionOd = "ଜେମିନି AI ସହିତ କଥାବାର୍ତ୍ତା, ଲାଇଭ୍ ମ୍ୟାପ୍ ସୂଚନା ଏବଂ ଚାନ୍ଦିପୁର ସମୁଦ୍ର ସଙ୍ଗୀତ ସୃଷ୍ଟି।",
+                tagText = "GEMINI 3.5 & LYRIA AI",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFF93C5FD)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY,
+                titleEn = "INCOIS Coastal Wave & Fishermen Advisory",
+                titleOd = "ସମୁଦ୍ର ଢେଉ, ତରଙ୍ଗ ଓ ମତ୍ସ୍ୟଜୀବୀ ସତର୍କତା",
+                category = "Coastal & Estuary",
+                iconEmoji = "🌊",
+                descriptionEn = "Real-time sea swell height, wave periods, tidal current velocity, and coastal fishing safety flags.",
+                descriptionOd = "ଚାନ୍ଦିପୁର, ବଳରାମଗଡ଼ି ଏବଂ ତାଳସାରୀ ଉପକୂଳର ଢେଉ ଉଚ୍ଚତା ଓ ସମୁଦ୍ର ଯାତ୍ରା ସୁରକ୍ଷା।",
+                tagText = "INCOIS MET-OCEAN",
+                primaryColor = Color(0xFFF0F9FF),
+                borderColor = Color(0xFF7DD3FC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ODIA_PANJIKA_CALENDAR,
+                titleEn = "Baleswar Kohinoor Panjika Calendar",
+                titleOd = "ବାଲେଶ୍ୱର କୋହିନୂର ପାଞ୍ଜି ଓ ତିଥି ଦର୍ପଣ",
+                category = "Artisans & Heritage",
+                iconEmoji = "📅",
+                descriptionEn = "Traditional Odia solar month, Tithi, Nakshatra, Amrutabela, Rahukala, and coastal temple festival timings.",
+                descriptionOd = "ଖୀରଚୋରା ଗୋପୀନାଥ ଓ ଚନ୍ଦନେଶ୍ୱର ମନ୍ଦିର ନୀତି ସହିତ ଶୁଭବେଳା ଓ ତିଥି ବିବରଣୀ।",
+                tagText = "ASTRONOMICAL TITHI",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.RAIBANIA_AUDIO_WALK,
+                titleEn = "Raibania Fort Medieval Audio Walk",
+                titleOd = "ରାଇବଣିଆ ଦୁର୍ଗ ଅଡିଓ ଗାଇଡ୍ ଓ ଇତିହାସ",
+                category = "Artisans & Heritage",
+                iconEmoji = "🏰",
+                descriptionEn = "Immersive multi-stop audio story of Eastern India's largest medieval stone fort with ambient Lyria music generation.",
+                descriptionOd = "୧୩ଶ ଶତାବ୍ଦୀର ବିଶାଳ ପଥର ଦୁର୍ଗର ଐତିହାସିକ ଯାତ୍ରା ଓ ଲୋକକଥା।",
+                tagText = "AI AUDIO STORY WALK",
+                primaryColor = Color(0xFFFDF4FF),
+                borderColor = Color(0xFFF0ABFC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BLOOD_AND_BED_PULSE,
+                titleEn = "Emergency Blood Donor & ICU Bed Pulse",
+                titleOd = "ଜରୁରୀ ରକ୍ତଦାତା ଓ ଡାକ୍ତରଖାନା ବେଡ୍ ସ୍ଥିତି",
+                category = "Emergency & Transit",
+                iconEmoji = "🩸",
+                descriptionEn = "Instant contact blood donor network by blood group, real-time hospital bed & dialysis unit availability.",
+                descriptionOd = "ଜିଲ୍ଲା ମୁଖ୍ୟ ଚିକିତ୍ସାଳୟ ଓ ବେସରକାରୀ ହସ୍ପିଟାଲ୍ ରକ୍ତ ଭଣ୍ଡାର ଓ ICU ବେଡ୍ ସନ୍ଧାନ।",
+                tagText = "LIVE HEALTH PULSE",
+                primaryColor = Color(0xFFFEF2F2),
+                borderColor = Color(0xFFFCA5A5)
             )
         )
     }
 
     val categories = listOf(
         "All",
+        "AI Innovations",
         "Daily Pulse",
         "Coastal & Estuary",
         "Artisans & Heritage",
         "Defense & Wildlife",
         "Health & Medical",
-        "Agro & Food",
+        "Agro & Marine",
         "Emergency & Transit"
     )
 
@@ -621,9 +768,9 @@ fun SpecialFeaturesScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (language == AppLanguage.ODIA)
-                            "ଭଟ୍ଟା ସମୟ, ମିସାଇଲ ଟ୍ରେଲ୍, ଲାଖ ଶଙ୍ଖା ଶିଳ୍ପ, ସ୍ୱାସ୍ଥ୍ୟସେବା ଓ ଦୈନିକ ଲାଇଭ୍ ହବ୍‌ର ସ୍ୱତନ୍ତ୍ର ସମ୍ଭାର।"
+                            "ଭଟ୍ଟା ସମୟ, ହାତୀ କରିଡର, ଇଲିଶି ମାଛ, ଲବଣ ସତ୍ୟାଗ୍ରହ, ସ୍ୱାସ୍ଥ୍ୟସେବା ଓ ୩୮ଟି ଦୈନିକ ଲାଇଭ୍ ହବ୍‌।"
                         else
-                            "31 curated live hubs: safe tidal clocks, DRDO missile heritage, artisan cooperatives, 24x7 healthcare rosters and flood telemetry.",
+                            "38 curated live hubs: private hospitals, tidal clocks, salt pans, Hilsa run, elephant radar, chhena gaja timers, 24x7 healthcare rosters and flood telemetry.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color(0xFFE2E8F0),
                             lineHeight = 20.sp

@@ -122,8 +122,21 @@ import com.example.ui.features.health.DoctorsDirectorySheet
 import com.example.ui.features.health.MedicineStoresDirectorySheet
 import com.example.ui.features.health.PolyclinicDirectorySheet
 import com.example.ui.features.health.PathologyLabDirectorySheet
+import com.example.ui.features.health.PrivateHospitalDirectorySheet
 import com.example.ui.features.coastal.RiverFloodTelemetrySheet
 import com.example.ui.features.artisans.LacquerCraftArtisansSheet
+import com.example.ui.features.coastal.SaltPanHeritageSheet
+import com.example.ui.features.coastal.HilsaMigrationSheet
+import com.example.ui.features.nature.KuldihaElephantCorridorSheet
+import com.example.ui.features.heritage.ChhenaGajaHotBatchSheet
+import com.example.ui.features.transit.RiverFerryScheduleSheet
+import com.example.ui.features.heritage.OdiaSahityaRevivalSheet
+import com.example.ui.features.ai.AskBalasoreChatbotSheet
+import com.example.ui.features.coastal.IncoisSeaAdvisorySheet
+import com.example.ui.features.heritage.BaleswarPanjikaCalendarSheet
+import com.example.ui.features.heritage.RaibaniaAudioStoryWalkSheet
+import com.example.ui.features.emergency.BloodDonorBedPulseSheet
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -433,6 +446,27 @@ fun BalasoreApp(
                     )
                 )
             }
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { viewModel.openFeatureSheet(UniqueFeatureSheetType.ASK_BALASORE_AI) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Ask Balasore AI",
+                        tint = Color.White
+                    )
+                },
+                text = {
+                    Text(
+                        text = if (uiState.language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର AI" else "Ask Balasore AI",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                containerColor = Color(0xFF0284C7),
+                modifier = Modifier.testTag("fab_ask_balasore_ai")
+            )
         }
     ) { innerPadding ->
         Column(
@@ -561,6 +595,12 @@ fun BalasoreApp(
                         )
                         3 -> WeatherScreen(
                             weather = uiState.weather,
+                            forecastDays = uiState.forecastDays,
+                            hourlyForecast = uiState.hourlyForecast,
+                            isWeatherLoading = uiState.isWeatherLoading,
+                            isFahrenheit = uiState.isFahrenheit,
+                            onRefreshWeather = { viewModel.fetchRealTimeWeather() },
+                            onToggleUnit = { viewModel.toggleTemperatureUnit() },
                             tidalClock = uiState.tidalClock,
                             drdoAdvisories = uiState.drdoAdvisories,
                             language = uiState.language,
@@ -948,6 +988,16 @@ fun BalasoreApp(
                         )
                     }
                 }
+                UniqueFeatureSheetType.PRIVATE_HOSPITAL_DIRECTORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PrivateHospitalDirectorySheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
                 UniqueFeatureSheetType.RIVER_FLOOD_TELEMETRY -> {
                     ModalBottomSheet(
                         onDismissRequest = { viewModel.closeFeatureSheet() },
@@ -974,6 +1024,138 @@ fun BalasoreApp(
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                     ) {
                         HotspotsMapView(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.SALT_PAN_HERITAGE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        SaltPanHeritageSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.HILSA_MIGRATION -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        HilsaMigrationSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.KULDIHA_ELEPHANT_CORRIDOR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        KuldihaElephantCorridorSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.CHHENA_GAJA_HOT_BATCH -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        ChhenaGajaHotBatchSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.RIVER_FERRY_SCHEDULE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        RiverFerryScheduleSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ODIA_SAHITYA_REVIVAL -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        OdiaSahityaRevivalSheet(
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ASK_BALASORE_AI -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        AskBalasoreChatbotSheet(
+                            chatMessages = uiState.chatMessages,
+                            isLoading = uiState.isChatLoading,
+                            selectedModel = uiState.selectedChatModel,
+                            selectedRole = uiState.selectedChatRole,
+                            isSearchGroundingEnabled = uiState.isChatSearchGrounding,
+                            isMapsGroundingEnabled = uiState.isChatMapsGrounding,
+                            language = uiState.language,
+                            onSendMessage = { viewModel.sendChatMessage(it) },
+                            onSelectModel = { viewModel.setChatModel(it) },
+                            onSelectRole = { viewModel.setChatRole(it) },
+                            onToggleSearchGrounding = { viewModel.toggleChatSearchGrounding() },
+                            onToggleMapsGrounding = { viewModel.toggleChatMapsGrounding() },
+                            onClearChat = { viewModel.clearChat() },
+                            onGenerateMusic = { prompt -> viewModel.generateLyriaMusic(prompt, isShortClip = true) },
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        IncoisSeaAdvisorySheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ODIA_PANJIKA_CALENDAR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BaleswarPanjikaCalendarSheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.RAIBANIA_AUDIO_WALK -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        RaibaniaAudioStoryWalkSheet(
+                            language = uiState.language,
+                            onGenerateLyriaTrack = { prompt, isClip ->
+                                viewModel.generateLyriaMusic(prompt, isClip)
+                            },
+                            isMusicGenerating = uiState.isMusicGenerating,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BLOOD_AND_BED_PULSE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BloodDonorBedPulseSheet(
                             language = uiState.language,
                             onClose = { viewModel.closeFeatureSheet() }
                         )

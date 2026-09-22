@@ -176,6 +176,170 @@ fun DailyAutoUpdateCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Primary Spotlight Row: Chandipur "Walk-on-Sea" & Balasore Junction Transit
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Feature 1: Chandipur Sea Walk Window
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
+                    color = Color(0xFFF0F9FF),
+                    border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🌊 Sea Walk Clock", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0369A1))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF0284C7),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Safe Walk Window",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0C4A6E)
+                        )
+                        Text(
+                            text = "1-4 km Vanishing Sea",
+                            fontSize = 9.sp,
+                            color = Color(0xFF0284C7)
+                        )
+                    }
+                }
+
+                // Feature 2: Balasore Station Transit & Auto Rate Card
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.TRANSIT_FARE_ESTIMATOR) },
+                    color = Color(0xFFFEF3C7),
+                    border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🚖 Station Transit", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB45309))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFF59E0B),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Auto / Toto Rate Card",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF78350F)
+                        )
+                        Text(
+                            text = "Fair Fare Calculator",
+                            fontSize = 9.sp,
+                            color = Color(0xFF92400E)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Spotlight Row 2: Kuldiha Elephant Safari & Balasore Food Trail
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Feature 3: Kuldiha Safari & Elephant Corridor
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.KULDIHA_SAFARI_COMPANION) },
+                    color = Color(0xFFECFDF5),
+                    border = BorderStroke(1.dp, Color(0xFFA7F3D0))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🐘 Kuldiha Safari", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF047857))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF10B981),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Elephant Corridor",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF064E3B)
+                        )
+                        Text(
+                            text = "Rissia Camp & Guide",
+                            fontSize = 9.sp,
+                            color = Color(0xFF059669)
+                        )
+                    }
+                }
+
+                // Feature 4: Remuna Khira & Balasore Food Trail
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.BALASORE_FOOD_TRAIL) },
+                    color = Color(0xFFFFF7ED),
+                    border = BorderStroke(1.dp, Color(0xFFFED7AA))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🍲 Food & Sweets", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC2410C))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFEA580C),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Remuna Khira Trail",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF7C2D12)
+                        )
+                        Text(
+                            text = "Chhena Poda & Mud Crabs",
+                            fontSize = 9.sp,
+                            color = Color(0xFF9A3412)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Dual Live Ticker: Fish Auction & Red Crab Emergence
             Row(
                 modifier = Modifier.fillMaxWidth(),

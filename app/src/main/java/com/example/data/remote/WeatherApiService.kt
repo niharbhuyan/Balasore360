@@ -16,8 +16,10 @@ interface WeatherApiService {
         @Query("latitude") latitude: Double = 21.4934,
         @Query("longitude") longitude: Double = 86.9135,
         @Query("current") current: String = "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_gusts_10m",
+        @Query("hourly") hourly: String = "temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m",
         @Query("daily") daily: String = "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max",
-        @Query("timezone") timezone: String = "Asia/Kolkata"
+        @Query("timezone") timezone: String = "Asia/Kolkata",
+        @Query("forecast_days") forecastDays: Int = 7
     ): OpenMeteoResponse
 
     companion object {

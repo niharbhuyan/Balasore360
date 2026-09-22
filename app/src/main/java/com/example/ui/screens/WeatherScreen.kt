@@ -74,10 +74,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.local.ChandipurTideEntity
 import com.example.data.model.AppLanguage
+import com.example.data.model.BalasoreForecastDay
+import com.example.data.model.BalasoreForecastHour
 import com.example.data.model.DrdoAdvisory
 import com.example.data.model.TidalClockData
 import com.example.data.model.WeatherInfo
 import com.example.ui.components.AdMobBannerCard
+import com.example.ui.components.BalasoreWeatherDashboardComponent
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -95,6 +98,12 @@ import kotlin.math.sin
 @Composable
 fun WeatherScreen(
     weather: WeatherInfo,
+    forecastDays: List<BalasoreForecastDay> = emptyList(),
+    hourlyForecast: List<BalasoreForecastHour> = emptyList(),
+    isWeatherLoading: Boolean = false,
+    isFahrenheit: Boolean = false,
+    onRefreshWeather: () -> Unit = {},
+    onToggleUnit: () -> Unit = {},
     tidalClock: TidalClockData,
     drdoAdvisories: List<DrdoAdvisory>,
     language: AppLanguage,
@@ -108,80 +117,25 @@ fun WeatherScreen(
             .testTag("weather_screen_list"),
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        // 1. Hero Weather Card
+        // 1. Premier Real-Time Weather Dashboard Component (Open-Meteo live API sync)
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color(0xFF0284C7), Color(0xFF0369A1))
-                        )
-                    )
-                    .padding(24.dp)
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Balasore City & Coast",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            )
-                            Text(
-                                text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପାଣିପାଗ ସୂଚନା" else "Bay of Bengal Coastal Zone",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.Cloud,
-                            contentDescription = "Weather",
-                            tint = Color.White,
-                            modifier = Modifier.size(44.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = "${weather.tempCelsius}°",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 54.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White,
-                                lineHeight = 54.sp
-                            )
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                            Text(
-                                text = weather.condition,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
-                                )
-                            )
-                            Text(
-                                text = "H: ${weather.highLow}",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
-                            )
-                        }
-                    }
-                }
+                BalasoreWeatherDashboardComponent(
+                    weather = weather,
+                    forecastDays = forecastDays,
+                    hourlyForecast = hourlyForecast,
+                    isRefreshing = isWeatherLoading,
+                    isFahrenheit = isFahrenheit,
+                    language = language,
+                    onRefresh = onRefreshWeather,
+                    onToggleUnit = onToggleUnit,
+                    onOpenTideSchedule = { onOpenFeatureSheet(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
+                    onOpenMarineAdvisory = { onOpenFeatureSheet(UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY) }
+                )
             }
         }
 

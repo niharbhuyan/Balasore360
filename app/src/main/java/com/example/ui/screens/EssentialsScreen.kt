@@ -352,7 +352,7 @@ fun EssentialsScreen(
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Real-time doctor OPD schedules, 24x7 pharmacies, generic Jan Aushadhi stores, and diagnostic polyclinics across Balasore.",
+                        text = "Real-time doctor OPD schedules, private hospitals & nursing homes, 24x7 pharmacies, generic stores, and diagnostic pathology labs across Balasore.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = Color(0xFF0C4A6E),
                             fontSize = 11.sp
@@ -364,14 +364,29 @@ fun EssentialsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
-                            onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.DOCTORS_DIRECTORY) },
+                            onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.PRIVATE_HOSPITAL_DIRECTORY) },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
+                            Text("🏥 Hospitals", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Button(
+                            onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.DOCTORS_DIRECTORY) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0369A1)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
                             Text("🩺 Doctors", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Button(
                             onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.MEDICINE_STORES_DIRECTORY) },
                             modifier = Modifier.weight(1f),
@@ -381,12 +396,6 @@ fun EssentialsScreen(
                         ) {
                             Text("💊 Medicine", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
                         Button(
                             onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.PATHOLOGY_LAB_DIRECTORY) },
                             modifier = Modifier.weight(1f),
@@ -403,7 +412,7 @@ fun EssentialsScreen(
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            Text("🏥 Polyclinics", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("🏥 Clinics", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

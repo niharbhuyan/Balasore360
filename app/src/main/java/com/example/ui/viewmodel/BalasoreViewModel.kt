@@ -14,6 +14,12 @@ import com.example.data.remote.EmergencyAlertDto
 import com.example.data.remote.GeminiGroundingService
 import com.example.data.remote.GroundingResponse
 import com.example.data.remote.GroundingToolMode
+import com.example.data.remote.GeminiChatService
+import com.example.data.remote.ChatMessage
+import com.example.data.remote.MessageSender
+import com.example.data.remote.GeminiChatModel
+import com.example.data.remote.ChatRolePersona
+import com.example.data.remote.ChatRolePersonas
 import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
@@ -69,6 +75,7 @@ data class BalasoreUiState(
     val ecoPassportStamps: List<EcoPassportStamp> = UniqueFeaturesRepository.ecoPassportStamps,
     val weatherAlerts: List<BalasoreWeatherAlert> = DefaultData.getInitialWeatherAlerts(),
     val forecastDays: List<BalasoreForecastDay> = BalasoreRepository.forecast3Days,
+    val hourlyForecast: List<BalasoreForecastHour> = emptyList(),
     val isFahrenheit: Boolean = false,
     val selectedForecastDayIndex: Int = 0,
     val activeFeatureSheet: UniqueFeatureSheetType? = null,
@@ -76,6 +83,14 @@ data class BalasoreUiState(
     val bookmarkedIds: Set<String> = emptySet(),
     val favoriteHotspotIds: Set<String> = emptySet(),
     val groundingState: GroundingState = GroundingState(),
+    // Gemini Chatbot & AI Features State
+    val chatMessages: List<com.example.data.remote.ChatMessage> = emptyList(),
+    val isChatLoading: Boolean = false,
+    val selectedChatModel: com.example.data.remote.GeminiChatModel = com.example.data.remote.GeminiChatModel.FLASH,
+    val selectedChatRole: com.example.data.remote.ChatRolePersona = com.example.data.remote.ChatRolePersonas.TOURISM_GUIDE,
+    val isChatSearchGrounding: Boolean = true,
+    val isChatMapsGrounding: Boolean = true,
+    val isMusicGenerating: Boolean = false,
     // Custom Interactive Itinerary (Room persisted)
     val itineraryItems: List<ItineraryItemEntity> = DefaultData.getDefaultItineraryItems(),
     // Live Emergency Alerts fetched from Backend
@@ -134,11 +149,25 @@ enum class UniqueFeatureSheetType {
     MEDICINE_STORES_DIRECTORY,
     POLYCLINIC_DIRECTORY,
     PATHOLOGY_LAB_DIRECTORY,
+    PRIVATE_HOSPITAL_DIRECTORY,
     // Hydrology & Artisan Marketplace Sheets:
     RIVER_FLOOD_TELEMETRY,
     MATI_MANISHA_ARTISANS,
     // Google Maps Explorer (Hotspots & Cyclone Shelters)
-    BALASORE_MAP_EXPLORER
+    BALASORE_MAP_EXPLORER,
+    // 6 Extended Unique Suites with Auto-Updating Telemetry
+    SALT_PAN_HERITAGE,
+    HILSA_MIGRATION,
+    KULDIHA_ELEPHANT_CORRIDOR,
+    CHHENA_GAJA_HOT_BATCH,
+    RIVER_FERRY_SCHEDULE,
+    ODIA_SAHITYA_REVIVAL,
+    // Suggested Innovations:
+    ASK_BALASORE_AI,
+    INCOIS_OCEAN_ADVISORY,
+    ODIA_PANJIKA_CALENDAR,
+    RAIBANIA_AUDIO_WALK,
+    BLOOD_AND_BED_PULSE
 }
 
 data class GroundingState(
@@ -173,6 +202,7 @@ class BalasoreViewModel : ViewModel() {
     private var tideDao: ChandipurTideDao? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
     private val weatherApiService: WeatherApiService by lazy { WeatherApiService.create() }
+    private val geminiChatService: GeminiChatService by lazy { GeminiChatService() }
 
     private val _uiState = MutableStateFlow(BalasoreUiState())
     val uiState: StateFlow<BalasoreUiState> = _uiState.asStateFlow()
@@ -391,7 +421,7 @@ class BalasoreViewModel : ViewModel() {
 
     /**
      * Fetches real-time meteorological data for Balasore using the Open-Meteo public API
-     * and updates the UI state prominently with temperature, humidity, wind, UV index, and conditions.
+     * and updates the UI state prominently with temperature, humidity, wind, UV index, hourly track, and 7-day outlook.
      */
     fun fetchRealTimeWeather() {
         viewModelScope.launch {
@@ -399,10 +429,14 @@ class BalasoreViewModel : ViewModel() {
             try {
                 val response = weatherApiService.getBalasoreForecast(
                     latitude = 21.4934,
-                    longitude = 86.9135
+                    longitude = 86.9135,
+                    hourly = "temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m",
+                    forecastDays = 7
                 )
                 val current = response.current
                 val daily = response.daily
+                val hourly = response.hourly
+
                 if (current != null) {
                     val tempC = current.temperature?.toInt() ?: 29
                     val feelsLikeC = current.apparentTemperature?.toInt() ?: (tempC + 2)
@@ -434,8 +468,95 @@ class BalasoreViewModel : ViewModel() {
                         lastUpdatedTime = "Live • Updated $nowFormat",
                         isLiveApi = true
                     )
+
+                    // Parse next 24 hourly steps
+                    val parsedHourly = mutableListOf<BalasoreForecastHour>()
+                    if (hourly?.time != null && hourly.temperature != null) {
+                        val count = minOf(hourly.time.size, hourly.temperature.size, 24)
+                        for (i in 0 until count) {
+                            val rawTime = hourly.time[i]
+                            val hourLabel = try {
+                                val hourPart = rawTime.substringAfter("T").take(5)
+                                val h = hourPart.substringBefore(":").toInt()
+                                when {
+                                    h == 0 -> "12 AM"
+                                    h < 12 -> "${h} AM"
+                                    h == 12 -> "12 PM"
+                                    else -> "${h - 12} PM"
+                                }
+                            } catch (_: Exception) {
+                                "${i}:00"
+                            }
+                            val temp = hourly.temperature[i].toInt()
+                            val code = hourly.weatherCode?.getOrNull(i) ?: 1
+                            val pop = hourly.precipitationProbability?.getOrNull(i) ?: 10
+                            val wind = hourly.windSpeed?.getOrNull(i)?.toInt() ?: 15
+                            val emoji = weatherCodeToEmoji(code)
+                            parsedHourly.add(
+                                BalasoreForecastHour(
+                                    timeLabel = hourLabel,
+                                    tempC = temp,
+                                    conditionEmoji = emoji,
+                                    popPercentage = pop,
+                                    windKmh = wind
+                                )
+                            )
+                        }
+                    }
+
+                    // Parse 7-day daily forecast
+                    val parsedDays = mutableListOf<BalasoreForecastDay>()
+                    if (daily?.time != null && daily.temperatureMax != null && daily.temperatureMin != null) {
+                        val count = minOf(daily.time.size, daily.temperatureMax.size, daily.temperatureMin.size, 7)
+                        for (i in 0 until count) {
+                            val dateStr = daily.time[i]
+                            val high = daily.temperatureMax[i].toInt()
+                            val low = daily.temperatureMin[i].toInt()
+                            val code = daily.weatherCode?.getOrNull(i) ?: 1
+                            val uvD = daily.uvIndexMax?.getOrNull(i) ?: 6.0
+                            val desc = weatherCodeToDescription(code)
+                            val emoji = weatherCodeToEmoji(code)
+
+                            val dayLabel = if (i == 0) "Today" else if (i == 1) "Tomorrow" else {
+                                try {
+                                    val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateStr)
+                                    SimpleDateFormat("EEE", Locale.getDefault()).format(parsedDate!!)
+                                } catch (_: Exception) { "Day ${i + 1}" }
+                            }
+                            val odiaDayLabel = if (i == 0) "ଆଜି" else if (i == 1) "ଆସନ୍ତାକାଲି" else dayLabel
+                            val odiaDesc = when {
+                                desc.contains("Rain", true) || desc.contains("Downpour", true) -> "ବର୍ଷା ସମ୍ଭାବନା"
+                                desc.contains("Thunder", true) -> "ବଜ୍ରପାତ ସତର୍କତା"
+                                desc.contains("Cloud", true) -> "ମେଘୁଆ ପାଗ"
+                                desc.contains("Fog", true) -> "କୁହୁଡ଼ି"
+                                else -> "ଖରାଟିଆ ନିର୍ମଳ ଆକାଶ"
+                            }
+
+                            parsedDays.add(
+                                BalasoreForecastDay(
+                                    id = "day_$i",
+                                    dayLabel = dayLabel,
+                                    dateFormatted = dateStr,
+                                    odiaDayLabel = odiaDayLabel,
+                                    highTempC = high,
+                                    lowTempC = low,
+                                    condition = desc,
+                                    odiaCondition = odiaDesc,
+                                    weatherIcon = emoji,
+                                    rainProbability = if (code in 51..67 || code in 80..82) 65 else 20,
+                                    windSummary = "14 km/h SW",
+                                    humidity = "76%",
+                                    uvIndex = "UV ${uvD.toInt()}",
+                                    marineNotice = if (code in 51..67) "Rough surf near Kasafal & Balaramgadi" else "Calm sea swell for Chandipur beach walk"
+                                )
+                            )
+                        }
+                    }
+
                     _uiState.value = _uiState.value.copy(
                         weather = updatedWeather,
+                        hourlyForecast = if (parsedHourly.isNotEmpty()) parsedHourly else _uiState.value.hourlyForecast,
+                        forecastDays = if (parsedDays.isNotEmpty()) parsedDays else _uiState.value.forecastDays,
                         isWeatherLoading = false
                     )
                 } else {
@@ -446,6 +567,84 @@ class BalasoreViewModel : ViewModel() {
                 android.util.Log.e("BalasoreViewModel", "Weather API fetch exception: ${e.message}")
                 _uiState.value = _uiState.value.copy(isWeatherLoading = false)
             }
+        }
+    }
+
+    private fun weatherCodeToEmoji(code: Int): String = when (code) {
+        0 -> "☀️"
+        1 -> "🌤️"
+        2 -> "⛅"
+        3 -> "☁️"
+        45, 48 -> "🌫️"
+        51, 53, 55 -> "🌦️"
+        61, 63 -> "🌧️"
+        65 -> "⛈️"
+        80, 81, 82 -> "🌧️"
+        95, 96, 99 -> "⛈️"
+        else -> "⛅"
+    }
+
+    // ==========================================
+    // GEMINI MULTI-TURN CHAT & LYRIA AI ENGINE
+    // ==========================================
+
+    fun sendChatMessage(text: String) {
+        if (text.isBlank()) return
+        val userMsg = ChatMessage(
+            text = text,
+            sender = MessageSender.USER
+        )
+        val currentHistory = _uiState.value.chatMessages
+        _uiState.value = _uiState.value.copy(
+            chatMessages = currentHistory + userMsg,
+            isChatLoading = true
+        )
+
+        viewModelScope.launch {
+            val response = geminiChatService.sendMultiTurnChat(
+                history = currentHistory,
+                userMessage = text,
+                model = _uiState.value.selectedChatModel,
+                enableSearchGrounding = _uiState.value.isChatSearchGrounding,
+                enableMapsGrounding = _uiState.value.isChatMapsGrounding,
+                systemInstruction = _uiState.value.selectedChatRole.systemInstruction
+            )
+
+            _uiState.value = _uiState.value.copy(
+                chatMessages = _uiState.value.chatMessages + response,
+                isChatLoading = false
+            )
+        }
+    }
+
+    fun setChatModel(model: GeminiChatModel) {
+        _uiState.value = _uiState.value.copy(selectedChatModel = model)
+    }
+
+    fun setChatRole(role: ChatRolePersona) {
+        _uiState.value = _uiState.value.copy(selectedChatRole = role)
+    }
+
+    fun toggleChatSearchGrounding() {
+        _uiState.value = _uiState.value.copy(isChatSearchGrounding = !_uiState.value.isChatSearchGrounding)
+    }
+
+    fun toggleChatMapsGrounding() {
+        _uiState.value = _uiState.value.copy(isChatMapsGrounding = !_uiState.value.isChatMapsGrounding)
+    }
+
+    fun clearChat() {
+        _uiState.value = _uiState.value.copy(chatMessages = emptyList())
+    }
+
+    fun generateLyriaMusic(prompt: String, isShortClip: Boolean = true) {
+        _uiState.value = _uiState.value.copy(isMusicGenerating = true)
+        viewModelScope.launch {
+            val trackMsg = geminiChatService.generateMusic(prompt, isShortClip)
+            _uiState.value = _uiState.value.copy(
+                chatMessages = _uiState.value.chatMessages + trackMsg,
+                isMusicGenerating = false
+            )
         }
     }
 

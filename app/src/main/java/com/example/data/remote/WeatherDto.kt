@@ -9,7 +9,18 @@ data class OpenMeteoResponse(
     @field:Json(name = "longitude") val longitude: Double? = null,
     @field:Json(name = "timezone") val timezone: String? = null,
     @field:Json(name = "current") val current: CurrentWeatherDto? = null,
+    @field:Json(name = "hourly") val hourly: HourlyWeatherDto? = null,
     @field:Json(name = "daily") val daily: DailyWeatherDto? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class HourlyWeatherDto(
+    @field:Json(name = "time") val time: List<String>? = null,
+    @field:Json(name = "temperature_2m") val temperature: List<Double>? = null,
+    @field:Json(name = "relative_humidity_2m") val relativeHumidity: List<Int>? = null,
+    @field:Json(name = "precipitation_probability") val precipitationProbability: List<Int>? = null,
+    @field:Json(name = "weather_code") val weatherCode: List<Int>? = null,
+    @field:Json(name = "wind_speed_10m") val windSpeed: List<Double>? = null
 )
 
 @JsonClass(generateAdapter = true)
