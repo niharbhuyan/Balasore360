@@ -355,6 +355,56 @@ object BalasoreRepository {
             category = "Development",
             timeAgo = "12 hours ago",
             source = "Prameya News"
+        ),
+        NewsArticle(
+            id = "news_8",
+            title = "Balasore Town Ring Road & Station Square Beautification Drive Initiated",
+            odiaTitle = "ବାଲେଶ୍ୱର ସହର ରିଙ୍ଗ ରୋଡ୍ ଓ ଷ୍ଟେସନ ଛକ ସୌନ୍ଦର୍ଯ୍ୟକରଣ କାର୍ଯ୍ୟ ଆରମ୍ଭ",
+            snippet = "Smart LED streetlights, modern pedestrian crossings, and native garden landscaping underway to ease traffic between OT Road and Cinema Chhak.",
+            odiaSnippet = "ସହରରେ ଟ୍ରାଫିକ୍ ନିୟନ୍ତ୍ରଣ ଓ ସୌନ୍ଦର୍ଯ୍ୟକରଣ ପାଇଁ ଓଟି ରୋଡ୍ ଓ ସିନେମା ଛକ ମଧ୍ୟରେ ସ୍ମାର୍ଟ ଲାଇଟ୍ ଏବଂ ଫୁଟପାଥ୍ ନିର୍ମାଣ।",
+            category = "Local",
+            timeAgo = "30 mins ago",
+            source = "Balasore Municipal Wire"
+        ),
+        NewsArticle(
+            id = "news_9",
+            title = "Balaramgadi Port Modern Marine Fish & Sea Crab Trading Hub Inaugurated",
+            odiaTitle = "ବଳରାମଗଡ଼ି ମୁହାଣରେ ଆଧୁନିକ ମାଛ ଓ କଙ୍କଡ଼ା ବଜାର ଉଦ୍ଘାଟିତ",
+            snippet = "Advanced cold chain lockers and direct coastal auction platforms opened for local fishermen, boosting aquaculture exports.",
+            odiaSnippet = "ମତ୍ସ୍ୟଜୀବୀମାନଙ୍କ ସୁବିଧା ପାଇଁ ଅତ୍ୟାଧୁନିକ ଶୀତଳ ଭଣ୍ଡାର ଓ ନିଲାମ କେନ୍ଦ୍ର କାର୍ଯ୍ୟକ୍ଷମ ହୋଇଛି।",
+            category = "Local",
+            timeAgo = "2 hours ago",
+            source = "Coastal Odisha Bureau"
+        ),
+        NewsArticle(
+            id = "news_10",
+            title = "IMD Issues Bay of Bengal Weather Alert: High Tide & Evening Showers for Balasore Coast",
+            odiaTitle = "ବାଲେଶ୍ୱର ଉପକୂଳରେ କାଳବୈଶାଖୀ ଓ ଉଚ୍ଚ ଜୁଆର ସତର୍କତା ଜାରି କଲା ପାଣିପାଗ ବିଭାଗ",
+            snippet = "Coastal gusts of 35-45 km/h predicted near Chandipur and Talasari; fishermen advised to stay within designated safe harbor zones.",
+            odiaSnippet = "ଚାନ୍ଦିପୁର ଏବଂ ତାଳସାରୀ ଉପକୂଳରେ ୩୫ ରୁ ୪୫ କିମି ବେଗରେ ପବନ ଓ ବର୍ଷା ସମ୍ଭାବନା, ମତ୍ସ୍ୟଜୀବୀଙ୍କୁ ସତର୍କ ରହିବାକୁ ପରାମର୍ଶ।",
+            category = "Weather",
+            timeAgo = "40 mins ago",
+            source = "IMD Coastal Warning Center"
+        ),
+        NewsArticle(
+            id = "news_11",
+            title = "Chandipur Vanishing Sea Records Spring Low Tide Receding 5.2 km into Bay",
+            odiaTitle = "ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ୫.୨ କିଲୋମିଟର ପଛକୁ ହଟିଲା ସମୁଦ୍ର; ପର୍ଯ୍ୟଟକଙ୍କ ଭିଡ଼",
+            snippet = "Unique tidal phenomenon exposes extensive intertidal sandbars, rare red ghost crabs, and endangered horseshoe crab habitats.",
+            odiaSnippet = "ଅପରାହ୍ନରେ ସମୁଦ୍ର ଜଳ ପଛକୁ ହଟିବା ପରେ ପର୍ଯ୍ୟଟକମାନେ ଚାଲି ଚାଲି ଗଭୀର ସମୁଦ୍ର ଶଯ୍ୟାର ଦୃଶ୍ୟ ଉପଭୋଗ କରୁଛନ୍ତି।",
+            category = "Weather",
+            timeAgo = "4 hours ago",
+            source = "Odisha Coastal Ecology"
+        ),
+        NewsArticle(
+            id = "news_12",
+            title = "District Red Cross & DHH Balasore Activate 24x7 Emergency Blood & Heat Relief Cells",
+            odiaTitle = "ବାଲେଶ୍ୱର ରେଡ୍ କ୍ରସ୍ ଓ ମୁଖ୍ୟ ଡାକ୍ତରଖାନାରେ ୨୪ ଘଣ୍ଟିଆ ଜରୁରୀକାଳୀନ ରକ୍ତ ସେବା କାର୍ଯ୍ୟକ୍ଷମ",
+            snippet = "Specialized rapid response emergency units and on-call donor registry mobilized to support coastal trauma and maternity centers.",
+            odiaSnippet = "ଜରୁରୀକାଳୀନ ଚିକିତ୍ସା ଓ ରକ୍ତ ସେବାକୁ ତ୍ୱରାନ୍ୱିତ କରିବା ପାଇଁ ସ୍ୱତନ୍ତ୍ର ଡାକ୍ତରୀ ଦଳ ଓ ଦାତା ନେଟୱାର୍କ ପ୍ରସ୍ତୁତ।",
+            category = "Emergency",
+            timeAgo = "1 hour ago",
+            source = "DHH Emergency Desk"
         )
     )
 

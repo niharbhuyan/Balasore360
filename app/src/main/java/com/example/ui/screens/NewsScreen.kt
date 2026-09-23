@@ -100,11 +100,35 @@ fun NewsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val categories = listOf("All", "Politics", "Sports", "Emergency", "Development", "Infrastructure", "Defense", "Culture", "Civic Alert")
+    val categories = listOf("All", "Local", "Sports", "Emergency", "Weather", "Development", "Culture", "Defense", "Politics")
+
+    val matchesCategoryForArticle: (NewsArticle, String) -> Boolean = { article, cat ->
+        when (cat) {
+            "All" -> true
+            "Local" -> article.category.equals("Local", ignoreCase = true) ||
+                       article.category.equals("Infrastructure", ignoreCase = true) ||
+                       article.category.contains("Civic", ignoreCase = true)
+            "Sports" -> article.category.contains("Sports", ignoreCase = true) ||
+                        article.category.contains("Athletic", ignoreCase = true)
+            "Emergency" -> article.category.contains("Emergency", ignoreCase = true) ||
+                           article.category.contains("Alert", ignoreCase = true) ||
+                           article.category.contains("Disaster", ignoreCase = true)
+            "Weather" -> article.category.contains("Weather", ignoreCase = true) ||
+                         article.category.contains("Tide", ignoreCase = true) ||
+                         article.category.contains("Marine", ignoreCase = true)
+            else -> article.category.equals(cat, ignoreCase = true)
+        }
+    }
+
+    val categoryCounts = remember(articles) {
+        categories.associateWith { cat ->
+            articles.count { matchesCategoryForArticle(it, cat) }
+        }
+    }
 
     // Filter articles by category and local search keywords across titles and body snippets
     val filteredArticles = articles.filter { article ->
-        val matchesCategory = selectedCategory == "All" || article.category == selectedCategory
+        val matchesCategory = matchesCategoryForArticle(article, selectedCategory)
         val query = searchQuery.trim()
         val matchesSearch = query.isEmpty() ||
             article.title.contains(query, ignoreCase = true) ||
@@ -317,22 +341,72 @@ fun NewsScreen(
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 6.dp)
+                    .testTag("news_category_filter_row"),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(categories) { cat ->
                     val isSelected = cat == selectedCategory
+                    val count = categoryCounts[cat] ?: 0
+                    val emoji = when (cat) {
+                        "All" -> "🌐"
+                        "Local" -> "📍"
+                        "Sports" -> "🏏"
+                        "Emergency" -> "🚨"
+                        "Weather" -> "🌦️"
+                        "Development" -> "🏗️"
+                        "Culture" -> "🏛️"
+                        "Defense" -> "🚀"
+                        "Politics" -> "🗳️"
+                        else -> "📰"
+                    }
+                    val displayLabel = if (language == AppLanguage.ODIA) {
+                        when (cat) {
+                            "All" -> "ସମସ୍ତ"
+                            "Local" -> "ସ୍ଥାନୀୟ"
+                            "Sports" -> "କ୍ରୀଡ଼ା"
+                            "Emergency" -> "ଜରୁରୀକାଳୀନ"
+                            "Weather" -> "ପାଣିପାଗ"
+                            "Development" -> "ବିକାଶ"
+                            "Culture" -> "ସଂସ୍କୃତି"
+                            "Defense" -> "ପ୍ରତିରକ୍ଷା"
+                            "Politics" -> "ରାଜନୀତି"
+                            else -> cat
+                        }
+                    } else {
+                        cat
+                    }
+
                     FilterChip(
                         selected = isSelected,
                         onClick = { onCategorySelected(cat) },
+                        leadingIcon = {
+                            Text(emoji, fontSize = 12.sp)
+                        },
                         label = {
-                            Text(
-                                text = cat,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = displayLabel,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold
+                                    )
                                 )
-                            )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) Color.White.copy(alpha = 0.25f) else BentoSlate200)
+                                        .padding(horizontal = 5.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "$count",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color.White else BentoSlate700
+                                    )
+                                }
+                            }
                         },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = OceanBlue,
@@ -341,8 +415,69 @@ fun NewsScreen(
                             labelColor = BentoSlate700
                         ),
                         border = null,
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .height(38.dp)
+                            .testTag("news_filter_chip_${cat.lowercase()}")
                     )
+                }
+            }
+
+            // Active category indicator and quick reset banner
+            if (selectedCategory != "All") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val activeLabel = if (language == AppLanguage.ODIA) {
+                        when (selectedCategory) {
+                            "Local" -> "ସ୍ଥାନୀୟ ଖବର"
+                            "Sports" -> "କ୍ରୀଡ଼ା ସମାଚାର"
+                            "Emergency" -> "ଜରୁରୀକାଳୀନ ସୂଚନା"
+                            "Weather" -> "ପାଣିପାଗ ଓ ଉପକୂଳ ସତର୍କତା"
+                            "Development" -> "ବିକାଶମୂଳକ ଖବର"
+                            "Culture" -> "ସାଂସ୍କୃତିକ ଖବର"
+                            "Defense" -> "ପ୍ରତିରକ୍ଷା ଅପଡେଟ୍"
+                            "Politics" -> "ରାଜନୈତିକ ଖବର"
+                            else -> selectedCategory
+                        }
+                    } else {
+                        "Filtered by: $selectedCategory"
+                    }
+
+                    Text(
+                        text = "$activeLabel (${filteredArticles.size})",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlue
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onCategorySelected("All") }
+                            .background(Color(0xFFE0F2FE))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear category filter",
+                            tint = OceanBlue,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସବୁ ଦେଖନ୍ତୁ" else "Show All",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlue
+                        )
+                    }
                 }
             }
         }

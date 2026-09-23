@@ -4,7 +4,7 @@ const path = require('path');
 
 const PORT = 3000;
 const ROOT_DIR = __dirname;
-const AAB_FILE_NAME = 'Balasore360-v1.0.5-release.aab';
+const AAB_FILE_NAME = 'Balasore360-v1.0.6-release.aab';
 const AAB_PATH = path.join(ROOT_DIR, AAB_FILE_NAME);
 const FALLBACK_AAB_PATH = path.join(ROOT_DIR, 'Balasore360-release.aab');
 const APK_PATH = path.join(ROOT_DIR, 'Balasore360-debug.apk');
