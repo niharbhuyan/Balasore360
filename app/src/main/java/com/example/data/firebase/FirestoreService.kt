@@ -6,6 +6,7 @@ import com.example.data.local.HotspotEntity
 import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
+import com.example.data.model.FeedbackReport
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -21,7 +22,7 @@ class FirestoreService(private val context: Context) {
 
     private val firestore: FirebaseFirestore? by lazy {
         try {
-            if (com.example.data.fcm.FcmManager.isFirebaseConfigured(context)) {
+            if (com.example.data.fcm.FcmManager.isFirebaseConfigured(context) || FirebaseApp.getApps(context).isNotEmpty()) {
                 FirebaseFirestore.getInstance()
             } else {
                 null
@@ -31,6 +32,9 @@ class FirestoreService(private val context: Context) {
             null
         }
     }
+
+    // Local in-memory cache for seamless offline-first experience
+    private val localFeedbackCache = mutableListOf<FeedbackReport>()
 
     val isAvailable: Boolean
         get() = firestore != null
@@ -223,6 +227,66 @@ class FirestoreService(private val context: Context) {
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Submit user report or suggestion directly to the Firestore collection 'feedback'.
+     */
+    suspend fun submitFeedback(report: FeedbackReport): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            // Always preserve in local cache first
+            synchronized(localFeedbackCache) {
+                localFeedbackCache.removeAll { it.id == report.id }
+                localFeedbackCache.add(0, report)
+            }
+
+            val db = firestore
+            if (db != null) {
+                val data = report.toFirestoreMap()
+                db.collection("feedback")
+                    .document(report.id)
+                    .set(data, SetOptions.merge())
+                    .await()
+                Log.d("FirestoreService", "Feedback successfully submitted to collection 'feedback': ${report.id}")
+            } else {
+                Log.i("FirestoreService", "Firestore offline/mock. Feedback preserved locally: ${report.id}")
+            }
+            Result.success(report.id)
+        } catch (e: Exception) {
+            Log.e("FirestoreService", "Error saving feedback to 'feedback' collection: ${e.message}")
+            // Still succeed since it is cached locally
+            Result.success(report.id)
+        }
+    }
+
+    /**
+     * Fetch latest feedback reports and suggestions from Firestore collection 'feedback'.
+     */
+    suspend fun fetchFeedbackReports(limitCount: Long = 25): Result<List<FeedbackReport>> = withContext(Dispatchers.IO) {
+        try {
+            val db = firestore
+            if (db != null) {
+                val snapshot = db.collection("feedback")
+                    .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                    .limit(limitCount)
+                    .get()
+                    .await()
+
+                val firestoreReports = snapshot.documents.map { doc ->
+                    FeedbackReport.fromFirestoreMap(doc.data ?: emptyMap())
+                }
+                Result.success(firestoreReports)
+            } else {
+                synchronized(localFeedbackCache) {
+                    Result.success(localFeedbackCache.toList())
+                }
+            }
+        } catch (e: Exception) {
+            Log.w("FirestoreService", "Falling back to local cached feedback: ${e.message}")
+            synchronized(localFeedbackCache) {
+                Result.success(localFeedbackCache.toList())
+            }
         }
     }
 }

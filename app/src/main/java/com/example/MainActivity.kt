@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.outlined.Article
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Emergency
 import androidx.compose.material.icons.outlined.Explore
@@ -88,6 +90,7 @@ import com.example.ui.components.AppWatermarkOverlay
 import com.example.ui.components.CycloneResilienceSheet
 import com.example.ui.components.DefenseTrailSheet
 import com.example.ui.components.ElephantPassportSheet
+import com.example.ui.features.civic.CitizenCivicEyeSheet
 import com.example.ui.components.HarborCatchRatesSheet
 import com.example.ui.components.HorseshoeCrabSheet
 import com.example.ui.components.RemunaPrasadArtisansSheet
@@ -136,6 +139,54 @@ import com.example.ui.features.coastal.IncoisSeaAdvisorySheet
 import com.example.ui.features.heritage.BaleswarPanjikaCalendarSheet
 import com.example.ui.features.heritage.RaibaniaAudioStoryWalkSheet
 import com.example.ui.features.emergency.BloodDonorBedPulseSheet
+import com.example.ui.features.transit.BalasoreTotoFareCardSheet
+import com.example.ui.features.civic.CampusCareerBoardSheet
+import com.example.ui.features.resilience.AutoUpdateCenterSheet
+import com.example.ui.features.transit.BalasoreJunctionRadarSheet
+import com.example.ui.features.agro.BaleswariPaanKrushiMandiSheet
+import com.example.ui.features.health.NightChemistSanjeevaniSheet
+import com.example.ui.features.heritage.BaleswarMahotsavChadakSheet
+import com.example.ui.features.artisans.NilagiriStoneArtisanSheet
+import com.example.ui.features.civic.TpnodlWatcoMonitorSheet
+import com.example.ui.features.coastal.TalasariMangroveExplorerSheet
+import com.example.ui.features.civic.MoSevaKendraCitizenSheet
+import com.example.ui.features.coastal.MarineFishermenSafetySheet
+import com.example.ui.features.nature.KuldihaEcoCampSafariSheet
+import com.example.ui.features.health.FmMchMedicalCollegeOpdSheet
+import com.example.ui.features.artisans.SabaiGrassMissionShaktiSheet
+import com.example.ui.features.heritage.BalasoreMaritimeColonialSheet
+import com.example.ui.features.civic.BalasoreStudentCareerScholarshipSheet
+import com.example.ui.features.coastal.DrdoChandipurSafetyRadarSheet
+import com.example.ui.features.nature.SubarnarekhaSluiceFloodRadarSheet
+import com.example.ui.features.artisans.NilagiriChhauCulturalGuildSheet
+import com.example.ui.features.health.DhhBloodBankLiveRadarSheet
+import com.example.ui.features.agro.PanBarajaAquaShrimpSheet
+import com.example.ui.features.civic.BalasoreCourtLegalAidSheet
+import com.example.ui.features.transit.Nh16HighwayPatrolTraumaSheet
+import com.example.ui.features.nature.PanchalingeswarKuldihaSafariSheet
+import com.example.ui.features.transit.SerBalasoreRailwayJunctionSheet
+import com.example.ui.features.civic.NocciIndustrialB2bSkillSheet
+import com.example.ui.features.coastal.TalsariBichitrapurMangrovePilotSheet
+import com.example.ui.features.heritage.FakirMohanBhashaLiteratureSheet
+import com.example.ui.features.heritage.BaleswariCuisineSweetHeritageSheet
+import com.example.ui.features.civic.TpnodlWatcoUtilityHotlineSheet
+import com.example.ui.components.LanguageToggleSwitch
+import com.example.ui.features.agro.DhanMandiMspProcurementSheet
+import com.example.ui.features.artisans.NilagiriGraniteStonewareGuildSheet
+import com.example.ui.features.emergency.BahanagaNhaiRapidTraumaNetworkSheet
+import com.example.ui.features.heritage.BhusandeswarChandaneswarPilgrimageSheet
+import com.example.ui.features.civic.SeniorCitizenSevaSetuSheet
+import com.example.ui.features.civic.BalasoreHigherEducationHubSheet
+import com.example.ui.features.transit.BalasoreMoBusCrutNavigatorSheet
+import com.example.ui.features.coastal.AquaShrimpHatcheryRadarSheet
+import com.example.ui.features.resilience.CoastalCycloneShelterNetworkSheet
+import com.example.ui.features.heritage.MaritimeForeignLogeTrailSheet
+import com.example.ui.features.health.RuralMobileTelemedicineNetworkSheet
+import com.example.ui.features.agro.BaleswariBetelPaddyCooperativeSheet
+import com.example.ui.features.transit.CoastalCrutInterdistrictBusRadarSheet
+import com.example.ui.features.nature.HorseshoeCrabIntertidalProtectionSheet
+import com.example.ui.features.civic.CitizenFeedbackSheet
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material3.ExtendedFloatingActionButton
 
 import androidx.activity.result.contract.ActivityResultContracts
@@ -277,36 +328,68 @@ fun BalasoreApp(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
+                            // Citizen Feedback & Suggestions Button (Firestore 'feedback' collection)
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                                    .clickable { viewModel.openFeatureSheet(UniqueFeatureSheetType.CITIZEN_FEEDBACK_PORTAL) }
+                                    .testTag("top_bar_feedback_btn")
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Feedback,
+                                        contentDescription = "Submit Feedback or Report",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                }
+                            }
+
+                            // Auto-Update Quick Access Indicator Pill
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = if (uiState.isRefreshing) Color(0xFFE0F2FE) else MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, if (uiState.isRefreshing) Color(0xFF38BDF8) else Color.Transparent),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .clickable { viewModel.openFeatureSheet(UniqueFeatureSheetType.BALASORE_AUTO_UPDATE_CENTER) }
+                                    .testTag("top_bar_auto_update_btn")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .clip(CircleShape)
+                                            .background(if (uiState.isHourlyAutoRefreshEnabled) Color(0xFF16A34A) else Color(0xFFEF4444))
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Sync,
+                                        contentDescription = "Auto Update",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                            }
+
                             // Theme Mode Toggle Button
                             ThemeTogglePill(
                                 currentMode = uiState.themeMode,
                                 onCycleTheme = { viewModel.cycleThemeMode() }
                             )
 
-                            // Language Toggle Pills
-                            Row(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                    .padding(2.dp),
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                LanguagePill(
-                                    title = "EN",
-                                    isSelected = uiState.language == AppLanguage.ENGLISH,
-                                    onClick = { viewModel.setLanguage(AppLanguage.ENGLISH) }
-                                )
-                                LanguagePill(
-                                    title = "ଓଡ଼ି",
-                                    isSelected = uiState.language == AppLanguage.ODIA,
-                                    onClick = { viewModel.setLanguage(AppLanguage.ODIA) }
-                                )
-                                LanguagePill(
-                                    title = "HI",
-                                    isSelected = uiState.language == AppLanguage.HINDI,
-                                    onClick = { viewModel.setLanguage(AppLanguage.HINDI) }
-                                )
-                            }
+                            // Dynamic Language Toggle Switch (English ⇄ Odia)
+                            LanguageToggleSwitch(
+                                currentLanguage = uiState.language,
+                                onLanguageSelected = { viewModel.setLanguage(it) },
+                                compact = true
+                            )
                         }
                     }
                 },
@@ -576,7 +659,8 @@ fun BalasoreApp(
                             dailyPulse = uiState.dailyPulse,
                             language = uiState.language,
                             onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
-                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
+                            onLanguageSelected = { viewModel.setLanguage(it) }
                         )
                         2 -> NewsScreen(
                             articles = uiState.newsArticles,
@@ -1160,6 +1244,329 @@ fun BalasoreApp(
                             onClose = { viewModel.closeFeatureSheet() }
                         )
                     }
+                }
+                UniqueFeatureSheetType.CITIZEN_CIVIC_EYE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        CitizenCivicEyeSheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TOTO_AUTO_FARE_CARD -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalasoreTotoFareCardSheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_CAMPUS_CAREER_BOARD -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        CampusCareerBoardSheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_AUTO_UPDATE_CENTER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        AutoUpdateCenterSheet(
+                            language = uiState.language,
+                            dailyPulse = uiState.dailyPulse,
+                            isRefreshing = uiState.isRefreshing,
+                            isHourlyAutoRefreshEnabled = uiState.isHourlyAutoRefreshEnabled,
+                            autoUpdateFrequencyMinutes = uiState.autoUpdateFrequencyMinutes,
+                            nextHourlyRefreshMinutesRemaining = uiState.nextHourlyRefreshMinutesRemaining,
+                            autoRefreshCycleCount = uiState.autoRefreshCycleCount,
+                            lastSyncStatusMessage = uiState.lastSyncStatusMessage,
+                            appVersionInstalled = uiState.appVersionInstalled,
+                            appVersionLatest = uiState.appVersionLatest,
+                            isUpdateCheckLoading = uiState.isUpdateCheckLoading,
+                            onForceSyncAll = { viewModel.forceSyncAllData() },
+                            onToggleAutoRefresh = { viewModel.setHourlyAutoRefreshEnabled(it) },
+                            onSetFrequency = { viewModel.setAutoUpdateFrequency(it) },
+                            onCheckForUpdates = { viewModel.checkForAppUpdates() },
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_JUNCTION_RADAR -> {
+                    BalasoreJunctionRadarSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALESWARI_PAAN_KRUSHI_MANDI -> {
+                    BaleswariPaanKrushiMandiSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NIGHT_CHEMIST_SANJEEVANI -> {
+                    NightChemistSanjeevaniSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALESWAR_MAHOTSAV_CHADAK -> {
+                    BaleswarMahotsavChadakSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NILAGIRI_STONE_ARTISAN -> {
+                    NilagiriStoneArtisanSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TPNODL_WATCO_MONITOR -> {
+                    TpnodlWatcoMonitorSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TALASARI_MANGROVE_EXPLORER -> {
+                    TalasariMangroveExplorerSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.MO_SEVA_KENDRA_CITIZEN -> {
+                    MoSevaKendraCitizenSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.MARINE_FISHERMEN_SAFETY -> {
+                    MarineFishermenSafetySheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.KULDIHA_ECO_CAMP_SAFARI -> {
+                    KuldihaEcoCampSafariSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.FM_MCH_MEDICAL_COLLEGE_OPD -> {
+                    FmMchMedicalCollegeOpdSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SABAI_GRASS_MISSION_SHAKTI -> {
+                    SabaiGrassMissionShaktiSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_MARITIME_COLONIAL -> {
+                    BalasoreMaritimeColonialSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_STUDENT_CAREER_SCHOLARSHIP -> {
+                    BalasoreStudentCareerScholarshipSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.DRDO_CHANDIPUR_SAFETY_RADAR -> {
+                    DrdoChandipurSafetyRadarSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SUBARNAREKHA_SLUICE_FLOOD_RADAR -> {
+                    SubarnarekhaSluiceFloodRadarSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NILAGIRI_CHHAU_CULTURAL_GUILD -> {
+                    NilagiriChhauCulturalGuildSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.DHH_BLOOD_BANK_LIVE_RADAR -> {
+                    DhhBloodBankLiveRadarSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.PAN_BARAJA_AQUA_SHRIMP_DESK -> {
+                    PanBarajaAquaShrimpSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_COURT_LEGAL_AID_DESK -> {
+                    BalasoreCourtLegalAidSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NH16_HIGHWAY_PATROL_TRAUMA_SOS -> {
+                    Nh16HighwayPatrolTraumaSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.PANCHALINGESWAR_KULDIHA_SAFARI -> {
+                    PanchalingeswarKuldihaSafariSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SER_BALASORE_RAILWAY_JUNCTION -> {
+                    SerBalasoreRailwayJunctionSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NOCCI_INDUSTRIAL_B2B_SKILL -> {
+                    NocciIndustrialB2bSkillSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TALSARI_BICHITRAPUR_MANGROVE_PILOT -> {
+                    TalsariBichitrapurMangrovePilotSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.FAKIR_MOHAN_BHASHA_LITERATURE -> {
+                    FakirMohanBhashaLiteratureSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALESWARI_CUISINE_SWEET_HERITAGE -> {
+                    BaleswariCuisineSweetHeritageSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TPNODL_WATCO_UTILITY_HOTLINE -> {
+                    TpnodlWatcoUtilityHotlineSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.DHAN_MANDI_MSP_PROCUREMENT -> {
+                    DhanMandiMspProcurementSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NILAGIRI_GRANITE_STONEWARE_GUILD -> {
+                    NilagiriGraniteStonewareGuildSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BAHANAGA_NHAI_RAPID_TRAUMA_NETWORK -> {
+                    BahanagaNhaiRapidTraumaNetworkSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BHUSANDESWAR_CHANDANESWAR_PILGRIMAGE -> {
+                    BhusandeswarChandaneswarPilgrimageSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SENIOR_CITIZEN_SEVA_SETU -> {
+                    SeniorCitizenSevaSetuSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_HIGHER_EDUCATION_HUB -> {
+                    BalasoreHigherEducationHubSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_MO_BUS_CRUT_NAVIGATOR -> {
+                    BalasoreMoBusCrutNavigatorSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.AQUA_SHRIMP_HATCHERY_RADAR -> {
+                    AquaShrimpHatcheryRadarSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.COASTAL_CYCLONE_SHELTER_NETWORK -> {
+                    CoastalCycloneShelterNetworkSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.MARITIME_FOREIGN_LOGE_TRAIL -> {
+                    MaritimeForeignLogeTrailSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.RURAL_MOBILE_TELEMEDICINE_NETWORK -> {
+                    RuralMobileTelemedicineNetworkSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALESWARI_BETEL_PADDY_COOPERATIVE -> {
+                    BaleswariBetelPaddyCooperativeSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.COASTAL_CRUT_INTERDISTRICT_BUS_RADAR -> {
+                    CoastalCrutInterdistrictBusRadarSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.HORSESHOE_CRAB_INTERTIDAL_PROTECTION -> {
+                    HorseshoeCrabIntertidalProtectionSheet(
+                        dailyPulse = uiState.dailyPulse,
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.CITIZEN_FEEDBACK_PORTAL -> {
+                    CitizenFeedbackSheet(
+                        language = uiState.language,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
                 }
                 null -> {}
             }

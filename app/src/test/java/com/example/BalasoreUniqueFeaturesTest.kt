@@ -253,4 +253,105 @@ class BalasoreUniqueFeaturesTest {
         val emergencyLab = labs.first { it.id == "path_5" }
         assertTrue(emergencyLab.openingHours.contains("24 Hours"))
     }
+
+    @Test
+    fun testNewAutoUpdateFeatureSheetsNavigation() {
+        val viewModel = BalasoreViewModel()
+        val newSheets = listOf(
+            UniqueFeatureSheetType.DHAN_MANDI_MSP_PROCUREMENT,
+            UniqueFeatureSheetType.NILAGIRI_GRANITE_STONEWARE_GUILD,
+            UniqueFeatureSheetType.BAHANAGA_NHAI_RAPID_TRAUMA_NETWORK,
+            UniqueFeatureSheetType.BHUSANDESWAR_CHANDANESWAR_PILGRIMAGE,
+            UniqueFeatureSheetType.SENIOR_CITIZEN_SEVA_SETU,
+            UniqueFeatureSheetType.BALASORE_HIGHER_EDUCATION_HUB,
+            UniqueFeatureSheetType.BALASORE_MO_BUS_CRUT_NAVIGATOR
+        )
+
+        for (sheet in newSheets) {
+            viewModel.openFeatureSheet(sheet)
+            assertEquals(sheet, viewModel.uiState.value.activeFeatureSheet)
+            viewModel.closeFeatureSheet()
+            assertNull(viewModel.uiState.value.activeFeatureSheet)
+        }
+    }
+
+    @Test
+    fun testDynamicLanguageToggleSwitch() {
+        val viewModel = BalasoreViewModel()
+        assertEquals(com.example.data.model.AppLanguage.ENGLISH, viewModel.uiState.value.language)
+
+        viewModel.setLanguage(com.example.data.model.AppLanguage.ODIA)
+        assertEquals(com.example.data.model.AppLanguage.ODIA, viewModel.uiState.value.language)
+
+        viewModel.setLanguage(com.example.data.model.AppLanguage.ENGLISH)
+        assertEquals(com.example.data.model.AppLanguage.ENGLISH, viewModel.uiState.value.language)
+
+        viewModel.setLanguage(com.example.data.model.AppLanguage.HINDI)
+        assertEquals(com.example.data.model.AppLanguage.HINDI, viewModel.uiState.value.language)
+    }
+
+    @Test
+    fun testNextGenSevenAutoUpdateSheetsNavigation() {
+        val viewModel = BalasoreViewModel()
+        val sevenSuites = listOf(
+            UniqueFeatureSheetType.AQUA_SHRIMP_HATCHERY_RADAR,
+            UniqueFeatureSheetType.COASTAL_CYCLONE_SHELTER_NETWORK,
+            UniqueFeatureSheetType.MARITIME_FOREIGN_LOGE_TRAIL,
+            UniqueFeatureSheetType.RURAL_MOBILE_TELEMEDICINE_NETWORK,
+            UniqueFeatureSheetType.BALESWARI_BETEL_PADDY_COOPERATIVE,
+            UniqueFeatureSheetType.COASTAL_CRUT_INTERDISTRICT_BUS_RADAR,
+            UniqueFeatureSheetType.HORSESHOE_CRAB_INTERTIDAL_PROTECTION
+        )
+
+        for (sheet in sevenSuites) {
+            viewModel.openFeatureSheet(sheet)
+            assertEquals(sheet, viewModel.uiState.value.activeFeatureSheet)
+            viewModel.closeFeatureSheet()
+            assertNull(viewModel.uiState.value.activeFeatureSheet)
+        }
+    }
+
+    @Test
+    fun testChandipurTidalTelemetryAndDefaultData() {
+        val pulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+        assertTrue("Chandipur low tide window should be set", pulse.chandipurLowTideWindow.isNotBlank())
+        assertTrue("Vannamei rate should be positive", pulse.aquacultureVannameiRateKg > 0)
+        assertTrue("Tiger prawn rate should be positive", pulse.aquacultureTigerPrawnRateKg > 0)
+    }
+
+    @Test
+    fun testFeedbackReportCreationAndFirestoreSerialization() {
+        val report = com.example.data.model.FeedbackReport(
+            id = "test_feedback_123",
+            type = com.example.data.model.FeedbackType.SUGGESTION,
+            category = "Tourism & Beaches",
+            title = "Improve Chandipur lighting",
+            description = "Add solar street lamps along the promenade for night tourists.",
+            userName = "Amit Mohanty",
+            contactInfo = "amit@example.com",
+            locality = "Chandipur"
+        )
+
+        val firestoreMap = report.toFirestoreMap()
+        assertEquals("test_feedback_123", firestoreMap["id"])
+        assertEquals("SUGGESTION", firestoreMap["type"])
+        assertEquals("Tourism & Beaches", firestoreMap["category"])
+        assertEquals("Improve Chandipur lighting", firestoreMap["title"])
+        assertEquals("Android", firestoreMap["devicePlatform"])
+
+        val deserialized = com.example.data.model.FeedbackReport.fromFirestoreMap(firestoreMap)
+        assertEquals(report.id, deserialized.id)
+        assertEquals(report.type, deserialized.type)
+        assertEquals(report.title, deserialized.title)
+        assertEquals(report.locality, deserialized.locality)
+    }
+
+    @Test
+    fun testCitizenFeedbackPortalSheetNavigation() {
+        val viewModel = BalasoreViewModel()
+        viewModel.openFeatureSheet(UniqueFeatureSheetType.CITIZEN_FEEDBACK_PORTAL)
+        assertEquals(UniqueFeatureSheetType.CITIZEN_FEEDBACK_PORTAL, viewModel.uiState.value.activeFeatureSheet)
+        viewModel.closeFeatureSheet()
+        assertNull(viewModel.uiState.value.activeFeatureSheet)
+    }
 }

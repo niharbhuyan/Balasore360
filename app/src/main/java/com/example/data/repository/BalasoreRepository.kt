@@ -294,7 +294,9 @@ object BalasoreRepository {
             odiaSnippet = "ବାଲେଶ୍ୱର ଷ୍ଟେସନରେ ଆଧୁନିକ ୱେଟିଂ ହଲ୍, ସ୍କାଏୱାକ୍ ଓ ଟେରାକୋଟା କଳାକୃତି ସହ ନୂତନ ସୁବିଧା ସୁଯୋଗ ସମ୍ପନ୍ନ ହେବାକୁ ଯାଉଛି।",
             category = "Infrastructure",
             timeAgo = "10 mins ago",
-            source = "Balasore Express News"
+            source = "Balasore Express News",
+            content = "The ambitious Amrit Bharat redevelopment initiative at Balasore Railway Station (BLS) has crossed 90% civil completion under South Eastern Railway. The station features an expanded 12-meter-wide central foot-over-bridge skywalk with integrated escalators and passenger lifts connecting platforms 1 through 4. A multi-tier parking concourse, dedicated EV charging bays, and executive air-conditioned lounge are nearing inauguration. The exterior facade proudly integrates Balasore heritage motifs, drawing inspiration from Emami Jagannath Temple architecture and traditional Baleswari terracotta panels.",
+            odiaContent = "ଦକ୍ଷିଣ ପୂର୍ବ ରେଳପଥ ଅଧୀନରେ ବାଲେଶ୍ୱର ରେଳ ଷ୍ଟେସନର ଅମୃତ ଭାରତ ପୁନଃବିକାଶ ପ୍ରକଳ୍ପ ୯୦ ପ୍ରତିଶତ କାର୍ଯ୍ୟ ସମାପ୍ତ କରିଛି। ପ୍ଲାଟଫର୍ମ ୧ ରୁ ୪ କୁ ସଂଯୋଗ କରୁଥିବା ୧୨ ମିଟର ଚଉଡ଼ା ସ୍କାଏୱାକ୍, ଏସ୍କାଲେଟର, ଲିଫ୍ଟ ଏବଂ ଇଭି ଚାର୍ଜିଂ ସୁବିଧା ଉଦ୍ଘାଟନ ପାଇଁ ପ୍ରସ୍ତୁତ। ବାଲେଶ୍ୱରର ଐତିହ୍ୟ ଟେରାକୋଟା ଓ ଏମାମି ଜଗନ୍ନାଥ ମନ୍ଦିର କଳାଶୈଳୀରେ ଷ୍ଟେସନ ଅଗ୍ରଭାଗ ସଜ୍ଜିତ ହୋଇଛି।"
         ),
         NewsArticle(
             id = "news_2",
@@ -304,7 +306,9 @@ object BalasoreRepository {
             odiaSnippet = "ଆଇଟିଆର ଚାନ୍ଦିପୁର କ୍ଷେପଣାସ୍ତ୍ର ଘାଟିରୁ ସ୍ୱଦେଶୀ ଜ୍ଞାନକୌଶଳରେ ନିର୍ମିତ ପ୍ରତିରକ୍ଷା ପ୍ରଣାଳୀ ଲକ୍ଷ୍ୟଭେଦ କରିଛି।",
             category = "Defense",
             timeAgo = "1 hour ago",
-            source = "Defense Updates Odisha"
+            source = "Defense Updates Odisha",
+            content = "The Defence Research and Development Organisation (DRDO) and Integrated Test Range (ITR) at Chandipur successfully flight-tested an indigenous advanced coastal defense missile system from Launch Complex III. Equipped with cutting-edge active radio frequency seekers and precision guidance avionics, the interceptor intercepted an offshore high-speed aerial unmanned target over the Bay of Bengal. Maritime telemetry stations at Wheeler Island (Dr. APJ Abdul Kalam Island) and Dhamra coastline confirmed flawless guidance metrics.",
+            odiaContent = "ଚାନ୍ଦିପୁର ସ୍ଥିତ ଆଇଟିଆର (Integrated Test Range) ଲଞ୍ଚ କମ୍ପ୍ଲେକ୍ସ-୩ ରୁ ପ୍ରତିରକ୍ଷା ଗବେଷଣା ସଂସ୍ଥା (DRDO) ଦ୍ୱାରା ଏକ ଉନ୍ନତ ଉପକୂଳ ପ୍ରତିରକ୍ଷା କ୍ଷେପଣାସ୍ତ୍ରର ସଫଳ ଉତକ୍ଷେପଣ କରାଯାଇଛି। ଡକ୍ଟର ଏପିଜେ ଅବଦୁଲ କଲାମ ଦ୍ୱୀପ ଏବଂ ଧାମରା ଉପକୂଳର ରାଡାର ଟ୍ରାକିଂ ସେଣ୍ଟର ସଠିକ୍ ଲକ୍ଷ୍ୟଭେଦ ନିଶ୍ଚିତ କରିଛନ୍ତି।"
         ),
         NewsArticle(
             id = "news_3",
@@ -314,7 +318,9 @@ object BalasoreRepository {
             odiaSnippet = "ପାରମ୍ପରିକ ସଂକୀର୍ତ୍ତନ ଏବଂ ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ ସହ ପାଞ୍ଚ ଦିନ ଧରି ଚାଲିବ ରେମୁଣା ବାର୍ଷିକ ଉତ୍ସବ।",
             category = "Culture",
             timeAgo = "3 hours ago",
-            source = "Odisha Sambad"
+            source = "Odisha Sambad",
+            content = "The temple administration and Balasore District Cultural Council have officially announced the itinerary for the celebrated Remuna Khirachora Gopinath Mahotsav. Millions of devotees are expected to relish the legendary condensed milk offering 'Amrita Keli' (Khira Bhog). Alongside devotional sankirtan troupes and Odissi performances, a traditional handicrafts fair featuring Remuna brass-metal utensils and handloom will run for five days with dedicated shuttle buses operating from Balasore Bus Stand.",
+            odiaContent = "ରେମୁଣା କ୍ଷୀରଚୋରା ଗୋପୀନାଥ ମନ୍ଦିର ଟ୍ରଷ୍ଟ ଓ ଜିଲ୍ଲା ସଂସ୍କୃତି ପରିଷଦ ପକ୍ଷରୁ ବାର୍ଷିକ ମହୋତ୍ସବର ତାରିଖ ଘୋଷଣା ହୋଇଛି। ପ୍ରସିଦ୍ଧ 'ଅମୃତ କେଳି' କ୍ଷୀର ଭୋଗ ପାଇଁ ଭକ୍ତଙ୍କ ଭିଡ଼କୁ ଦୃଷ୍ଟିରେ ରଖି ସ୍ୱତନ୍ତ୍ର ବ୍ୟବସ୍ଥା କରାଯାଇଛି। ସାଂସ୍କୃତିକ ମଞ୍ଚରେ ଓଡ଼ିଶୀ ନୃତ୍ୟ, ସଂକୀର୍ତ୍ତନ ଏବଂ କଂସା-ପିତ୍ତଳ ଶିଳ୍ପ ପ୍ରଦର୍ଶନୀ ଅନୁଷ୍ଠିତ ହେବ।"
         ),
         NewsArticle(
             id = "news_4",
@@ -324,7 +330,9 @@ object BalasoreRepository {
             odiaSnippet = "ଜଳସ୍ତର ଉପରେ ନଜର ରଖିବାକୁ ଭୋଗରାଇ ଏବଂ ଜଳେଶ୍ୱର ବ୍ଲକରେ ସେନ୍ସର ସ୍ଥାପିତ ହୋଇଛି।",
             category = "Emergency",
             timeAgo = "5 hours ago",
-            source = "Balasore District Admin"
+            source = "Balasore District Admin",
+            content = "To prevent sudden monsoon flash floods along northern Balasore, the District Disaster Management Authority (DDMA) in collaboration with Central Water Commission has installed solar-powered acoustic flood telemetry gauges at Rajghat, Jamsholaghat, and Bhograi embankments. When water levels cross danger levels (10.36 meters at Rajghat), automated siren broadcasts and SMS alerts will reach over 48 coastal gram panchayats within 90 seconds.",
+            odiaContent = "ଉତ୍ତର ବାଲେଶ୍ୱରରେ ବନ୍ୟା ନିୟନ୍ତ୍ରଣ ଓ ସତର୍କତା ପାଇଁ କେନ୍ଦ୍ରୀୟ ଜଳ ଆୟୋଗ ଏବଂ ଜିଲ୍ଲା ବିପର୍ଯ୍ୟୟ ପରିଚାଳନା କର୍ତ୍ତୃପକ୍ଷ ରାଜଘାଟ, ଜାମଶୋଳାଘାଟ ଓ ଭୋଗରାଇ ନିକଟରେ ସୌରଚାଳିତ ସ୍ୱୟଂକ୍ରିୟ ସେନ୍ସର ବସାଇଛନ୍ତି। ବିପଦ ସଙ୍କେତ ଟପିଲେ ସଙ୍ଗେ ସଙ୍ଗେ ସାଇରନ ଓ ଏସଏମଏସ ଜରିଆରେ ଗ୍ରାମବାସୀଙ୍କୁ ସତର୍କ କରାଯିବ।"
         ),
         NewsArticle(
             id = "news_5",
@@ -334,7 +342,9 @@ object BalasoreRepository {
             odiaSnippet = "ସହରର ଉନ୍ନୟନ ଏବଂ ଭୂତଳ କେବୁଲିଂ ବ୍ୟବସ୍ଥା ନେଇ ପ୍ରଶାସନିକ ବୈଠକ ଅନୁଷ୍ଠିତ ହୋଇଛି।",
             category = "Politics",
             timeAgo = "6 hours ago",
-            source = "Utkal Mail"
+            source = "Utkal Mail",
+            content = "A high-level steering meeting led by local legislators and the Balasore Municipal Commissioner reviewed the ₹85-crore urban drainage masterplan for Cinema Chhak, Motiganj, Gopalgaon, and Azimabad. The municipal council has instructed contractors to clean primary stormwater culverts before the monsoon peak and fast-track underground electrical cabling along OT Road to prevent cyclone wind damage.",
+            odiaContent = "ବାଲେଶ୍ୱର ପୌରପାଳିକା ପରିସରରେ ଆୟୋଜିତ ଉଚ୍ଚସ୍ତରୀୟ ସମୀକ୍ଷା ବୈଠକରେ ସିନେମା ଛକ, ମୋତିଗଞ୍ଜ, ଗୋପାଳଗାଁ ଏବଂ ଅଜିମାବାଦ ଅଞ୍ଚଳରେ ୮୫ କୋଟି ଟଙ୍କାର ଡ୍ରେନେଜ୍ ମାଷ୍ଟରପ୍ଲାନକୁ ତ୍ୱରାନ୍ୱିତ କରିବା ପାଇଁ ନିର୍ଦ୍ଦେଶ ଦିଆଯାଇଛି। ଓଟି ରୋଡରେ ଭୂତଳ ବିଦ୍ୟୁତ୍ କେବୁଲିଂ କାର୍ଯ୍ୟ ମଧ୍ୟ ଜାରି ରହିଛି।"
         ),
         NewsArticle(
             id = "news_6",
@@ -344,7 +354,9 @@ object BalasoreRepository {
             odiaSnippet = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା କ୍ରୀଡା ସଂଘ ଦ୍ୱାରା ଯୁବ ଖେଳାଳିମାନଙ୍କ ପାଇଁ ରାଜ୍ୟସ୍ତରୀୟ ମ୍ୟାଚ୍ ଆୟୋଜନ।",
             category = "Sports",
             timeAgo = "8 hours ago",
-            source = "Odisha Sports Bureau"
+            source = "Odisha Sports Bureau",
+            content = "Balasore District Sports Association has announced that the newly renovated Permit Field turf and athletic tracks at Balasore Stadium will host the Northern Odisha Inter-District U-19 Cricket Cup and Track & Field Meet. Teams from Balasore, Mayurbhanj, Bhadrak, and Jajpur will compete under floodlights with state selectors attending to scout budding sports talent.",
+            odiaContent = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା କ୍ରୀଡ଼ା ସଂଘ ପକ୍ଷରୁ ବାଲେଶ୍ୱର ଷ୍ଟାଡିୟମ (ପରମିଟ୍ ପଡ଼ିଆ) ଠାରେ ଉତ୍ତର ଓଡ଼ିଶା ଆନ୍ତଃଜିଲ୍ଲା ଅଣ୍ଡର-୧୯ କ୍ରିକେଟ ଏବଂ ଆଥଲେଟିକ୍ସ ଚାମ୍ପିଅନସିପ୍ ଆରମ୍ଭ ହେବ। ମୟୂରଭଞ୍ଜ, ଭଦ୍ରକ, ଯାଜପୁର ଓ ବାଲେଶ୍ୱରରୁ ୪୫୦ରୁ ଉର୍ଦ୍ଧ୍ୱ ପ୍ରତିଯୋଗୀ ଅଂଶଗ୍ରହଣ କରିବେ।"
         ),
         NewsArticle(
             id = "news_7",
@@ -354,7 +366,9 @@ object BalasoreRepository {
             odiaSnippet = "କୁରୁଡା ନିକଟରେ ନୂତନ ଶିଳ୍ପ କରିଡର ଓ ଯୋଗାଯୋଗ ବ୍ୟବସ୍ଥାକୁ ମିଳିଲା ସରକାରୀ ଅନୁମୋଦନ।",
             category = "Development",
             timeAgo = "12 hours ago",
-            source = "Prameya News"
+            source = "Prameya News",
+            content = "The National Highways Authority of India (NHAI) and Odisha State Industrial Development Corporation have sanctioned the six-lane expansion of the NH-60 segment linking Balasore to Jaleswar and Kharagpur. A specialized 200-acre multimodal logistics park at Kuruda will house deep freezing storage, dry docks, and electronic testing facilities, drastically cutting transit time for local seafood and plastic manufacturing units.",
+            odiaContent = "ବାଲେଶ୍ୱରରୁ ଜଳେଶ୍ୱର ଦେଇ ଖଡ଼ଗପୁର ସଂଯୋଗ କରୁଥିବା ଜାତୀୟ ରାଜପଥ-୬୦ ର ୬ ଲେନ ସମ୍ପ୍ରସାରଣ କାର୍ଯ୍ୟ ଅନୁମୋଦିତ ହୋଇଛି। କୁରୁଡ଼ା ଠାରେ ୨୦୦ ଏକର ପରିମିତ ମଲ୍ଟିମୋଡାଲ ଲଜିଷ୍ଟିକ୍ସ ପାର୍କ ନିର୍ମାଣ ହେବ, ଯାହା ମାଧ୍ୟମରେ ସାମୁଦ୍ରିକ ଉତ୍ପାଦ ରପ୍ତାନି ଓ ଶିଳ୍ପ କ୍ଷେତ୍ରକୁ ନୂତନ ଗତି ମିଳିବ।"
         ),
         NewsArticle(
             id = "news_8",
@@ -364,7 +378,9 @@ object BalasoreRepository {
             odiaSnippet = "ସହରରେ ଟ୍ରାଫିକ୍ ନିୟନ୍ତ୍ରଣ ଓ ସୌନ୍ଦର୍ଯ୍ୟକରଣ ପାଇଁ ଓଟି ରୋଡ୍ ଓ ସିନେମା ଛକ ମଧ୍ୟରେ ସ୍ମାର୍ଟ ଲାଇଟ୍ ଏବଂ ଫୁଟପାଥ୍ ନିର୍ମାଣ।",
             category = "Local",
             timeAgo = "30 mins ago",
-            source = "Balasore Municipal Wire"
+            source = "Balasore Municipal Wire",
+            content = "Traffic congestion between Phandi Chhak, Sahadevkhunta Bus Stand, and OT Road will soon ease as the town Ring Road expansion is underway. The initiative includes decorative solar LED street lighting, pedestrian-safe brick sidewalks, roundabouts with statues of Fakir Mohan Senapati and Bagha Jatin, and green median landscaping utilizing native flowering bougainvillea shrubs.",
+            odiaContent = "ଫାଣ୍ଡି ଛକ, ସହଦେବଖୁଣ୍ଟା ବସ୍ ଷ୍ଟାଣ୍ଡ ଓ ଓଟି ରୋଡରେ ଟ୍ରାଫିକ୍ ସମସ୍ୟାର ସମାଧାନ ପାଇଁ ରିଙ୍ଗ ରୋଡ୍ ନିର୍ମାଣ ଜାରି ରହିଛି। ବ୍ୟାସକବି ଫକୀର ମୋହନ ସେନାପତି ଏବଂ ବାଘା ଯତୀନଙ୍କ ପ୍ରତିମୂର୍ତ୍ତି ସହ ସୌନ୍ଦର୍ଯ୍ୟକରଣ, ସ୍ମାର୍ଟ ଏଲଇଡି ଲାଇଟ୍ ଓ ପଦଚାରୀ ରାସ୍ତା ନିର୍ମାଣ କରାଯାଉଛି।"
         ),
         NewsArticle(
             id = "news_9",
@@ -374,7 +390,9 @@ object BalasoreRepository {
             odiaSnippet = "ମତ୍ସ୍ୟଜୀବୀମାନଙ୍କ ସୁବିଧା ପାଇଁ ଅତ୍ୟାଧୁନିକ ଶୀତଳ ଭଣ୍ଡାର ଓ ନିଲାମ କେନ୍ଦ୍ର କାର୍ଯ୍ୟକ୍ଷମ ହୋଇଛି।",
             category = "Local",
             timeAgo = "2 hours ago",
-            source = "Coastal Odisha Bureau"
+            source = "Coastal Odisha Bureau",
+            content = "The scenic estuary where the Budhabalanga River joins the Bay of Bengal at Balaramgadi has received a major technological boost with the opening of a modern fish landing terminal. Featuring computerized digital auction boards, flake-ice plants, hygienic gutting sheds, and direct cold-storage vans, local fishermen can now sell prized Hilsa (Ilish), pomfret, and tiger prawns without middleman deductions.",
+            odiaContent = "ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ ମୁହାଣ ବଳରାମଗଡ଼ି ଠାରେ ନୂତନ ମତ୍ସ୍ୟ ଅବତରଣ କେନ୍ଦ୍ର ଖୋଲିଛି। କମ୍ପ୍ୟୁଟରୀକୃତ ନିଲାମ ପ୍ରଣାଳୀ, ବରଫ କାରଖାନା ଓ ଶୀତଳ ଭଣ୍ଡାର ମାଧ୍ୟମରେ ସ୍ଥାନୀୟ ମତ୍ସ୍ୟଜୀବୀମାନେ ସିଧାସଳଖ ଇଲିସି, ଚିଙ୍ଗୁଡ଼ି ଓ କଙ୍କଡ଼ାର ଉଚିତ୍ ମୂଲ୍ୟ ପାଇପାରିବେ।"
         ),
         NewsArticle(
             id = "news_10",
@@ -384,7 +402,9 @@ object BalasoreRepository {
             odiaSnippet = "ଚାନ୍ଦିପୁର ଏବଂ ତାଳସାରୀ ଉପକୂଳରେ ୩୫ ରୁ ୪୫ କିମି ବେଗରେ ପବନ ଓ ବର୍ଷା ସମ୍ଭାବନା, ମତ୍ସ୍ୟଜୀବୀଙ୍କୁ ସତର୍କ ରହିବାକୁ ପରାମର୍ଶ।",
             category = "Weather",
             timeAgo = "40 mins ago",
-            source = "IMD Coastal Warning Center"
+            source = "IMD Coastal Warning Center",
+            content = "The India Meteorological Department (IMD) regional centre in Bhubaneswar has warned of a low-pressure formation over the northwest Bay of Bengal triggering squally winds of 35-45 km/h along Chandipur, Kasafal, and Talasari beaches. Sea conditions will remain rough during evening high tide. Beachgoers are cautioned not to venture past designated boundary markers, and mechanized fishing boats have returned to safe anchorages.",
+            odiaContent = "ଭାରତୀୟ ପାଣିପାଗ ବିଭାଗ (IMD) ପକ୍ଷରୁ ଉତ୍ତର-ପଶ୍ଚିମ ବଙ୍ଗୋପସାଗରରେ ସୃଷ୍ଟ ଲଘୁଚାପ ଯୋଗୁଁ ଚାନ୍ଦିପୁର, କସାଫଳ ଓ ତାଳସାରୀ ଉପକୂଳରେ ଘଣ୍ଟାପ୍ରତି ୩୫-୪୫ କିଲୋମିଟର ବେଗରେ ଝଡ଼ ପବନ ଓ ସମୁଦ୍ର ଅଶାନ୍ତ ରହିବା ନେଇ ସତର୍କତା ଜାରି କରାଯାଇଛି। ସନ୍ଧ୍ୟା ଜୁଆର ସମୟରେ ପର୍ଯ୍ୟଟକମାନଙ୍କୁ ସମୁଦ୍ର ମଧ୍ୟକୁ ନଯିବାକୁ ଅନୁରୋଧ କରାଯାଇଛି।"
         ),
         NewsArticle(
             id = "news_11",
@@ -394,7 +414,9 @@ object BalasoreRepository {
             odiaSnippet = "ଅପରାହ୍ନରେ ସମୁଦ୍ର ଜଳ ପଛକୁ ହଟିବା ପରେ ପର୍ଯ୍ୟଟକମାନେ ଚାଲି ଚାଲି ଗଭୀର ସମୁଦ୍ର ଶଯ୍ୟାର ଦୃଶ୍ୟ ଉପଭୋଗ କରୁଛନ୍ତି।",
             category = "Weather",
             timeAgo = "4 hours ago",
-            source = "Odisha Coastal Ecology"
+            source = "Odisha Coastal Ecology",
+            content = "Nature lovers and coastal researchers flocked to Chandipur Beach this afternoon as the astronomical spring tide caused the shallow continental shelf water to recede an extraordinary 5.2 kilometers. The dry intertidal seabed revealed colonies of red ghost crabs scurrying along mudflats and several pairs of ancient horseshoe crabs (living fossils). Marine biology volunteers accompanied visitors to educate them on biodiversity conservation while strictly ensuring everyone returned before the tidal reversal.",
+            odiaContent = "ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ପ୍ରାକୃତିକ ଭଟ୍ଟା ସମୟରେ ସମୁଦ୍ର ଜଳରାଶି ପ୍ରାୟ ୫.୨ କିଲୋମିଟର ପଛକୁ ଅପସାରିତ ହୋଇଛି। ବାଲୁକା ଶଯ୍ୟାରେ ବିରଳ ଲାଲ କଙ୍କଡ଼ା ଓ ଜୀବନ୍ତ ଜୀବାଶ୍ମ କୁହାଯାଉଥିବା ରାଜକଙ୍କଡ଼ା (Horseshoe Crab) ଦେଖିବାକୁ ପର୍ଯ୍ୟଟକଙ୍କ ଭିଡ଼ ଜମିଥିଲା। ସମୁଦ୍ର ଫେରିବା ପୂର୍ବରୁ ଫେରିଆସିବା ପାଇଁ ଲାଇଫଗାର୍ଡମାନେ ସତର୍କ କରାଇଥିଲେ।"
         ),
         NewsArticle(
             id = "news_12",
@@ -404,7 +426,9 @@ object BalasoreRepository {
             odiaSnippet = "ଜରୁରୀକାଳୀନ ଚିକିତ୍ସା ଓ ରକ୍ତ ସେବାକୁ ତ୍ୱରାନ୍ୱିତ କରିବା ପାଇଁ ସ୍ୱତନ୍ତ୍ର ଡାକ୍ତରୀ ଦଳ ଓ ଦାତା ନେଟୱାର୍କ ପ୍ରସ୍ତୁତ।",
             category = "Emergency",
             timeAgo = "1 hour ago",
-            source = "DHH Emergency Desk"
+            source = "DHH Emergency Desk",
+            content = "The Indian Red Cross Society Balasore District Branch and District Headquarters Hospital (DHH) have streamlined their 24x7 emergency blood bank inventory. A special helpline (+91 6782 262002) has been activated for O-negative, AB-negative, and rare blood components. Dedicated mobile vans and cooling hydration kiosks have also been stationed across Sahadevkhunta, Station Square, and Remuna to assist heat-affected patients and highway trauma cases.",
+            odiaContent = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ମୁଖ୍ୟ ଚିକିତ୍ସାଳୟ (DHH) ଓ ରେଡକ୍ରସ ରକ୍ତଭଣ୍ଡାର ପକ୍ଷରୁ ୨୪ ଘଣ୍ଟିଆ ଜରୁରୀକାଳୀନ ହେଲ୍ପଲାଇନ ସେବା ଆରମ୍ଭ କରାଯାଇଛି। ଦୁର୍ଲଭ ନେଗେଟିଭ୍ ରକ୍ତ ଗ୍ରୁପ୍ ଆବଶ୍ୟକ କରୁଥିବା ରୋଗୀ ଓ ଟ୍ରମା କେନ୍ଦ୍ର ପାଇଁ ସ୍ୱତନ୍ତ୍ର ଦାତା ନେଟୱାର୍କ ସହ ସହଦେବଖୁଣ୍ଟା ଓ ଷ୍ଟେସନ ଛକରେ ସ୍ୱାସ୍ଥ୍ୟ ସହାୟତା ଶିବିର ଖୋଲାଯାଇଛି।"
         )
     )
 

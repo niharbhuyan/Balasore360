@@ -26,7 +26,9 @@ data class NewsArticle(
     val category: String,
     val timeAgo: String,
     val source: String = "Balasore Live Bureau",
-    val isBookmarked: Boolean = false
+    val isBookmarked: Boolean = false,
+    val content: String = "",
+    val odiaContent: String = ""
 )
 
 data class WeatherInfo(
@@ -44,7 +46,11 @@ data class WeatherInfo(
     val precipitationMm: Double = 0.0,
     val dataSource: String = "Open-Meteo Meteorological Service",
     val lastUpdatedTime: String = "Live • Just Now",
-    val isLiveApi: Boolean = true
+    val isLiveApi: Boolean = true,
+    val weatherCode: Int = 2,
+    val conditionIconUrl: String = "https://openweathermap.org/img/wn/02d@2x.png",
+    val iconType: String = "partly_cloudy",
+    val isDay: Boolean = true
 )
 
 data class BalasoreForecastHour(

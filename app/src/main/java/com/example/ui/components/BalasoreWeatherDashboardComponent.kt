@@ -289,25 +289,15 @@ fun BalasoreWeatherDashboardComponent(
                             }
                         }
 
-                        // Condition badge emoji
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.White.copy(alpha = 0.15f),
-                            modifier = Modifier.size(56.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = when {
-                                        weather.condition.contains("Rain", true) -> "🌧️"
-                                        weather.condition.contains("Thunder", true) -> "⛈️"
-                                        weather.condition.contains("Cloud", true) -> "⛅"
-                                        weather.condition.contains("Fog", true) -> "🌫️"
-                                        else -> "☀️"
-                                    },
-                                    fontSize = 28.sp
-                                )
-                            }
-                        }
+                        // Dynamically fetched weather condition icon
+                        DynamicWeatherConditionIcon(
+                            iconUrl = weather.conditionIconUrl,
+                            condition = weather.condition,
+                            weatherCode = weather.weatherCode,
+                            isDay = weather.isDay,
+                            size = 64.dp,
+                            showLiveBadge = true
+                        )
                     }
                 }
             }

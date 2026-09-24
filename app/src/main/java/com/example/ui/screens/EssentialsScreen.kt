@@ -46,6 +46,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -157,6 +158,362 @@ fun EssentialsScreen(
                     text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ଡାକ୍ତରଖାନା, ପୋଲିସ, ବାହାବଳପୁର ମାଛ ବଜାର ଓ ପରିବହନ" else "Hospitals, police, fresh harbor seafood index & transit schedules",
                     style = MaterialTheme.typography.bodyMedium.copy(color = BentoSlate500)
                 )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Quick Launch Utilities
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.TOTO_AUTO_FARE_CARD) }
+                            .testTag("essentials_toto_card_btn"),
+                        color = Color(0xFFFEF9C3),
+                        border = BorderStroke(1.dp, Color(0xFFFDE047))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🛺", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଟୋଟୋ ଭଡ଼ା" else "Toto Fare",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF854D0E)
+                                )
+                                Text("RTA Chart", fontSize = 9.sp, color = Color(0xFFA16207))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_CAMPUS_CAREER_BOARD) }
+                            .testTag("essentials_campus_btn"),
+                        color = Color(0xFFE0F2FE),
+                        border = BorderStroke(1.dp, Color(0xFF7DD3FC))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🎓", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "କ୍ୟାମ୍ପସ୍ ବସ୍" else "FMU Campus",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF075985)
+                                )
+                                Text("Bus & Notice", fontSize = 9.sp, color = Color(0xFF0369A1))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_AUTO_UPDATE_CENTER) }
+                            .testTag("essentials_auto_sync_btn"),
+                        color = Color(0xFFF0FDF4),
+                        border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🔄", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଲାଇଭ୍ ସିଙ୍କ୍" else "Auto-Sync",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                                Text("Every 15m", fontSize = 9.sp, color = Color(0xFF15803D))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Second Quick Launch Utilities Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_JUNCTION_RADAR) }
+                            .testTag("essentials_junction_radar_btn"),
+                        color = Color(0xFFEFF6FF),
+                        border = BorderStroke(1.dp, Color(0xFF93C5FD))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🚆", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଟ୍ରେନ୍ ରାଡାର" else "Rail Radar",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E40AF)
+                                )
+                                Text("BLS Junction", fontSize = 9.sp, color = Color(0xFF2563EB))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.NIGHT_CHEMIST_SANJEEVANI) }
+                            .testTag("essentials_night_rx_btn"),
+                        color = Color(0xFFFEF2F2),
+                        border = BorderStroke(1.dp, Color(0xFFFCA5A5))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("💊", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "୨୪h ଔଷଧାଳୟ" else "24h Chemist",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF991B1B)
+                                )
+                                Text("Oxygen SOS", fontSize = 9.sp, color = Color(0xFFDC2626))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.TPNODL_WATCO_MONITOR) }
+                            .testTag("essentials_power_water_btn"),
+                        color = Color(0xFFFFFBEB),
+                        border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⚡", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ବିଦ୍ୟୁତ୍/ଜଳ" else "Power/Water",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF92400E)
+                                )
+                                Text("Feeder Status", fontSize = 9.sp, color = Color(0xFFB45309))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Third Quick Launch Utilities Row: Civic, Health & Marine Safety
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.MO_SEVA_KENDRA_CITIZEN) }
+                            .testTag("essentials_moseva_btn"),
+                        color = Color(0xFFF0FDF4),
+                        border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🌾", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ମୋ ସେବା" else "Mo Seva",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                                Text("e-District", fontSize = 9.sp, color = Color(0xFF15803D))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.FM_MCH_MEDICAL_COLLEGE_OPD) }
+                            .testTag("essentials_fmmch_opd_btn"),
+                        color = Color(0xFFFEF2F2),
+                        border = BorderStroke(1.dp, Color(0xFFFECACA))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🏥", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଏଫଏମ MCH" else "FM MCH OPD",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF991B1B)
+                                )
+                                Text("Specialists", fontSize = 9.sp, color = Color(0xFFDC2626))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.MARINE_FISHERMEN_SAFETY) }
+                            .testTag("essentials_marine_safety_btn"),
+                        color = Color(0xFFEFF6FF),
+                        border = BorderStroke(1.dp, Color(0xFFBFDBFE))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⚓", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ସମୁଦ୍ର SOS" else "Marine SOS",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E40AF)
+                                )
+                                Text("Coast Guard", fontSize = 9.sp, color = Color(0xFF2563EB))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Fourth Quick Launch Utilities Row: Nature, SHG Crafts & Scholarships
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.KULDIHA_ECO_CAMP_SAFARI) }
+                            .testTag("essentials_kuldiha_safari_btn"),
+                        color = Color(0xFFF0FDF4),
+                        border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🐘", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "କୁଲଡିହା ସଫାରୀ" else "Kuldiha Safari",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF14532D)
+                                )
+                                Text("Rissia Camp", fontSize = 9.sp, color = Color(0xFF16A34A))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.SABAI_GRASS_MISSION_SHAKTI) }
+                            .testTag("essentials_sabai_craft_btn"),
+                        color = Color(0xFFFFFBEB),
+                        border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🧺", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ସବାଇ ଶିଳ୍ପ" else "Sabai Craft",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF92400E)
+                                )
+                                Text("SHG Haat", fontSize = 9.sp, color = Color(0xFFD97706))
+                            }
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_STUDENT_CAREER_SCHOLARSHIP) }
+                            .testTag("essentials_scholarship_btn"),
+                        color = Color(0xFFF0F9FF),
+                        border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🎓", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଛାତ୍ରବୃତ୍ତି" else "Scholarships",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0369A1)
+                                )
+                                Text("Career Desk", fontSize = 9.sp, color = Color(0xFF0284C7))
+                            }
+                        }
+                    }
+                }
             }
         }
 

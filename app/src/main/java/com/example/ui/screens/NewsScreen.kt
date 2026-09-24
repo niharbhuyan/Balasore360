@@ -25,6 +25,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ManageSearch
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Call
@@ -126,7 +135,7 @@ fun NewsScreen(
         }
     }
 
-    // Filter articles by category and local search keywords across titles and body snippets
+    // Filter articles by category and local search keywords across titles, body snippets, and full narrative content
     val filteredArticles = articles.filter { article ->
         val matchesCategory = matchesCategoryForArticle(article, selectedCategory)
         val query = searchQuery.trim()
@@ -135,6 +144,8 @@ fun NewsScreen(
             article.odiaTitle.contains(query, ignoreCase = true) ||
             article.snippet.contains(query, ignoreCase = true) ||
             article.odiaSnippet.contains(query, ignoreCase = true) ||
+            article.content.contains(query, ignoreCase = true) ||
+            article.odiaContent.contains(query, ignoreCase = true) ||
             article.category.contains(query, ignoreCase = true) ||
             article.source.contains(query, ignoreCase = true)
         matchesCategory && matchesSearch
@@ -278,12 +289,45 @@ fun NewsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Open Offline Cyclone Shelter Map & Checklist", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CITIZEN_CIVIC_EYE) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("news_open_civic_eye_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("📸", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଆମ ବାଲେଶ୍ୱର: ନାଗରିକ ଓ ଡ୍ରେନେଜ୍ ଅଭିଯୋଗ ଦାଖଲ" else "Citizen Civic Eye: Report Potholes & Drains",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
 
         // Category Filter Chips & Local Search Field
         item {
+            val popularSearchKeywords = remember {
+                listOf(
+                    "Amrit Bharat",
+                    "DRDO Chandipur",
+                    "High Tide",
+                    "Permit Field",
+                    "Red Cross Blood",
+                    "Balaramgadi Fish",
+                    "Subarnarekha",
+                    "Remuna Gopinath",
+                    "Ring Road"
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -295,7 +339,7 @@ fun NewsScreen(
                     onValueChange = onSearchQueryChanged,
                     placeholder = {
                         Text(
-                            text = if (language == AppLanguage.ODIA) "ଖବର ଓ ଆର୍ଟିକିଲ୍ ଖୋଜନ୍ତୁ..." else "Search headlines, topics, or keywords...",
+                            text = if (language == AppLanguage.ODIA) "ଶିରୋନାମା ବା ବିବରଣୀରୁ ଖବର ଖୋଜନ୍ତୁ..." else "Search news by title or content keywords...",
                             fontSize = 13.sp,
                             color = BentoSlate400
                         )
@@ -333,9 +377,98 @@ fun NewsScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 10.dp)
+                        .padding(bottom = 8.dp)
                         .testTag("news_search_text_field")
                 )
+
+                // Quick Trending Keywords Row (Shown when search is empty)
+                if (searchQuery.isBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.TrendingUp,
+                            contentDescription = null,
+                            tint = OceanBlue,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଲୋକପ୍ରିୟ:" else "Trending:",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BentoSlate600
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.testTag("news_trending_tags_row")
+                        ) {
+                            items(popularSearchKeywords) { kw ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFF1F5F9))
+                                        .clickable { onSearchQueryChanged(kw) }
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = kw,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = BentoSlate700
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Active Search Summary Banner (when searching)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFEFF6FF))
+                            .border(BorderStroke(1.dp, Color(0xFFBFDBFE)), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .testTag("news_search_summary_banner"),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Icon(
+                                imageVector = Icons.Default.ManageSearch,
+                                contentDescription = null,
+                                tint = OceanBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA)
+                                    "\"${searchQuery.trim()}\" ପାଇଁ ${filteredArticles.size} ଟି ଖବର ମିଳିଲା (ଶିରୋନାମା ଓ ବିବରଣୀ)"
+                                else
+                                    "Found ${filteredArticles.size} updates matching \"${searchQuery.trim()}\"",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlueDark
+                            )
+                        }
+
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସଫା କରନ୍ତୁ ✕" else "Clear ✕",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlue,
+                            modifier = Modifier
+                                .clickable { onSearchQueryChanged("") }
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             }
 
             LazyRow(
@@ -541,6 +674,7 @@ fun NewsScreen(
             NewsCard(
                 article = article,
                 language = language,
+                searchQuery = searchQuery,
                 isBookmarked = bookmarkedIds.contains(article.id),
                 onToggleBookmark = { onToggleBookmark(article.id) },
                 onShare = {
@@ -568,14 +702,72 @@ fun NewsScreen(
 }
 
 @Composable
+fun HighlightedNewsText(
+    text: String,
+    query: String,
+    style: TextStyle,
+    highlightColor: Color = Color(0xFFFEF08A),
+    textColor: Color = BentoSlate900,
+    modifier: Modifier = Modifier
+) {
+    val trimmed = query.trim()
+    if (trimmed.isEmpty() || !text.contains(trimmed, ignoreCase = true)) {
+        Text(text = text, style = style, color = textColor, modifier = modifier)
+        return
+    }
+
+    val annotated = buildAnnotatedString {
+        var currentIndex = 0
+        val lowerText = text.lowercase()
+        val lowerQuery = trimmed.lowercase()
+
+        while (currentIndex < text.length) {
+            val matchIndex = lowerText.indexOf(lowerQuery, currentIndex)
+            if (matchIndex == -1) {
+                append(text.substring(currentIndex))
+                break
+            }
+            if (matchIndex > currentIndex) {
+                append(text.substring(currentIndex, matchIndex))
+            }
+            val matchEnd = matchIndex + lowerQuery.length
+            pushStyle(
+                SpanStyle(
+                    background = highlightColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF78350F)
+                )
+            )
+            append(text.substring(matchIndex, matchEnd))
+            pop()
+            currentIndex = matchEnd
+        }
+    }
+
+    Text(text = annotated, style = style, modifier = modifier)
+}
+
+@Composable
 fun NewsCard(
     article: NewsArticle,
     language: AppLanguage,
+    searchQuery: String = "",
     isBookmarked: Boolean,
     onToggleBookmark: () -> Unit,
     onShare: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val titleText = if (language == AppLanguage.ODIA) article.odiaTitle else article.title
+    val snippetText = if (language == AppLanguage.ODIA) article.odiaSnippet else article.snippet
+    val contentText = if (language == AppLanguage.ODIA) article.odiaContent else article.content
+    val query = searchQuery.trim()
+
+    val isMatchedInTitle = query.isNotEmpty() && titleText.contains(query, ignoreCase = true)
+    val isMatchedInSnippet = query.isNotEmpty() && snippetText.contains(query, ignoreCase = true)
+    val isMatchedInContent = query.isNotEmpty() && contentText.contains(query, ignoreCase = true)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -616,8 +808,10 @@ fun NewsCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = if (language == AppLanguage.ODIA) article.odiaTitle else article.title,
+            // Highlighted Title
+            HighlightedNewsText(
+                text = titleText,
+                query = query,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = BentoSlate900,
@@ -627,13 +821,142 @@ fun NewsCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = if (language == AppLanguage.ODIA) article.odiaSnippet else article.snippet,
+            // Highlighted Snippet
+            HighlightedNewsText(
+                text = snippetText,
+                query = query,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = BentoSlate600,
                     lineHeight = 20.sp
                 )
             )
+
+            // Context Excerpt if keyword matched in full article text but not snippet/title
+            if (isMatchedInContent && !isMatchedInTitle && !isMatchedInSnippet) {
+                val matchIdx = contentText.indexOf(query, ignoreCase = true)
+                val start = (matchIdx - 35).coerceAtLeast(0)
+                val end = (matchIdx + query.length + 55).coerceAtMost(contentText.length)
+                val excerpt = "${if (start > 0) "..." else ""}${contentText.substring(start, end)}${if (end < contentText.length) "..." else ""}"
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFFEF3C7))
+                        .border(BorderStroke(1.dp, Color(0xFFFCD34D)), RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color(0xFFB45309),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଆର୍ଟିକିଲ୍ ମଧ୍ୟରେ ମିଳିଥିବା ଅଂଶ:" else "Matched inside article text:",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF92400E)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(3.dp))
+                        HighlightedNewsText(
+                            text = excerpt,
+                            query = query,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = Color(0xFF78350F), lineHeight = 18.sp),
+                            highlightColor = Color(0xFFFDE68A)
+                        )
+                    }
+                }
+            }
+
+            // Expandable Full Story View
+            if (contentText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { isExpanded = !isExpanded }
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.MenuBook,
+                            contentDescription = null,
+                            tint = OceanBlue,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isExpanded) {
+                                if (language == AppLanguage.ODIA) "ସମ୍ପୂର୍ଣ୍ଣ ଖବର ବନ୍ଦ କରନ୍ତୁ" else "Collapse Full Story"
+                            } else {
+                                if (language == AppLanguage.ODIA) "ସମ୍ପୂର୍ଣ୍ଣ ଖବର ପଢ଼ନ୍ତୁ" else "Read Full Story"
+                            },
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlue
+                        )
+                    }
+
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = OceanBlue,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                AnimatedVisibility(visible = isExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF8FAFC))
+                            .border(BorderStroke(1.dp, BentoSlate100), RoundedCornerShape(10.dp))
+                            .padding(12.dp)
+                    ) {
+                        val words = contentText.split("\\s+".toRegex()).size
+                        val readingMinutes = (words / 130).coerceAtLeast(1)
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ" else "Full Detailed Report",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate700
+                            )
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "$readingMinutes ମିନିଟ୍ ପଠନ ($words ଶବ୍ଦ)" else "$readingMinutes min read ($words words)",
+                                fontSize = 10.sp,
+                                color = BentoSlate400
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        HighlightedNewsText(
+                            text = contentText,
+                            query = query,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = BentoSlate800,
+                                lineHeight = 22.sp
+                            )
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 

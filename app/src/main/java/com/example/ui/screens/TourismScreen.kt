@@ -86,6 +86,8 @@ import com.example.ui.components.LiveEmergencyAlertBanner
 import com.example.ui.components.UniqueFeaturesPillGrid
 import com.example.ui.components.DailyAutoUpdateCard
 import com.example.ui.components.TidalDataVisualizationCard
+import com.example.ui.components.ChandipurTidalGoogleMapView
+import com.example.ui.components.FeedbackFormCard
 import com.example.data.daily.DailyBalasorePulse
 import com.example.data.daily.DailyUpdateEngine
 import com.example.ui.theme.AmberGold
@@ -353,6 +355,16 @@ fun TourismScreen(
             )
         }
 
+        // Google Maps SDK Live View: Dynamic Chandipur Tidal Range & Vanishing Sea Seabed Visualization
+        item {
+            ChandipurTidalGoogleMapView(
+                dailyPulse = dailyPulse,
+                language = language,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                onOpenFullMap = { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER) }
+            )
+        }
+
         // Live Special Features Quick Hub (31 Live Hubs)
         item {
             UniqueFeaturesPillGrid(
@@ -370,6 +382,14 @@ fun TourismScreen(
                 onAddToItinerary = onAddToItinerary,
                 onRemoveFromItinerary = onRemoveFromItinerary,
                 onClearItinerary = onClearItinerary,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+        }
+
+        // Citizen Feedback & Suggestions Form Component (Firestore 'feedback' collection)
+        item {
+            FeedbackFormCard(
+                language = language,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
             )
         }
