@@ -33,6 +33,7 @@ import com.example.ui.theme.*
 import com.example.ui.viewmodel.UniqueFeatureSheetType
 import com.example.data.daily.DailyBalasorePulse
 import com.example.data.daily.DailyUpdateEngine
+import com.example.util.AudioPhraseHelper
 
 /**
  * Live Daily Auto-Update Pulse Card for Balasore.
@@ -675,6 +676,420 @@ fun DailyAutoUpdateCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             color = Color(0xFF7E22CE)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 5: 🌊 INCOIS Marine Swell & Tidal Reversal Alert
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY) },
+                    color = Color(0xFFE0F2FE),
+                    border = BorderStroke(1.dp, Color(0xFF7DD3FC))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🌊 INCOIS Sea Swell", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0284C7))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.incoisSeaFlagColor.contains("GREEN")) Color(0xFF22C55E) else Color(0xFFEAB308),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${dailyPulse.incoisSwellMeters}m Wave Swell",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0369A1)
+                        )
+                        Text(
+                            text = dailyPulse.incoisSeaFlagColor,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF0284C7)
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
+                    color = if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFFEF2F2) else Color(0xFFF0FDF4),
+                    border = BorderStroke(1.dp, if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFFCA5A5) else Color(0xFF86EFAC))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⏰ Tide Return Alarm", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFDC2626) else Color(0xFF16A34A))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFEF4444) else Color(0xFF22C55E),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (dailyPulse.isTideReversalAlarmImminent) "⚠️ REVERSAL IMMINENT" else "Safe Walk Active",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFB91C1C) else Color(0xFF15803D)
+                        )
+                        Text(
+                            text = if (dailyPulse.isTideReversalAlarmImminent) "Return to shore immediately" else "Safe walk up to 4.8 km",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = if (dailyPulse.isTideReversalAlarmImminent) Color(0xFFDC2626) else Color(0xFF16A34A)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 6: 🚌 Smart Transit - CRUT Mo Bus & River Ferry
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.BALASORE_MO_BUS_CRUT_NAVIGATOR) },
+                    color = Color(0xFFFFFBEB),
+                    border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🚌 Mo Bus Live ETA", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD97706))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFF59E0B),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Route 101 in ${dailyPulse.moBusRoute101EtaMins}m",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF92400E)
+                        )
+                        Text(
+                            text = "Station ⇄ Remuna • Rt 102: ${dailyPulse.moBusRoute102EtaMins}m",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFFB45309)
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.RIVER_FERRY_SCHEDULE) },
+                    color = Color(0xFFF0FDF4),
+                    border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⛴️ River Ferry Ghat", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF22C55E),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Balaramgadi Ghat",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF15803D)
+                        )
+                        Text(
+                            text = dailyPulse.riverFerryCrossingStatus,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF16A34A)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 7: 🩸 Emergency ICU Beds & Voluntary Blood Registry
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.BLOOD_AND_BED_PULSE) },
+                    color = Color(0xFFFEF2F2),
+                    border = BorderStroke(1.dp, Color(0xFFFECACA))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🩸 Blood Bank Units", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFDC2626))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFEF4444),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${dailyPulse.dhhBloodUnitsStored} Units in Store",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF991B1B)
+                        )
+                        Text(
+                            text = "DHH & Red Cross 24x7 Registry",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFFB91C1C)
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.FM_MCH_MEDICAL_COLLEGE_OPD) },
+                    color = Color(0xFFF8FAFC),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🏥 Critical Ward Beds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF22C55E),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "ICU: ${dailyPulse.fmmchIcuBedsVacant} • Dialysis: ${dailyPulse.fmmchDialysisBedsVacant}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E293B)
+                        )
+                        Text(
+                            text = "FMMCH & DHH Live Casualty",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 8: 📜 Baleswari Odia Audio Phrasebook & Story Trail
+            val localContext = LocalContext.current
+            var isSpeakingPhrase by remember { mutableStateOf(false) }
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onFeatureClick(UniqueFeatureSheetType.BALESWARIYA_DIALECT_PROVERBS) },
+                color = Color(0xFFFDF4FF),
+                border = BorderStroke(1.dp, Color(0xFFF0ABFC))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🗣️ Baleswari Audio Phrase", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC026D3))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFFAE8FF)
+                            ) {
+                                Text(
+                                    text = "AUDIO TAP",
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFFA21CAF),
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = dailyPulse.dialectAudioPhraseTitle,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF701A75)
+                        )
+                        Text(
+                            text = dailyPulse.dialectAudioPhraseMeaning,
+                            fontSize = 9.sp,
+                            color = Color(0xFF86198F)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            val audioHelper = AudioPhraseHelper.getInstance(localContext)
+                            if (isSpeakingPhrase) {
+                                audioHelper.stop()
+                                isSpeakingPhrase = false
+                            } else {
+                                audioHelper.speak("phrase_daily", "${dailyPulse.dialectAudioPhraseTitle}. ${dailyPulse.dialectAudioPhraseMeaning}")
+                                isSpeakingPhrase = true
+                            }
+                        },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF5D0FE))
+                    ) {
+                        Icon(
+                            imageVector = if (isSpeakingPhrase) Icons.Default.Stop else Icons.Default.VolumeUp,
+                            contentDescription = "Hear native pronunciation",
+                            tint = Color(0xFFA21CAF),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Live Ticker Row 9: 🌾 Mandi Procurement & Sabai Grass Handicrafts
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.DHAN_MANDI_MSP_PROCUREMENT) },
+                    color = Color(0xFFF7FEE7),
+                    border = BorderStroke(1.dp, Color(0xFFD9F99D))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🌾 Mandi Paddy MSP", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF65A30D))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF84CC16),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "₹${dailyPulse.paddyMspRatePerQuintal} / Quintal",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF3F6212)
+                        )
+                        Text(
+                            text = "Vannamei: ₹${dailyPulse.aquacultureVannameiRateKg}/kg",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF4D7C0F)
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onFeatureClick(UniqueFeatureSheetType.SABAI_GRASS_MISSION_SHAKTI) },
+                    color = Color(0xFFFEFCE8),
+                    border = BorderStroke(1.dp, Color(0xFFFEF08A))
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🧺 Sabai Grass SHG", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFCA8A04))
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFEAB308),
+                                modifier = Modifier.size(6.dp)
+                            ) {}
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${dailyPulse.sabaiGrassActiveShgClusters} Active Clusters",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF854D0E)
+                        )
+                        Text(
+                            text = "Nilagiri Golden Fiber Mart",
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFFA16207)
                         )
                     }
                 }

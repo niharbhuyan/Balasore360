@@ -429,6 +429,54 @@ object BalasoreRepository {
             source = "DHH Emergency Desk",
             content = "The Indian Red Cross Society Balasore District Branch and District Headquarters Hospital (DHH) have streamlined their 24x7 emergency blood bank inventory. A special helpline (+91 6782 262002) has been activated for O-negative, AB-negative, and rare blood components. Dedicated mobile vans and cooling hydration kiosks have also been stationed across Sahadevkhunta, Station Square, and Remuna to assist heat-affected patients and highway trauma cases.",
             odiaContent = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ମୁଖ୍ୟ ଚିକିତ୍ସାଳୟ (DHH) ଓ ରେଡକ୍ରସ ରକ୍ତଭଣ୍ଡାର ପକ୍ଷରୁ ୨୪ ଘଣ୍ଟିଆ ଜରୁରୀକାଳୀନ ହେଲ୍ପଲାଇନ ସେବା ଆରମ୍ଭ କରାଯାଇଛି। ଦୁର୍ଲଭ ନେଗେଟିଭ୍ ରକ୍ତ ଗ୍ରୁପ୍ ଆବଶ୍ୟକ କରୁଥିବା ରୋଗୀ ଓ ଟ୍ରମା କେନ୍ଦ୍ର ପାଇଁ ସ୍ୱତନ୍ତ୍ର ଦାତା ନେଟୱାର୍କ ସହ ସହଦେବଖୁଣ୍ଟା ଓ ଷ୍ଟେସନ ଛକରେ ସ୍ୱାସ୍ଥ୍ୟ ସହାୟତା ଶିବିର ଖୋଲାଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_13",
+            title = "Talasari & Bichitrapur Coastal Mangrove Eco-Tourism Expansion Announced",
+            odiaTitle = "ତାଳସାରୀ ଓ ବିଚିତ୍ରପୁର ଉପକୂଳ ଇକୋ-ଟୁରିଜମ୍ ସମ୍ପ୍ରସାରଣ ଘୋଷଣା",
+            snippet = "Modern eco-cottages, solar speedboats, and protected mudflat trails launched to preserve red ghost crab zones.",
+            odiaSnippet = "ତାଳସାରୀ ବେଳାଭୂମି ଓ ବିଚିତ୍ରପୁର ହେନ୍ତାଳବନରେ ପର୍ଯ୍ୟଟକଙ୍କ ପାଇଁ ସୌର ବୋଟିଂ ଏବଂ ପରିବେଶ ଅନୁକୂଳ କଟେଜ୍ ସୁବିଧା।",
+            category = "Coastal",
+            timeAgo = "2 hours ago",
+            source = "Odisha Coastal Tourism Board",
+            content = "The Forest and Tourism Department has sanctioned an extensive eco-tourism upgrade along the Talasari-Udaipur beach belt and Bichitrapur mangrove wetlands at the Odisha-West Bengal coastal border. The project incorporates battery-operated solar safari boats, elevated timber nature walkways across mangrove mudflats, and dedicated conservation zones to safeguard the nesting grounds of red ghost crabs. Trained local fishermen self-help groups have been deployed as certified ecoguides to guide coastal travelers.",
+            odiaContent = "ଜଙ୍ଗଲ ଓ ପର୍ଯ୍ୟଟନ ବିଭାଗ ପକ୍ଷରୁ ତାଳସାରୀ ବେଳାଭୂମି ଏବଂ ବିଚିତ୍ରପୁର ହେନ୍ତାଳବନ ଅଞ୍ଚଳରେ ଇକୋ-ଟୁରିଜମ୍ ପ୍ରକଳ୍ପ ଆରମ୍ଭ ହୋଇଛି। ସୌରଚାଳିତ ବୋଟିଂ, କାଠର ପ୍ରକୃତି ପଦଚାରୀ ରାସ୍ତା ଏବଂ ବିରଳ ଲାଲ କଙ୍କଡ଼ା ସଂରକ୍ଷଣ ପାଇଁ ସ୍ୱତନ୍ତ୍ର ପଦକ୍ଷେପ ନିଆଯାଇଛି। ସ୍ଥାନୀୟ ମତ୍ସ୍ୟଜୀବୀମାନଙ୍କୁ ପ୍ରଶିକ୍ଷଣ ଦିଆଯାଇ ଇକୋ-ଗାଇଡ୍ ଭାବେ ନିଯୁକ୍ତି ଦିଆଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_14",
+            title = "Panchalingeswar Temple Perennial Mountain Stream Darshan Facilitated for Devotees",
+            odiaTitle = "ପବିତ୍ର ପାହାଡ଼ୀ ଝରଣା ଦର୍ଶନ ପାଇଁ ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ପୀଠରେ ଶ୍ରଦ୍ଧାଳୁଙ୍କ ଗହଳି",
+            snippet = "District administration installs anti-slip safety railings and queue management shades along the Devagiri hill shrine.",
+            odiaSnippet = "ନୀଳଗିରି ଦେବଗିରି ପାହାଡ଼ ଉପରେ ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ପୀଠରେ ଶ୍ରଦ୍ଧାଳୁଙ୍କ ସୁରକ୍ଷା ପାଇଁ ଷ୍ଟେନଲେସ ଷ୍ଟିଲ ରେଲିଂ ଓ ଛାତ ନିର୍ମିତ।",
+            category = "Spiritual",
+            timeAgo = "3 hours ago",
+            source = "Balasore Devaswom Board",
+            content = "Devotees visiting the sacred Panchalingeswar Temple atop Devagiri Hill in Nilagiri can now experience hassle-free worship of the five Shiva Lingas constantly submerged in cold perennial spring water. The district administration and endowment commission have installed non-slip textured stone pathways, stainless steel safety banisters along the waterfall steps, and drinking water kiosks. Special medical aid outposts have been set up for senior citizen pilgrims hiking up the sacred hill.",
+            odiaContent = "ନୀଳଗିରିର ଦେବଗିରି ପାହାଡ଼ ଶୀର୍ଷରେ ଅବସ୍ଥିତ ପ୍ରସିଦ୍ଧ ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ମନ୍ଦିରରେ ସ୍ୱତନ୍ତ୍ର ସୁରକ୍ଷା ବ୍ୟବସ୍ଥା କରାଯାଇଛି। ସବୁଦିନିଆ ପାହାଡ଼ୀ ଝରଣା ପାଣିରେ ବୁଡ଼ି ରହିଥିବା ପାଞ୍ଚଟି ଶିବଲିଙ୍ଗଙ୍କୁ ଦର୍ଶନ କରିବା ପାଇଁ ଷ୍ଟେନଲେସ୍ ଷ୍ଟିଲ ରେଲିଂ, ଅଣ-ଖସଡ଼ା ପଥର ଚଟାଣ ଓ ପାନୀୟ ଜଳ ବ୍ୟବସ୍ଥା ହୋଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_15",
+            title = "Emami Jagannath Temple Januganj Hosts Grand Evening Alati & Odissi Devotional Recital",
+            odiaTitle = "ଇମାମି ଜଗନ୍ନାଥ ମନ୍ଦିରରେ ସ୍ୱତନ୍ତ୍ର ସନ୍ଧ୍ୟା ଆଳତି ଓ ଓଡ଼ିଶୀ ଭଜନ ସନ୍ଧ୍ୟା",
+            snippet = "Centuries of Utkal spiritual heritage celebrated in the modern Kalinga-style stone courtyard with sacred Amruta Keli distribution.",
+            odiaSnippet = "ଜାନୁଗଞ୍ଜ ସ୍ଥିତ କଳିଙ୍ଗ ଶୈଳୀର ପ୍ରାଚୀନ କାରୁକାର୍ଯ୍ୟପୂର୍ଣ୍ଣ ମନ୍ଦିରରେ ହଜାର ହଜାର ଭକ୍ତଙ୍କ ସମାଗମ।",
+            category = "Spiritual",
+            timeAgo = "5 hours ago",
+            source = "Shri Jagannath Seva Sangha",
+            content = "The majestic Emami Jagannath Temple at Remuna-Januganj bypass attracted thousands of coastal devotees for the special Sandhya Alati and classical Odissi flute performance. The sacred shrine complex, renowned for its ornate Kalinga stone sculptures and lush surrounding flora, held continuous devotional chanting. Temple trust volunteers ensured disciplined darshan for visitors traveling from across Balasore, Mayurbhanj, and West Bengal.",
+            odiaContent = "ବାଲେଶ୍ୱର ଜାନୁଗଞ୍ଜ ସ୍ଥିତ ଏମାମି ଜଗନ୍ନାଥ ମନ୍ଦିର ପରିସରରେ ମନୋରମ ସନ୍ଧ୍ୟା ଆଳତି ଓ ଶାସ୍ତ୍ରୀୟ ଓଡ଼ିଶୀ ବଂଶୀ ବାଦନ ଅନୁଷ୍ଠିତ ହୋଇଛି। କଳିଙ୍ଗ ସ୍ଥାପତ୍ୟ କଳାର ଏହି ଭବ୍ୟ ମନ୍ଦିରରେ ଭକ୍ତମାନେ ଶାନ୍ତିପୂର୍ଣ୍ଣ ଭାବେ ଶ୍ରୀଜଗନ୍ନାଥଙ୍କ ଦର୍ଶନ କରିବା ସହ ପ୍ରସାଦ ସେବନ କରିଛନ୍ତି।"
+        ),
+        NewsArticle(
+            id = "news_16",
+            title = "Chandipur Marine Life Volunteers Tag Endangered Horseshoe Crabs During Vanishing Tide",
+            odiaTitle = "ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ରାଜକଙ୍କଡ଼ା (ହର୍ସସୁ କ୍ରାବ୍) ଗବେଷଣା ଓ ଟ୍ୟାଗିଂ କାର୍ଯ୍ୟକ୍ରମ",
+            snippet = "FM University zoology department and state biodiversity council monitor living fossil colonies along intertidal mudflats.",
+            odiaSnippet = "ସମୁଦ୍ର ଅପସାରିତ ହେବା ପରେ ବାଲୁକା ଶଯ୍ୟାରେ ବିରଳ ରାଜକଙ୍କଡ଼ାଙ୍କ ସଂରକ୍ଷଣ ଉପରେ ଗବେଷକଙ୍କ ଦଳ କାର୍ଯ୍ୟ କରୁଛନ୍ତି।",
+            category = "Coastal",
+            timeAgo = "6 hours ago",
+            source = "FMU Marine Biology Department",
+            content = "A joint research unit from Fakir Mohan University and Odisha Biodiversity Board conducted a field census of living fossil horseshoe crabs (Tachypleus gigas and Carcinoscorpius rotundicauda) exposed on the intertidal flats during Chandipur's vanishing low tide. Over 65 specimens were weighed, tagged with microscopic tracking bands, and safely returned to deep tidal channels. The team urged beachgoers to avoid stepping on sand ripples where crabs burrow to lay eggs.",
+            odiaContent = "ଫକୀର ମୋହନ ବିଶ୍ୱବିଦ୍ୟାଳୟ ପ୍ରାଣୀବିଜ୍ଞାନ ବିଭାଗ ଓ ରାଜ୍ୟ ଜୈବବିବିଧତା ବୋର୍ଡ ପକ୍ଷରୁ ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ବିରଳ ଜୀବନ୍ତ ଜୀବାଶ୍ମ ରାଜକଙ୍କଡ଼ାଙ୍କ ଉପରେ ସର୍ଭେ କରାଯାଇଛି। ୬୫ ରୁ ଅଧିକ ରାଜକଙ୍କଡ଼ାଙ୍କୁ ଟ୍ୟାଗିଂ କରି ସୁରକ୍ଷିତ ଭାବେ ସମୁଦ୍ରକୁ ଫେରାଇ ଦିଆଯାଇଛି।"
         )
     )
 

@@ -117,7 +117,7 @@ fun NewsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val categories = listOf("All", "Local", "Sports", "Emergency", "Weather", "Development", "Culture", "Defense", "Politics")
+    val categories = listOf("All", "Local", "Coastal", "Spiritual", "Emergency", "Weather", "Culture", "Defense", "Sports", "Development", "Politics")
 
     val matchesCategoryForArticle: (NewsArticle, String) -> Boolean = { article, cat ->
         when (cat) {
@@ -125,6 +125,26 @@ fun NewsScreen(
             "Local" -> article.category.equals("Local", ignoreCase = true) ||
                        article.category.equals("Infrastructure", ignoreCase = true) ||
                        article.category.contains("Civic", ignoreCase = true)
+            "Coastal" -> article.category.equals("Coastal", ignoreCase = true) ||
+                         article.category.contains("Marine", ignoreCase = true) ||
+                         article.category.contains("Tide", ignoreCase = true) ||
+                         article.title.contains("Chandipur", ignoreCase = true) ||
+                         article.title.contains("Talasari", ignoreCase = true) ||
+                         article.title.contains("Balaramgadi", ignoreCase = true) ||
+                         article.title.contains("Coastal", ignoreCase = true) ||
+                         article.title.contains("Sea", ignoreCase = true) ||
+                         article.content.contains("Bay of Bengal", ignoreCase = true) ||
+                         article.category.equals("Defense", ignoreCase = true)
+            "Spiritual" -> article.category.equals("Spiritual", ignoreCase = true) ||
+                           article.category.equals("Culture", ignoreCase = true) ||
+                           article.category.contains("Temple", ignoreCase = true) ||
+                           article.title.contains("Gopinath", ignoreCase = true) ||
+                           article.title.contains("Temple", ignoreCase = true) ||
+                           article.title.contains("Mahotsav", ignoreCase = true) ||
+                           article.title.contains("Jagannath", ignoreCase = true) ||
+                           article.title.contains("Panchalingeswar", ignoreCase = true) ||
+                           article.content.contains("devotees", ignoreCase = true) ||
+                           article.content.contains("pilgrimage", ignoreCase = true)
             "Sports" -> article.category.contains("Sports", ignoreCase = true) ||
                         article.category.contains("Athletic", ignoreCase = true)
             "Emergency" -> article.category.contains("Emergency", ignoreCase = true) ||
@@ -560,6 +580,8 @@ fun NewsScreen(
                     val emoji = when (cat) {
                         "All" -> "🌐"
                         "Local" -> "📍"
+                        "Coastal" -> "🌊"
+                        "Spiritual" -> "🛕"
                         "Sports" -> "🏏"
                         "Emergency" -> "🚨"
                         "Weather" -> "🌦️"
@@ -573,6 +595,8 @@ fun NewsScreen(
                         when (cat) {
                             "All" -> "ସମସ୍ତ"
                             "Local" -> "ସ୍ଥାନୀୟ"
+                            "Coastal" -> "ଉପକୂଳ"
+                            "Spiritual" -> "ଆଧ୍ୟାତ୍ମିକ"
                             "Sports" -> "କ୍ରୀଡ଼ା"
                             "Emergency" -> "ଜରୁରୀକାଳୀନ"
                             "Weather" -> "ପାଣିପାଗ"

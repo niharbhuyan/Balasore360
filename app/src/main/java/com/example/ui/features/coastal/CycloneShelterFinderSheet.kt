@@ -43,6 +43,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import android.media.AudioManager
+import android.media.ToneGenerator
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -86,6 +90,43 @@ fun CycloneShelterFinderSheet(
 ) {
     val context = LocalContext.current
     var selectedBlock by remember { mutableStateOf("All") }
+    var isSosStrobeActive by remember { mutableStateOf(false) }
+    var isWhistleSounding by remember { mutableStateOf(false) }
+    var strobeColorToggle by remember { mutableStateOf(false) }
+
+    val toneGen = remember {
+        try {
+            ToneGenerator(AudioManager.STREAM_ALARM, 100)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    LaunchedEffect(isSosStrobeActive) {
+        if (isSosStrobeActive) {
+            while (isSosStrobeActive) {
+                delay(280L)
+                strobeColorToggle = !strobeColorToggle
+            }
+        } else {
+            strobeColorToggle = false
+        }
+    }
+
+    LaunchedEffect(isWhistleSounding) {
+        if (isWhistleSounding) {
+            while (isWhistleSounding) {
+                try {
+                    toneGen?.startTone(ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, 450)
+                } catch (_: Exception) {}
+                delay(650L)
+            }
+        } else {
+            try {
+                toneGen?.stopTone()
+            } catch (_: Exception) {}
+        }
+    }
 
     val shelters = remember {
         listOf(

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.daily.DailyBalasorePulse
 import com.example.data.model.AppLanguage
 import com.example.ui.theme.*
+import com.example.ui.viewmodel.UniqueFeatureSheetType
 
 data class SubsystemTelemetryStatus(
     val nameEn: String,
@@ -37,7 +38,8 @@ data class SubsystemTelemetryStatus(
     val iconEmoji: String,
     val statusText: String,
     val updateInterval: String,
-    val isOnline: Boolean = true
+    val isOnline: Boolean = true,
+    val targetSheet: UniqueFeatureSheetType? = null
 )
 
 /**
@@ -63,7 +65,8 @@ fun AutoUpdateCenterSheet(
     onToggleAutoRefresh: (Boolean) -> Unit,
     onSetFrequency: (Int) -> Unit,
     onCheckForUpdates: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onOpenFeatureSheet: ((UniqueFeatureSheetType) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val infiniteTransition = rememberInfiniteTransition(label = "sync_spin")
@@ -79,343 +82,207 @@ fun AutoUpdateCenterSheet(
 
     val frequencyOptions = listOf(1, 5, 15, 30, 60)
 
-    val telemetrySubsystems = remember {
+    val telemetrySubsystems = remember(dailyPulse) {
         listOf(
             SubsystemTelemetryStatus(
                 nameEn = "Subarnarekha & Budhabalanga River Levels",
                 nameOd = "ସୁବର୍ଣ୍ଣରେଖା ଓ ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ ଜଳସ୍ତର",
                 iconEmoji = "🌊",
-                statusText = "Rajghat Gauge: 8.42m (Normal, Warning at 9.45m)",
-                updateInterval = "Every 15 mins"
+                statusText = dailyPulse.subarnarekhaBasinRisk,
+                updateInterval = "Live CWC / Irrigation Gauge Sync",
+                targetSheet = UniqueFeatureSheetType.SUBARNAREKHA_SLUICE_FLOOD_RADAR
             ),
             SubsystemTelemetryStatus(
-                nameEn = "Chandipur Vanishing Sea Tidal Clock",
-                nameOd = "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ଭଟ୍ଟା ସମୟ ନିୟନ୍ତ୍ରକ",
+                nameEn = "Chandipur Vanishing Sea & Tide Reversal Alarm",
+                nameOd = "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ଭଟ୍ଟା ସମୟ ନିୟନ୍ତ୍ରକ ଓ ଆଲାର୍ମ",
                 iconEmoji = "🏖️",
-                statusText = "Receding 4.8 km into Bay of Bengal • Safe Walking",
-                updateInterval = "Continuous Lunar Algorithmic Sync"
+                statusText = "${dailyPulse.chandipurLowTideWindow} • ${if (dailyPulse.isChandipurWalkSafeNow) "Safe Intertidal Walking 🟢" else "⚠️ Tide Returning (High Tide ${dailyPulse.chandipurNextHighTide})"}",
+                updateInterval = "Continuous Lunar Algorithmic Sync",
+                targetSheet = UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "INCOIS Ocean Marine & High Wave Radar",
+                nameOd = "ସାମୁଦ୍ରିକ ତରଙ୍ଗ ସତର୍କତା ବାର୍ତ୍ତା (INCOIS)",
+                iconEmoji = "⚠️",
+                statusText = "${dailyPulse.incoisSeaFlagColor} • Swell: ${String.format(java.util.Locale.US, "%.1fm", dailyPulse.incoisSwellMeters)} • Safe bathing zones active",
+                updateInterval = "Live IMD / INCOIS Telemetry Feed",
+                targetSheet = UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore Mo Bus & CRUT Transit Navigator",
+                nameOd = "ବାଲେଶ୍ୱର ମୋ ବସ୍ ଓ CRUT ଅର୍ବାନ ଟ୍ରାଞ୍ଜିଟ୍",
+                iconEmoji = "🚌",
+                statusText = "Route 101: ${dailyPulse.moBusRoute101EtaMins}m • Route 102: ${dailyPulse.moBusRoute102EtaMins}m • Route 103: ${dailyPulse.moBusRoute103EtaMins}m",
+                updateInterval = "Live CRUT Sahadevkhunta Telemetry",
+                targetSheet = UniqueFeatureSheetType.BALASORE_MO_BUS_CRUT_NAVIGATOR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "SER Balasore Junction (BLS) Train & Platform Radar",
+                nameOd = "ବାଲେଶ୍ୱର ଜଙ୍କସନ ଟ୍ରେନ ଓ ପ୍ଲାଟଫର୍ମ ରାଡାର",
+                iconEmoji = "🚆",
+                statusText = "Platform allocation & mainline signals normal • Vande Bharat & Dhauli live",
+                updateInterval = "Live SER Division Rail Sync",
+                targetSheet = UniqueFeatureSheetType.BALASORE_JUNCTION_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Subarnarekha River & Estuary Ferry Timetable",
+                nameOd = "ସୁବର୍ଣ୍ଣରେଖା ନଦୀ ଓ ଘାଟ ଡଙ୍ଗା ଚଳାଚଳ",
+                iconEmoji = "⛴️",
+                statusText = dailyPulse.riverFerryCrossingStatus,
+                updateInterval = "Continuous Ferry Dispatch Sync",
+                targetSheet = UniqueFeatureSheetType.RIVER_FERRY_SCHEDULE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "DHH & Red Cross Blood Bank Live Pulse",
+                nameOd = "ବାଲେଶ୍ୱର DHH ରକ୍ତଭଣ୍ଡାର ଲାଇଭ୍ ଷ୍ଟକ୍",
+                iconEmoji = "🩸",
+                statusText = "${dailyPulse.dhhBloodUnitsStored} total units stored • Emergency O- & Platelets component reserves live",
+                updateInterval = "Hourly Real-Time Push",
+                targetSheet = UniqueFeatureSheetType.DHH_BLOOD_BANK_LIVE_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "FM MCH Hospital Bed & ICU Live Telemetry",
+                nameOd = "ଫକୀର ମୋହନ ମେଡିକାଲ ବେଡ୍ ଓ ଆଇସିୟୁ ରାଡାର",
+                iconEmoji = "🏥",
+                statusText = "ICU Beds Vacant: ${dailyPulse.fmmchIcuBedsVacant} • Dialysis Units: ${dailyPulse.fmmchDialysisBedsVacant} • ${dailyPulse.antiVenomStockAdvisory}",
+                updateInterval = "Live Health Dept Hospital Sync",
+                targetSheet = UniqueFeatureSheetType.BLOOD_AND_BED_PULSE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Panchalingeswar Perennial Stream & Temple Darshan",
+                nameOd = "ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ପାହାଡ଼ ଝରଣା ଓ ଦର୍ଶନ ସମୟ",
+                iconEmoji = "🛕",
+                statusText = "${dailyPulse.panchalingeswarFlowStatus} • Slip Risk: ${dailyPulse.panchalingeswarSlipRisk}",
+                updateInterval = "Daily Temple Trust & Stream Sync",
+                targetSheet = UniqueFeatureSheetType.PANCHALINGESWAR_KULDIHA_SAFARI
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Bhusandeswar & Chandaneswar Shiva Pilgrimage",
+                nameOd = "ଭୂଷଣ୍ଡେଶ୍ୱର ଓ ଚନ୍ଦନେଶ୍ୱର ତୀର୍ଥ ରାଡାର",
+                iconEmoji = "🕉️",
+                statusText = "${dailyPulse.chandaneswarDailyRitual} • Chadak Mela crowd guidance active",
+                updateInterval = "Daily Temple Schedule Sync",
+                targetSheet = UniqueFeatureSheetType.BHUSANDESWAR_CHANDANESWAR_PILGRIMAGE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Dhan Mandi & MSP Paddy Procurement Radar",
+                nameOd = "ଧାନ ମଣ୍ଡି ଓ ଏମଏସପି କ୍ରୟ ରାଡାର",
+                iconEmoji = "🌾",
+                statusText = "Govt MSP Rate: ₹${dailyPulse.paddyMspRatePerQuintal} / quintal • Jaleswar, Soro, Basta PACS tokens live",
+                updateInterval = "Live Mandi Procurement Feed",
+                targetSheet = UniqueFeatureSheetType.DHAN_MANDI_MSP_PROCUREMENT
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Subarnarekha Brackish Shrimp & Aqua Pricing",
+                nameOd = "ସୁବର୍ଣ୍ଣରେଖା ଲୁଣିଜଳ ଚିଙ୍ଗୁଡ଼ି ହେଚେରୀ ଓ ଦର",
+                iconEmoji = "🦐",
+                statusText = "Vannamei Grade-A: ₹${dailyPulse.aquacultureVannameiRateKg}/kg • Black Tiger: ₹${dailyPulse.aquacultureTigerPrawnRateKg}/kg",
+                updateInterval = "Live MPEDA & Aquaculture Telemetry",
+                targetSheet = UniqueFeatureSheetType.AQUA_SHRIMP_HATCHERY_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Sabai Grass & Mission Shakti SHG Mart",
+                nameOd = "ସବାଇ ଘାସ ଓ ମିଶନ ଶକ୍ତି ହାଟ",
+                iconEmoji = "🧺",
+                statusText = "${dailyPulse.sabaiGrassActiveShgClusters} verified SHG clusters active • Direct fair pricing with zero middlemen",
+                updateInterval = "Weekly SHG Guild Sync",
+                targetSheet = UniqueFeatureSheetType.SABAI_GRASS_MISSION_SHAKTI
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Nilagiri Granite & Stoneware Artisan Guild",
+                nameOd = "ନୀଳଗିରି କଳା ପଥର ଶିଳ୍ପ ଓ ବାସନ ଗିଲ୍ଡ",
+                iconEmoji = "🪨",
+                statusText = dailyPulse.artisanShowcaseOfTheDay,
+                updateInterval = "Artisan Guild Catalog Sync",
+                targetSheet = UniqueFeatureSheetType.NILAGIRI_GRANITE_STONEWARE_GUILD
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "TPNODL Power Outage & WATCO Water Monitor",
+                nameOd = "ବିଦ୍ୟୁତ୍ କାଟ୍ ଓ ପାନୀୟ ଜଳ ଯୋଗାଣ ସୂଚୀ",
+                iconEmoji = "⚡",
+                statusText = "${dailyPulse.watcoSupplyStatusText} • ${dailyPulse.tpnodlPowerGridStatus}",
+                updateInterval = "Live Ward Feeder Telemetry",
+                targetSheet = UniqueFeatureSheetType.TPNODL_WATCO_UTILITY_HOTLINE
             ),
             SubsystemTelemetryStatus(
                 nameEn = "Balaramgadi Fish Catch & Auction",
                 nameOd = "ବଳରାମଗଡ଼ି ମତ୍ସ୍ୟ ବନ୍ଦର ନିଲାମ ଦର",
                 iconEmoji = "🐟",
-                statusText = "Trawlers docked • Daily rates updated",
-                updateInterval = "Daily morning 5:30 AM & noon"
+                statusText = "${dailyPulse.auctionStatusMessage} • ${dailyPulse.auctionCountdownText}",
+                updateInterval = "Daily Morning 5:30 AM & Noon",
+                targetSheet = UniqueFeatureSheetType.HARBOR_CATCH_RATES
             ),
             SubsystemTelemetryStatus(
-                nameEn = "DHH & Red Cross Blood Bank Pulse",
-                nameOd = "ବାଲେଶ୍ୱର ରକ୍ତଭଣ୍ଡାର ଲାଇଭ୍ ଷ୍ଟକ୍",
-                iconEmoji = "🩸",
-                statusText = "24x7 Casualty linkage active • 140 units in store",
-                updateInterval = "Hourly real-time push"
+                nameEn = "Talasari & Bichitrapur Eco-Boat Safari",
+                nameOd = "ତାଳସାରୀ ଓ ବିଚିତ୍ରପୁର ବୋଟ୍ ସଫାରି",
+                iconEmoji = "🦀",
+                statusText = "${dailyPulse.bichitrapurBoatingWindow} • ${dailyPulse.bichitrapurStatusMessage}",
+                updateInterval = "Hourly Coastal Tidal Window Sync",
+                targetSheet = UniqueFeatureSheetType.TALSARI_BICHITRAPUR_MANGROVE_PILOT
             ),
             SubsystemTelemetryStatus(
-                nameEn = "INCOIS Ocean Marine & High Wave Alert",
-                nameOd = "ସାମୁଦ୍ରିକ ତରଙ୍ଗ ସତର୍କତା ବାର୍ତ୍ତା",
-                iconEmoji = "⚠️",
-                statusText = "Swell: 1.2m - 1.8m • Green Channel for fishermen",
-                updateInterval = "Live IMD/INCOIS feed"
+                nameEn = "Kasafal Red Crab Colony Schedule",
+                nameOd = "କାସାଫାଳ ନାଲି କଙ୍କଡ଼ା ଅଭିଯାନ ସୂଚୀ",
+                iconEmoji = "🦀",
+                statusText = "${dailyPulse.crabWindowStatusMessage} (Morning window: ${dailyPulse.redCrabMorningWindow})",
+                updateInterval = "Live Tidal Emergence Sync",
+                targetSheet = UniqueFeatureSheetType.KASAFAL_RED_CRABS
             ),
             SubsystemTelemetryStatus(
-                nameEn = "Balasore Local News & Odia Headlines",
-                nameOd = "ବାଲେଶ୍ୱର ସ୍ଥାନୀୟ ଖବର ଓ ସମ୍ବାଦ",
-                iconEmoji = "📰",
-                statusText = "Interactive search & categorized Odia feeds synced",
-                updateInterval = "Live automated indexing"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Junction (BLS) Train & Platform Radar",
-                nameOd = "ବାଲେଶ୍ୱର ଜଙ୍କସନ ଟ୍ରେନ ଓ ପ୍ଲାଟଫର୍ମ ରାଡାର",
-                iconEmoji = "🚆",
-                statusText = "Platform allocation & mainline signals normal",
-                updateInterval = "Live SER Railway Sync"
+                nameEn = "24x7 Night Chemist & Emergency Oxygen Desk",
+                nameOd = "୨୪x୭ ରାତ୍ରିକାଳୀନ ଔଷଧାଳୟ ଓ ଅମ୍ଳଜାନ ସେବା",
+                iconEmoji = "💊",
+                statusText = dailyPulse.medicineStoreEmergencyDuty,
+                updateInterval = "Continuous 24h Roster Sync",
+                targetSheet = UniqueFeatureSheetType.NIGHT_CHEMIST_SANJEEVANI
             ),
             SubsystemTelemetryStatus(
                 nameEn = "Baleswari Paan & Krushi Mandi Rates",
                 nameOd = "ବାଲେଶ୍ୱରୀ ପାନ ଓ କୃଷି ମଣ୍ଡି ସୂଚୀ",
                 iconEmoji = "🍃",
                 statusText = "Bhograi Mitha Paan & Cashew wholesale arath rates active",
-                updateInterval = "Daily Mandi Opening & Noon"
+                updateInterval = "Daily Mandi Opening & Noon",
+                targetSheet = UniqueFeatureSheetType.BALESWARI_PAAN_KRUSHI_MANDI
             ),
             SubsystemTelemetryStatus(
-                nameEn = "24x7 Night Chemist & Emergency Oxygen Desk",
-                nameOd = "୨୪x୭ ରାତ୍ରିକାଳୀନ ଔଷଧାଳୟ ଓ ଅମ୍ଳଜାନ ସେବା",
-                iconEmoji = "💊",
-                statusText = "DHH & town 24x7 pharmacies with medical oxygen verified",
-                updateInterval = "Continuous 24h Roster"
+                nameEn = "Baleswari Dialect & Literary Peetha",
+                nameOd = "ବାଲେଶ୍ୱରୀ ଭାଷା ଓ ଓଡ଼ିଆ ସାହିତ୍ୟ ଆର୍କାଇଭ",
+                iconEmoji = "📜",
+                statusText = "${dailyPulse.dialectAudioPhraseTitle} - ${dailyPulse.dialectAudioPhraseMeaning}",
+                updateInterval = "Daily Literary Heritage Feed",
+                targetSheet = UniqueFeatureSheetType.FAKIR_MOHAN_BHASHA_LITERATURE
             ),
             SubsystemTelemetryStatus(
-                nameEn = "TPNODL Power Outage & WATCO Water Monitor",
-                nameOd = "ବିଦ୍ୟୁତ୍ କାଟ୍ ଓ ପାନୀୟ ଜଳ ଯୋଗାଣ ସୂଚୀ",
-                iconEmoji = "⚡",
-                statusText = "Municipal feeder grid active • Morning & Evening water normal",
-                updateInterval = "Live Ward Feeder Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Talasari & Bichitrapur Eco-Boat Safari",
-                nameOd = "ତାଳସାରୀ ଓ ବିଚିତ୍ରପୁର ବୋଟ୍ ସଫାରି",
-                iconEmoji = "🦀",
-                statusText = "High tide mangrove cruise & red crab colonies clear",
-                updateInterval = "Daily Tidal Window Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Nilagiri Green Stone & Dokra Guilds",
-                nameOd = "ନୀଳଗିରି ସବୁଜ ପଥର ଓ ଢୋକ୍ରା ହସ୍ତଶିଳ୍ପ",
-                iconEmoji = "🏺",
-                statusText = "Artisan cooperatives & fair-trade registry connected",
-                updateInterval = "Weekly Guild Catalog Update"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Baleswar Mahotsav & Chadak Ritual Guide",
-                nameOd = "ବାଲେଶ୍ୱର ମହୋତ୍ସବ ଓ ଚନ୍ଦନେଶ୍ୱର ଚଡ଼କ କ୍ୟାଲେଣ୍ଡର",
-                iconEmoji = "🎭",
-                statusText = "Pilgrimage timetable & Expo cultural schedules synchronized",
-                updateInterval = "Seasonal Ritual Calendar Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Mo Seva Kendra & e-District Desk",
-                nameOd = "ମୋ ସେବା କେନ୍ଦ୍ର ଓ ଇ-ପ୍ରଶାସନ ଡେସ୍କ",
-                iconEmoji = "🌾",
-                statusText = "12 Block citizen centers, statutory certificate fee caps (₹30) active",
-                updateInterval = "Odisha One Portal Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Marine Fishermen Sea-Safety & NavIC",
-                nameOd = "ମତ୍ସ୍ୟଜୀବୀ ସମୁଦ୍ର ସୁରକ୍ଷା ଓ ଟେଲିମେଟ୍ରି",
-                iconEmoji = "⚓",
-                statusText = "Kasafal & Balaramgadi swell/wind telemetry & Coast Guard 1554 active",
-                updateInterval = "Continuous Sea-State Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Kuldiha Eco-Camp & Wildlife Safari",
-                nameOd = "କୁଲଡିହା ନେଚର କ୍ୟାମ୍ପ ଓ ସଫାରୀ",
-                iconEmoji = "🐘",
-                statusText = "Rissia cottages & Jadachua elephant watchtower spotting times connected",
-                updateInterval = "Daily Forest Range Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "FM MCH Medical College OPD Roster",
-                nameOd = "ଫକୀର ମୋହନ ମେଡିକାଲ OPD ଓ BSKY",
-                iconEmoji = "🏥",
-                statusText = "Remuna campus OPD roster & BSKY cashless helpdesks updated",
-                updateInterval = "Daily Health Dept Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Sabai Grass & Mission Shakti SHG Mart",
-                nameOd = "ସବାଇ ଘାସ ଓ ମିଶନ ଶକ୍ତି ହାଟ",
-                iconEmoji = "🧺",
-                statusText = "Nilagiri golden fiber SHG catalog & direct fair prices synchronized",
-                updateInterval = "Weekly SHG Guild Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Maritime & Colonial Heritage",
-                nameOd = "ବାଲେଶ୍ୱର ସାମୁଦ୍ରିକ ଓ ଔପନିବେଶିକ ଇତିହାସ",
-                iconEmoji = "⛵",
-                statusText = "Farasidinga French enclave & Sadhabapua Boita historical trail mapped",
-                updateInterval = "Archaeological Registry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Scholarships & Model Career Center Desk",
-                nameOd = "ଛାତ୍ରବୃତ୍ତି ଓ କ୍ୟାରିୟର ସହାୟତା",
-                iconEmoji = "🎓",
-                statusText = "Odisha state scholarship portal & ITI rozgar melas active",
-                updateInterval = "Daily Employment Feed"
+                nameEn = "Baleswar Panjika Almanac & Muhurat",
+                nameOd = "ବାଲେଶ୍ୱର ପାଞ୍ଜି କ୍ୟାଲେଣ୍ଡର ଓ ଶୁଭ ବେଳା",
+                iconEmoji = "🗓️",
+                statusText = dailyPulse.panjikaTithiToday,
+                updateInterval = "Daily Vedic Calendar Sync",
+                targetSheet = UniqueFeatureSheetType.ODIA_PANJIKA_CALENDAR
             ),
             SubsystemTelemetryStatus(
                 nameEn = "DRDO Chandipur Launch & Sea Radar",
                 nameOd = "ଚାନ୍ଦିପୁର କ୍ଷେପଣାସ୍ତ୍ର ପରୀକ୍ଷା ଓ ସୁରକ୍ଷା ରାଡାର",
                 iconEmoji = "🚀",
-                statusText = "NOTAM sea/air exclusion telemetry & coastal alert sirens synchronized",
-                updateInterval = "Live Defense Advisory Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Subarnarekha River & Sluice Gate Radar",
-                nameOd = "ସୁବର୍ଣ୍ଣରେଖା ନଦୀ ଓ ସ୍ଲୁଇସ୍ ଗେଟ୍ ବନ୍ୟା ରାଡାର",
-                iconEmoji = "🌊",
-                statusText = "Rajghat gauge discharge & 8 coastal sluice gates monitored",
-                updateInterval = "Live CWC & Irrigation Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Nilagiri Chhau Cultural & Akhara Guild",
-                nameOd = "ନୀଳଗିରି ଛଉ ନୃତ୍ୟ ଓ ଆଖଡ଼ା ଗିଲ୍ଡ",
-                iconEmoji = "🎭",
-                statusText = "Royal Chhau dance troupes & mask artisan cooperatives connected",
-                updateInterval = "Weekly Cultural Guild Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "DHH & Red Cross Blood Bank Live Radar",
-                nameOd = "ବାଲେଶ୍ୱର DHH ରକ୍ତ ଭଣ୍ଡାର ଲାଇଭ୍ ଷ୍ଟକ୍",
-                iconEmoji = "🩸",
-                statusText = "PRBC, Platelets & rare negative groups component units synchronized",
-                updateInterval = "Live Blood Bank Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Paan Baraja & Aqua Shrimp Livelihood Desk",
-                nameOd = "ପାନ ବରଜ ଓ ଆକ୍ୱା ଚିଙ୍ଗୁଡ଼ି ଡେସ୍କ",
-                iconEmoji = "🍃",
-                statusText = "Bhograi shade micro-climate & Vannamei shrimp DO levels telemetry active",
-                updateInterval = "Hourly Micro-Sensor Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "District Court & DLSA Free Legal Aid",
-                nameOd = "ଜିଲ୍ଲା କୋର୍ଟ ଓ ଡିଏଲ୍ଏସ୍ଏ ମାଗଣା ଆଇନ ସେବା",
-                iconEmoji = "⚖️",
-                statusText = "Daily cause lists, Lok Adalat rosters & mediation desks active",
-                updateInterval = "Daily Judicial Registry Sync"
+                statusText = "${dailyPulse.itrAirspaceStatus} • ${dailyPulse.itrNotamAdvisory}",
+                updateInterval = "Live Defense Advisory Sync",
+                targetSheet = UniqueFeatureSheetType.DRDO_CHANDIPUR_SAFETY_RADAR
             ),
             SubsystemTelemetryStatus(
                 nameEn = "NH-16 Highway Patrol & Trauma SOS",
                 nameOd = "NH-16 ଜାତୀୟ ରାଜପଥ ପାଟ୍ରୋଲିଂ ଓ ଟ୍ରମା ଏସଓଏସ",
                 iconEmoji = "🚨",
-                statusText = "Bahanaga-Balasore corridor NHAI 1033 patrol & cranes on stand-by",
-                updateInterval = "24x7 Highway Emergency Network"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Panchalingeswar & Kuldiha Eco-Trek & Safari",
-                nameOd = "ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ଓ କୁଲଡିହା ସଫାରୀ ରାଡାର",
-                iconEmoji = "🐘",
-                statusText = "Forest gates, elephant corridor telemetry & spring water stream sync",
-                updateInterval = "Live Forest & Wildlife Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "SER Balasore & Jaleswar Railway Radar",
-                nameOd = "ଦକ୍ଷିଣ ପୂର୍ବ ରେଳପଥ ବାଲେଶ୍ୱର ଲାଇଭ୍ ରାଡାର",
-                iconEmoji = "🚆",
-                statusText = "Live platforms, Vande Bharat/Dhauli rake formations & MEMU tracking",
-                updateInterval = "Live SER Division Rail Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "NOCCI Industrial Corridor & B2B Skill Connect",
-                nameOd = "ନୋସି ଶିଳ୍ପ କରିଡର ଓ ଦକ୍ଷତା ନିଯୁକ୍ତି ଡେସ୍କ",
-                iconEmoji = "🏭",
-                statusText = "Chhanpur & Remuna MSME, CIPET toolroom & apprentice vacancy feed",
-                updateInterval = "Daily Industrial Registry Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Talsari & Bichitrapur Mangrove Boating Pilot",
-                nameOd = "ତାଳସାରୀ ଓ ବିଚିତ୍ରପୁର ହେନ୍ତାଳବଣ ବୋଟ୍ ପାଇଲଟ୍",
-                iconEmoji = "🦀",
-                statusText = "Subarnarekha estuary tide depths & red ghost crab colony alerts",
-                updateInterval = "Hourly Coastal Tidal Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Fakir Mohan Bhasha & Literature Archive",
-                nameOd = "ଫକୀର ମୋହନ ଭାଷା ଓ ଓଡ଼ିଆ ସାହିତ୍ୟ ଆର୍କାଇଭ",
-                iconEmoji = "📜",
-                statusText = "Mallikashpur heritage peetha, daily Baleswari idioms & public library",
-                updateInterval = "Daily Literary Heritage Feed"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Baleswari Cuisines & Sweet Heritage Finder",
-                nameOd = "ବାଲେଶ୍ୱରୀ ଖାଦ୍ୟ ଓ ମିଠା ଐତିହ୍ୟ ଡାଇରୀ",
-                iconEmoji = "🍲",
-                statusText = "Chhena Mudki GI makers, Nilagiri Khaja & Kasafal Sukhua fish index",
-                updateInterval = "Verified Heritage Food Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "TPNODL Power & WATCO Tap Water Civic Hotline",
-                nameOd = "TPNODL ବିଦ୍ୟୁତ୍ ଓ WATCO ଜଳଯୋଗାଣ ରାଡାର",
-                iconEmoji = "⚡",
-                statusText = "33/11kV feeder shutdown status & ward piped water timings live",
-                updateInterval = "Live Utility Grid Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Dhan Mandi & MSP Paddy Procurement Radar",
-                nameOd = "ଧାନ ମଣ୍ଡି ଓ ଏମଏସପି କ୍ରୟ ରାଡାର",
-                iconEmoji = "🌾",
-                statusText = "Jaleswar, Soro, Basta PACS mandi tokens & moisture meter telemetry live",
-                updateInterval = "Live Mandi Procurement Feed"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Nilagiri Granite & Stoneware Artisan Guild",
-                nameOd = "ନୀଳଗିରି କଳା ପଥର ଶିଳ୍ପ ଓ ବାସନ ଗିଲ୍ଡ",
-                iconEmoji = "🪨",
-                statusText = "Mitrapur & Baunsabania stoneware cookware catalogs & Utkalika sync",
-                updateInterval = "Artisan Guild Catalog Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Bahanaga & NH-16 Rapid Trauma Network",
-                nameOd = "ବାହାନଗା ଓ NH-16 ରାପିଡ୍ ଟ୍ରମା ନେଟୱର୍କ",
-                iconEmoji = "🚨",
-                statusText = "108 ALS ambulance GPS posts, Balasore DHH trauma ICU beds live",
-                updateInterval = "Live Highway Emergency Radar"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Bhusandeswar & Chandaneswar Shiva Pilgrimage",
-                nameOd = "ଭୂଷଣ୍ଡେଶ୍ୱର ଓ ଚନ୍ଦନେଶ୍ୱର ତୀର୍ଥ ରାଡାର",
-                iconEmoji = "🛕",
-                statusText = "Asia's largest lingam darshan timings, Chadak Mela crowd & pilgrim shuttles",
-                updateInterval = "Daily Temple Schedule Sync"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Seva Setu: Senior Citizen Care & Police Desk",
-                nameOd = "ସେବା ସେତୁ: ବରିଷ୍ଠ ନାଗରିକ ସହାୟତା ଡେସ୍କ",
-                iconEmoji = "🏥",
-                statusText = "Verified geriatric home nurses, Nidan doorstep labs & beat police sync",
-                updateInterval = "Daily Health & Civic Registry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Higher Education & Campus Admission Hub",
-                nameOd = "ବାଲେଶ୍ୱର ଉଚ୍ଚଶିକ୍ଷା ଓ କ୍ୟାମ୍ପସ ଆଡମିଶନ ହବ୍",
-                iconEmoji = "🎓",
-                statusText = "FMU, FM MCH, BCET admission cutoffs & e-Medhabruti scholarship alerts",
-                updateInterval = "SAMS Higher Education Feed"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Mo Bus & CRUT Urban Transit Navigator",
-                nameOd = "ବାଲେଶ୍ୱର ମୋ ବସ୍ ଓ ସହଦେବଖୁଣ୍ଟା ଟର୍ମିନାଲ୍",
-                iconEmoji = "🚌",
-                statusText = "Routes 71-74 live frequency, student passes & express bus bays live",
-                updateInterval = "Live CRUT Transit Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Subarnarekha Brackish Shrimp Hatchery Radar",
-                nameOd = "ସୁବର୍ଣ୍ଣରେଖା ଲୁଣିଜଳ ଚିଙ୍ଗୁଡ଼ି ହେଚେରୀ ରାଡାର୍",
-                iconEmoji = "🦐",
-                statusText = "Salinity, pH, dissolved oxygen & export mandi rates active",
-                updateInterval = "Live MPEDA & Aqua Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Coastal 64 Cyclone Shelter Radar",
-                nameOd = "ବାଲେଶ୍ୱର ଉପକୂଳ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ ନେଟୱାର୍କ",
-                iconEmoji = "🌀",
-                statusText = "64 shelters solar inverters, DG diesel reserves & water tanks active",
-                updateInterval = "Live OSDMA / ODRAF Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "French-Dutch-Danish Foreign Loge Trail",
-                nameOd = "ଫରାସୀ, ଡଚ୍ ଓ ଡେନିସ୍ ବାଣିଜ୍ୟ କୋଠି ଐତିହ୍ୟ",
-                iconEmoji = "🏛️",
-                statusText = "Farashdanga enclave, Dutch obelisks & Danish factory trail synced",
-                updateInterval = "Archaeological Heritage Registry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Rural Mobile Medical Unit Network",
-                nameOd = "ବାଲେଶ୍ୱର ଗ୍ରାମୀଣ ମୋବାଇଲ୍ ମେଡିକାଲ୍ ଭ୍ୟାନ୍ ସେବା",
-                iconEmoji = "🩺",
-                statusText = "12 MMU vans village camps, free diagnostics & PM Jan Aushadhi active",
-                updateInterval = "Daily NHM Health Telemetry"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Mati-Miras Betel Leaf & Saline Paddy Radar",
-                nameOd = "ବାଲେଶ୍ୱରୀ ପାନ ବରଜ ଓ ଲୁଣା ଧାନ ସମବାୟ ରାଡାର୍",
-                iconEmoji = "🌿",
-                statusText = "Bhograi betel leaf mandi prices & Luna Sankhi PACS procurement live",
-                updateInterval = "Daily Mandi & PACS Feed"
-            ),
-            SubsystemTelemetryStatus(
-                nameEn = "Balasore Coastal Bus & Fleet Live Radar",
-                nameOd = "ବାଲେଶ୍ୱର ଉପକୂଳ ମୋ ବସ୍ ଓ ଏକ୍ସପ୍ରେସ୍ ରାଡାର୍",
-                iconEmoji = "🚍",
-                statusText = "Chandipur, Talsari, Kasafal & Nilagiri bus GPS fleet synced",
-                updateInterval = "Live Fleet Transit GPS"
+                statusText = "Bahanaga-Balasore corridor NHAI 1033 patrol & trauma ambulances active",
+                updateInterval = "24x7 Highway Emergency Network",
+                targetSheet = UniqueFeatureSheetType.NH16_HIGHWAY_PATROL_TRAUMA_SOS
             ),
             SubsystemTelemetryStatus(
                 nameEn = "Horseshoe Crab Intertidal Bio-Reserve Watch",
                 nameOd = "ଜୀବନ୍ତ ଜୀବାଶ୍ମ ରାଜକଙ୍କଡ଼ା ସଂରକ୍ଷଣ ୱାଚ୍",
                 iconEmoji = "🦀",
-                statusText = "Chandipur intertidal sightings, breeding windows & wildlife hotline active",
-                updateInterval = "Daily ZSI & Marine Forest Telemetry"
+                statusText = "Chandipur intertidal sightings, breeding windows & FMU wildlife hotline active",
+                updateInterval = "Daily ZSI & Marine Forest Telemetry",
+                targetSheet = UniqueFeatureSheetType.HORSESHOE_CRAB_INTERTIDAL_PROTECTION
             )
         )
     }
@@ -752,6 +619,86 @@ fun AutoUpdateCenterSheet(
                     }
                 }
 
+                // 5 Core Auto-Updating District Domains Hub
+                item {
+                    Column {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "🌟 ୫ଟି ମୁଖ୍ୟ ସ୍ୱୟଂ-ଅପଡେଟ୍ ହବ୍ (ସିଧାସଳଖ ପ୍ରବେଶ)" else "🌟 5 Core Auto-Updating Domains (Quick Launch)",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = BentoSlate900
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ତଳେ ଥିବା ଯେକୌଣସି ହବ୍ କ୍ଲିକ୍ କରି ସିଧାସଳଖ ଲାଇଭ୍ ସ୍କ୍ରିନ୍ ଦେଖନ୍ତୁ" else "Tap any domain card below to immediately open the full live interactive feature",
+                            style = MaterialTheme.typography.bodySmall.copy(color = BentoSlate500)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        val domainHighlights = listOf(
+                            Triple("🌊 Coastal & Tide Alarm", "Low tide: ${dailyPulse.chandipurLowTideWindow} • Swell: ${String.format(java.util.Locale.US, "%.1fm", dailyPulse.incoisSwellMeters)}", UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER),
+                            Triple("🚆 Smart Transit & Mo Bus", "Mo Bus: ${dailyPulse.moBusRoute101EtaMins}m • Ferry: ${if (dailyPulse.riverFerryCrossingStatus.contains("Active")) "Running" else "Docked"}", UniqueFeatureSheetType.BALASORE_MO_BUS_CRUT_NAVIGATOR),
+                            Triple("🏥 24/7 Red Cross & DHH", "${dailyPulse.dhhBloodUnitsStored} blood units • ICU beds: ${dailyPulse.fmmchIcuBedsVacant}", UniqueFeatureSheetType.DHH_BLOOD_BANK_LIVE_RADAR),
+                            Triple("🛕 Heritage & Sacred Spring", "${dailyPulse.panchalingeswarFlowStatus} • Chadak sync", UniqueFeatureSheetType.PANCHALINGESWAR_KULDIHA_SAFARI),
+                            Triple("🌾 Mandi MSP & Artisans", "Paddy MSP: ₹${dailyPulse.paddyMspRatePerQuintal} • ${dailyPulse.sabaiGrassActiveShgClusters} SHG clusters", UniqueFeatureSheetType.DHAN_MANDI_MSP_PROCUREMENT)
+                        )
+
+                        domainHighlights.forEach { (title, subtitle, sheet) ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .then(
+                                        if (onOpenFeatureSheet != null) {
+                                            Modifier.clickable { onOpenFeatureSheet(sheet) }
+                                        } else Modifier
+                                    ),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9)),
+                                border = BorderStroke(1.dp, Color(0xFFCBD5E1))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = title,
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = BentoSlate900
+                                            )
+                                        )
+                                        Text(
+                                            text = subtitle,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = Color(0xFF0369A1),
+                                                fontSize = 11.sp
+                                            )
+                                        )
+                                    }
+                                    Surface(
+                                        color = OceanBlue,
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "OPEN →",
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 10.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Subsystem Telemetry Feeds Header
                 item {
                     Text(
@@ -765,6 +712,15 @@ fun AutoUpdateCenterSheet(
 
                 items(telemetrySubsystems) { subsystem ->
                     Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (subsystem.targetSheet != null && onOpenFeatureSheet != null) {
+                                    Modifier.clickable {
+                                        onOpenFeatureSheet(subsystem.targetSheet)
+                                    }
+                                } else Modifier
+                            ),
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
@@ -787,24 +743,46 @@ fun AutoUpdateCenterSheet(
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             color = BentoSlate900
-                                        )
+                                        ),
+                                        modifier = Modifier.weight(1f, fill = false)
                                     )
-                                    Surface(
-                                        color = Color(0xFFDCFCE7),
-                                        shape = RoundedCornerShape(6.dp)
-                                    ) {
-                                        Text(
-                                            text = "SYNCED",
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 9.sp,
-                                                color = Color(0xFF166534)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (subsystem.targetSheet != null) {
+                                            Surface(
+                                                color = Color(0xFFE0F2FE),
+                                                shape = RoundedCornerShape(6.dp),
+                                                modifier = Modifier.padding(end = 4.dp)
+                                            ) {
+                                                Text(
+                                                    text = "VIEW →",
+                                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 9.sp,
+                                                        color = Color(0xFF0369A1)
+                                                    )
+                                                )
+                                            }
+                                        }
+                                        Surface(
+                                            color = Color(0xFFDCFCE7),
+                                            shape = RoundedCornerShape(6.dp)
+                                        ) {
+                                            Text(
+                                                text = "SYNCED",
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 9.sp,
+                                                    color = Color(0xFF166534)
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 }
 
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = subsystem.statusText,
                                     style = MaterialTheme.typography.bodySmall.copy(
@@ -813,6 +791,7 @@ fun AutoUpdateCenterSheet(
                                     )
                                 )
 
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "Cadence: ${subsystem.updateInterval}",
                                     style = MaterialTheme.typography.bodySmall.copy(

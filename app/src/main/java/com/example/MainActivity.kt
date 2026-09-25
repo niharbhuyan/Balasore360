@@ -1284,29 +1284,25 @@ fun BalasoreApp(
                     }
                 }
                 UniqueFeatureSheetType.BALASORE_AUTO_UPDATE_CENTER -> {
-                    ModalBottomSheet(
-                        onDismissRequest = { viewModel.closeFeatureSheet() },
-                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                    ) {
-                        AutoUpdateCenterSheet(
-                            language = uiState.language,
-                            dailyPulse = uiState.dailyPulse,
-                            isRefreshing = uiState.isRefreshing,
-                            isHourlyAutoRefreshEnabled = uiState.isHourlyAutoRefreshEnabled,
-                            autoUpdateFrequencyMinutes = uiState.autoUpdateFrequencyMinutes,
-                            nextHourlyRefreshMinutesRemaining = uiState.nextHourlyRefreshMinutesRemaining,
-                            autoRefreshCycleCount = uiState.autoRefreshCycleCount,
-                            lastSyncStatusMessage = uiState.lastSyncStatusMessage,
-                            appVersionInstalled = uiState.appVersionInstalled,
-                            appVersionLatest = uiState.appVersionLatest,
-                            isUpdateCheckLoading = uiState.isUpdateCheckLoading,
-                            onForceSyncAll = { viewModel.forceSyncAllData() },
-                            onToggleAutoRefresh = { viewModel.setHourlyAutoRefreshEnabled(it) },
-                            onSetFrequency = { viewModel.setAutoUpdateFrequency(it) },
-                            onCheckForUpdates = { viewModel.checkForAppUpdates() },
-                            onClose = { viewModel.closeFeatureSheet() }
-                        )
-                    }
+                    AutoUpdateCenterSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        isRefreshing = uiState.isRefreshing,
+                        isHourlyAutoRefreshEnabled = uiState.isHourlyAutoRefreshEnabled,
+                        autoUpdateFrequencyMinutes = uiState.autoUpdateFrequencyMinutes,
+                        nextHourlyRefreshMinutesRemaining = uiState.nextHourlyRefreshMinutesRemaining,
+                        autoRefreshCycleCount = uiState.autoRefreshCycleCount,
+                        lastSyncStatusMessage = uiState.lastSyncStatusMessage,
+                        appVersionInstalled = uiState.appVersionInstalled,
+                        appVersionLatest = uiState.appVersionLatest,
+                        isUpdateCheckLoading = uiState.isUpdateCheckLoading,
+                        onForceSyncAll = { viewModel.forceSyncAllData() },
+                        onToggleAutoRefresh = { viewModel.setHourlyAutoRefreshEnabled(it) },
+                        onSetFrequency = { viewModel.setAutoUpdateFrequency(it) },
+                        onCheckForUpdates = { viewModel.checkForAppUpdates() },
+                        onClose = { viewModel.closeFeatureSheet() },
+                        onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                    )
                 }
                 UniqueFeatureSheetType.BALASORE_JUNCTION_RADAR -> {
                     BalasoreJunctionRadarSheet(

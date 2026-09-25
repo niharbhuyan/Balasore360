@@ -9,18 +9,20 @@ class ThemeModeTest {
 
     @Test
     fun testThemeModeCycleIncludesSystem() {
-        // Verify cycle: SYSTEM -> LIGHT -> DARK -> SYSTEM
+        // Verify cycle: SYSTEM -> LIGHT -> DARK -> HIGH_CONTRAST_DARK -> SYSTEM
         fun nextTheme(current: ThemeMode): ThemeMode {
             return when (current) {
                 ThemeMode.SYSTEM -> ThemeMode.LIGHT
                 ThemeMode.LIGHT -> ThemeMode.DARK
-                ThemeMode.DARK -> ThemeMode.SYSTEM
+                ThemeMode.DARK -> ThemeMode.HIGH_CONTRAST_DARK
+                ThemeMode.HIGH_CONTRAST_DARK -> ThemeMode.SYSTEM
             }
         }
 
         assertEquals(ThemeMode.LIGHT, nextTheme(ThemeMode.SYSTEM))
         assertEquals(ThemeMode.DARK, nextTheme(ThemeMode.LIGHT))
-        assertEquals(ThemeMode.SYSTEM, nextTheme(ThemeMode.DARK))
+        assertEquals(ThemeMode.HIGH_CONTRAST_DARK, nextTheme(ThemeMode.DARK))
+        assertEquals(ThemeMode.SYSTEM, nextTheme(ThemeMode.HIGH_CONTRAST_DARK))
     }
 
     @Test
@@ -33,6 +35,9 @@ class ThemeModeTest {
 
         viewModel.cycleThemeMode()
         assertEquals(ThemeMode.DARK, viewModel.uiState.value.themeMode)
+
+        viewModel.cycleThemeMode()
+        assertEquals(ThemeMode.HIGH_CONTRAST_DARK, viewModel.uiState.value.themeMode)
 
         viewModel.cycleThemeMode()
         assertEquals(ThemeMode.SYSTEM, viewModel.uiState.value.themeMode)
