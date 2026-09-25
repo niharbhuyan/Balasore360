@@ -46,6 +46,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.NightlightRound
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -240,8 +241,10 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
+                ThemeMode.HIGH_CONTRAST_DARK -> true
             }
-            Balasore360Theme(darkTheme = isDarkTheme) {
+            val isHighContrast = uiState.themeMode == ThemeMode.HIGH_CONTRAST_DARK
+            Balasore360Theme(darkTheme = isDarkTheme, isHighContrast = isHighContrast) {
                 BalasoreApp(
                     viewModel = viewModel,
                     updateManager = updateManager
@@ -675,7 +678,9 @@ fun BalasoreApp(
                             onSearchQueryChanged = { viewModel.setNewsSearchQuery(it) },
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
                             onRefresh = { viewModel.refreshAll() },
-                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
+                            onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
+                            themeMode = uiState.themeMode,
+                            onToggleNightMode = { viewModel.toggleHighContrastNightMode() }
                         )
                         3 -> WeatherScreen(
                             weather = uiState.weather,
@@ -1620,6 +1625,11 @@ fun ThemeTogglePill(
             Icons.Default.DarkMode,
             Color(0xFF38BDF8),
             "Dark"
+        )
+        ThemeMode.HIGH_CONTRAST_DARK -> Triple(
+            Icons.Default.NightlightRound,
+            Color(0xFFFBBF24),
+            "Night"
         )
     }
 

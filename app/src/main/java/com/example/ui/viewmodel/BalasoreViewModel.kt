@@ -23,6 +23,8 @@ import com.example.data.remote.ChatRolePersonas
 import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
+import com.example.data.repository.NewsRepository
+import com.example.data.repository.Resource
 import com.example.data.repository.TravelJournalRepository
 import com.example.data.repository.UniqueFeaturesRepository
 import com.example.ui.components.WatermarkOpacity
@@ -261,6 +263,7 @@ class BalasoreViewModel : ViewModel() {
     var travelJournalRepo: TravelJournalRepository? = null
         private set
     private var tideDao: ChandipurTideDao? = null
+    private var newsRepo: NewsRepository? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
     private val weatherApiService: WeatherApiService by lazy { WeatherApiService.create() }
     private val geminiChatService: GeminiChatService by lazy { GeminiChatService() }
@@ -275,8 +278,8 @@ class BalasoreViewModel : ViewModel() {
                 fetchRealTimeWeather()
                 // Periodic auto-update ticker:
                 // 1) Refreshes daily pulse every 60s
-                // 2) Ticks countdown for the hourly refresh
-                // 3) Automatically triggers full data refresh every 60 minutes (1 hour)
+                // 2) Ticks countdown for the auto refresh loop
+                // 3) Automatically triggers full data refresh based on user-configured frequency
                 viewModelScope.launch {
                     while (true) {
                         delay(60_000L)
@@ -284,7 +287,8 @@ class BalasoreViewModel : ViewModel() {
                         if (_uiState.value.isHourlyAutoRefreshEnabled) {
                             val elapsedMillis = System.currentTimeMillis() - _uiState.value.lastHourlyRefreshTimestamp
                             val elapsedMinutes = (elapsedMillis / (1000 * 60)).toInt()
-                            val remaining = (60 - elapsedMinutes).coerceAtLeast(0)
+                            val freq = _uiState.value.autoUpdateFrequencyMinutes.coerceAtLeast(1)
+                            val remaining = (freq - elapsedMinutes).coerceAtLeast(0)
                             if (remaining <= 0) {
                                 triggerHourlyAutoRefresh()
                             } else {
@@ -379,6 +383,36 @@ class BalasoreViewModel : ViewModel() {
                     android.util.Log.e("BalasoreViewModel", "Error collecting itinerary items: ${t.message}")
                 }
             }
+
+            // Room Database + Network unified News Repository with auto cache updates
+            val nRepo = NewsRepository(db.newsDao(), db.cacheMetadataDao())
+            newsRepo = nRepo
+            viewModelScope.launch {
+                try {
+                    nRepo.getUnifiedNewsFlow(forceRefresh = false).collect { res ->
+                        if (res is Resource.Success && !res.data.isNullOrEmpty()) {
+                            val mapped = res.data.map { entity ->
+                                NewsArticle(
+                                    id = entity.id.toString(),
+                                    title = entity.title,
+                                    odiaTitle = entity.title,
+                                    snippet = entity.summary,
+                                    odiaSnippet = entity.summary,
+                                    category = entity.category,
+                                    timeAgo = entity.publishedAt,
+                                    source = entity.source,
+                                    isBookmarked = entity.isBookmarked,
+                                    content = entity.content,
+                                    odiaContent = entity.content
+                                )
+                            }
+                            _uiState.value = _uiState.value.copy(newsArticles = mapped)
+                        }
+                    }
+                } catch (t: Throwable) {
+                    android.util.Log.w("BalasoreViewModel", "News stream fallback: ${t.message}")
+                }
+            }
         } catch (t: Throwable) {
             android.util.Log.e("BalasoreViewModel", "Failed to initialize database: ${t.message}")
         }
@@ -461,6 +495,14 @@ class BalasoreViewModel : ViewModel() {
         val current = _uiState.value.bookmarkedIds
         val updated = if (current.contains(articleId)) current - articleId else current + articleId
         _uiState.value = _uiState.value.copy(bookmarkedIds = updated)
+        val idLong = articleId.toLongOrNull()
+        if (idLong != null) {
+            viewModelScope.launch {
+                try {
+                    newsRepo?.toggleBookmark(idLong, !current.contains(articleId))
+                } catch (_: Throwable) {}
+            }
+        }
     }
 
     fun toggleFavoriteHotspot(hotspotId: String) {
@@ -475,6 +517,9 @@ class BalasoreViewModel : ViewModel() {
             fetchRealTimeWeather()
             fetchLiveEmergencyAlerts()
             refreshDailyPulse()
+            try {
+                newsRepo?.refreshNews()
+            } catch (_: Throwable) {}
             delay(800)
             _uiState.value = _uiState.value.copy(isRefreshing = false)
         }
@@ -884,8 +929,19 @@ class BalasoreViewModel : ViewModel() {
         val next = when (_uiState.value.themeMode) {
             ThemeMode.SYSTEM -> ThemeMode.LIGHT
             ThemeMode.LIGHT -> ThemeMode.DARK
-            ThemeMode.DARK -> ThemeMode.SYSTEM
+            ThemeMode.DARK -> ThemeMode.HIGH_CONTRAST_DARK
+            ThemeMode.HIGH_CONTRAST_DARK -> ThemeMode.SYSTEM
         }
+        _uiState.value = _uiState.value.copy(themeMode = next)
+    }
+
+    /**
+     * Direct toggle for High-Contrast OLED Night Mode.
+     * Switches directly between High-Contrast Dark Mode and standard theme to reduce eye strain.
+     */
+    fun toggleHighContrastNightMode() {
+        val current = _uiState.value.themeMode
+        val next = if (current == ThemeMode.HIGH_CONTRAST_DARK) ThemeMode.SYSTEM else ThemeMode.HIGH_CONTRAST_DARK
         _uiState.value = _uiState.value.copy(themeMode = next)
     }
 
@@ -911,12 +967,12 @@ class BalasoreViewModel : ViewModel() {
     }
 
     /**
-     * Executes the hourly automatic refresh of weather, alerts, daily pulse, and synchronizes caches.
+     * Executes the automatic refresh of weather, alerts, daily pulse, news, and synchronizes caches.
      */
     fun triggerHourlyAutoRefresh() {
         _uiState.value = _uiState.value.copy(
             lastHourlyRefreshTimestamp = System.currentTimeMillis(),
-            nextHourlyRefreshMinutesRemaining = 60,
+            nextHourlyRefreshMinutesRemaining = _uiState.value.autoUpdateFrequencyMinutes,
             autoRefreshCycleCount = _uiState.value.autoRefreshCycleCount + 1
         )
         try {
@@ -925,6 +981,9 @@ class BalasoreViewModel : ViewModel() {
                 fetchRealTimeWeather()
                 fetchLiveEmergencyAlerts()
                 refreshDailyPulse()
+                try {
+                    newsRepo?.refreshNews()
+                } catch (_: Throwable) {}
                 delay(800)
                 _uiState.value = _uiState.value.copy(isRefreshing = false)
             }
@@ -936,7 +995,7 @@ class BalasoreViewModel : ViewModel() {
     fun setHourlyAutoRefreshEnabled(enabled: Boolean) {
         _uiState.value = _uiState.value.copy(
             isHourlyAutoRefreshEnabled = enabled,
-            nextHourlyRefreshMinutesRemaining = if (enabled) 60 else 0
+            nextHourlyRefreshMinutesRemaining = if (enabled) _uiState.value.autoUpdateFrequencyMinutes else 0
         )
     }
 
@@ -961,6 +1020,9 @@ class BalasoreViewModel : ViewModel() {
                 fetchRealTimeWeather()
                 fetchLiveEmergencyAlerts()
                 refreshDailyPulse()
+                try {
+                    newsRepo?.refreshNews()
+                } catch (_: Throwable) {}
                 kotlinx.coroutines.delay(700)
                 val timeStr = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault()).format(java.util.Date())
                 _uiState.value = _uiState.value.copy(

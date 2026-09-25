@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.NightlightRound
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -914,6 +915,7 @@ fun EssentialsScreen(
                                     ThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
                                     ThemeMode.LIGHT -> Icons.Default.LightMode
                                     ThemeMode.DARK -> Icons.Default.DarkMode
+                                    ThemeMode.HIGH_CONTRAST_DARK -> Icons.Default.NightlightRound
                                 },
                                 contentDescription = "Theme Icon",
                                 tint = MaterialTheme.colorScheme.primary,
@@ -934,6 +936,7 @@ fun EssentialsScreen(
                                     ThemeMode.SYSTEM -> if (language == AppLanguage.ODIA) "ସିଷ୍ଟମ୍ ଡିଫଲ୍ଟ ଅନୁସାରେ ସ୍ୱୟଂକ୍ରିୟ" else "Follows system setting automatically"
                                     ThemeMode.LIGHT -> if (language == AppLanguage.ODIA) "ସର୍ବଦା ଲାଇଟ୍ ମୋଡ୍ (ଉଜ୍ଜ୍ୱଳ)" else "Always light mode"
                                     ThemeMode.DARK -> if (language == AppLanguage.ODIA) "ସର୍ବଦା ଡାର୍କ ମୋଡ୍ (କମ ଆଲୋକ ପାଇଁ ଉପଯୁକ୍ତ)" else "Comfortable dark mode for low light"
+                                    ThemeMode.HIGH_CONTRAST_DARK -> if (language == AppLanguage.ODIA) "ନିଶାର୍ଦ୍ଧ ହାଇ-କଣ୍ଟ୍ରାଷ୍ଟ ଡାର୍କ (ଚକ୍ଷୁ ଶ୍ରାନ୍ତି ମୁକ୍ତ)" else "High-contrast OLED black for night news reading"
                                 },
                                 style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                             )
@@ -977,6 +980,15 @@ fun EssentialsScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("theme_btn_dark")
+                        )
+                        ThemeOptionPill(
+                            title = if (language == AppLanguage.ODIA) "ନିଶାର୍ଦ୍ଧ" else "Night",
+                            icon = Icons.Default.NightlightRound,
+                            isSelected = themeMode == ThemeMode.HIGH_CONTRAST_DARK,
+                            onClick = { onThemeModeChange(ThemeMode.HIGH_CONTRAST_DARK) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("theme_btn_high_contrast")
                         )
                     }
                 }

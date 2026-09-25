@@ -44,6 +44,9 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SportsCricket
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.NightlightRound
+import androidx.compose.material.icons.filled.Brightness7
+import com.example.ui.theme.LocalBentoPalette
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -109,10 +112,12 @@ fun NewsDetailScreen(
     onNavigateBack: () -> Unit,
     onToggleBookmark: () -> Unit,
     onVerifyWithSearch: () -> Unit = {},
+    onToggleNightMode: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    val bentoPalette = LocalBentoPalette.current
 
     // Handle Android system back gesture
     BackHandler(onBack = onNavigateBack)
@@ -132,7 +137,7 @@ fun NewsDetailScreen(
         modifier = modifier
             .fillMaxSize()
             .testTag("news_detail_screen_${article.id}"),
-        containerColor = BentoCardWhite,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -156,11 +161,27 @@ fun NewsDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back to News List",
-                            tint = BentoSlate900
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 actions = {
+                    // Quick High-Contrast Night-Reading Mode Toggle
+                    if (onToggleNightMode != null) {
+                        IconButton(
+                            onClick = onToggleNightMode,
+                            modifier = Modifier
+                                .testTag("news_detail_night_mode_button")
+                                .size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (bentoPalette.isHighContrast) Icons.Default.Brightness7 else Icons.Default.NightlightRound,
+                                contentDescription = "Toggle High-Contrast Night Reading",
+                                tint = if (bentoPalette.isHighContrast) Color(0xFFFBBF24) else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
                     // Bookmark / Read Later Action
                     IconButton(
                         onClick = onToggleBookmark,
@@ -171,7 +192,7 @@ fun NewsDetailScreen(
                         Icon(
                             imageVector = if (article.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = if (article.isBookmarked) "Remove from Read Later" else "Save to Read Later",
-                            tint = if (article.isBookmarked) BentoPrimaryBlue else BentoSlate700
+                            tint = if (article.isBookmarked) BentoPrimaryBlue else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -185,13 +206,13 @@ fun NewsDetailScreen(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share News Story",
-                            tint = BentoSlate700
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BentoCardWhite,
-                    titleContentColor = BentoSlate900
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -332,7 +353,7 @@ fun NewsDetailScreen(
                         fontWeight = FontWeight.Bold,
                         lineHeight = 32.sp
                     ),
-                    color = BentoSlate900
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -426,8 +447,8 @@ fun NewsDetailScreen(
                 // Key Summary Bento Highlight Card
                 Card(
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = BentoBlueLight),
-                    border = BorderStroke(1.dp, BentoBorder),
+                    colors = CardDefaults.cardColors(containerColor = bentoPalette.nightHighlightBg),
+                    border = BorderStroke(1.dp, bentoPalette.cardBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -465,7 +486,7 @@ fun NewsDetailScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 lineHeight = 22.sp
                             ),
-                            color = BentoSlate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -476,7 +497,7 @@ fun NewsDetailScreen(
                 Text(
                     text = "Full Story",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = BentoSlate900
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -487,7 +508,7 @@ fun NewsDetailScreen(
                         lineHeight = 26.sp,
                         fontWeight = FontWeight.Normal
                     ),
-                    color = BentoSlate900
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

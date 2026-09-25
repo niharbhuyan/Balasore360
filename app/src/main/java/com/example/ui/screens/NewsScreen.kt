@@ -45,6 +45,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.NightlightRound
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
+import com.example.ui.viewmodel.ThemeMode
+import com.example.ui.theme.LocalBentoPalette
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -106,6 +112,8 @@ fun NewsScreen(
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChanged: (String) -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onToggleNightMode: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -171,12 +179,12 @@ fun NewsScreen(
                         text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ସମାଚାର" else "Balasore Live News",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = BentoSlate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     Text(
                         text = if (language == AppLanguage.ODIA) "ସଦ୍ୟତମ ସ୍ଥାନୀୟ ଖବର ଓ ସୂଚନା" else "Hyper-local updates & district press bulletins",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = BentoSlate500)
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
 
@@ -185,13 +193,80 @@ fun NewsScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(BentoSlate100)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .testTag("refresh_news_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
-                        tint = OceanBlue
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        // Global High-Contrast Night-Reading Mode Quick Toggle Bar
+        item {
+            val isNightMode = themeMode == ThemeMode.HIGH_CONTRAST_DARK
+            Surface(
+                onClick = onToggleNightMode,
+                shape = RoundedCornerShape(14.dp),
+                color = if (isNightMode) Color(0xFF0F172A) else MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, if (isNightMode) Color(0xFF38BDF8) else Color.Transparent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .testTag("news_night_reading_toggle_bar")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isNightMode) Color(0xFF1E293B) else MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (isNightMode) Icons.Default.NightlightRound else Icons.Default.DarkMode,
+                                    contentDescription = "Night reading mode",
+                                    tint = if (isNightMode) Color(0xFFFBBF24) else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = if (isNightMode) {
+                                    if (language == AppLanguage.ODIA) "ନିଶାର୍ଦ୍ଧ ହାଇ-କଣ୍ଟ୍ରାଷ୍ଟ ଡାର୍କ ମୋଡ୍ (ସକ୍ରିୟ)" else "High-Contrast Night Mode (Active)"
+                                } else {
+                                    if (language == AppLanguage.ODIA) "ନିଶାର୍ଦ୍ଧ ଖବର ପାଠ ପାଇଁ ଡାର୍କ ମୋଡ୍" else "Night-Time News Reading Mode"
+                                },
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isNightMode) Color(0xFFFFFFFF) else MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଚକ୍ଷୁ ଶ୍ରାନ୍ତି ଦୂର ଓ ସ୍ପଷ୍ଟ ପଠନ ପାଇଁ OLED କଣ୍ଟ୍ରାଷ୍ଟ" else "Pure black & glare-free high contrast for night reading",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 11.sp,
+                                    color = if (isNightMode) Color(0xFF94A3B8) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = isNightMode,
+                        onCheckedChange = { onToggleNightMode() },
+                        modifier = Modifier.testTag("news_night_mode_switch")
                     )
                 }
             }
@@ -205,8 +280,8 @@ fun NewsScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .testTag("river_flood_telemetry_card"),
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -235,13 +310,13 @@ fun NewsScreen(
                                     text = if (language == AppLanguage.ODIA) "ନଦୀ ଜଳସ୍ତର ଓ ବନ୍ୟା ସତର୍କତା" else "River Levels & Flood Early Warning",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = BentoSlate900,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 15.sp
                                     )
                                 )
                                 Text(
                                     text = "Central Water Commission & SRC Odisha",
-                                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate500)
+                                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
                         }
@@ -624,8 +699,8 @@ fun NewsScreen(
                         .padding(16.dp)
                         .testTag("news_empty_search_card"),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, BentoSlate200)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(
                         modifier = Modifier
@@ -639,7 +714,7 @@ fun NewsScreen(
                             text = if (language == AppLanguage.ODIA) "କୌଣସି ଖବର ମିଳିଲା ନାହିଁ" else "No News Articles Found",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = BentoSlate900
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -774,9 +849,9 @@ fun NewsCard(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("news_card_${article.id}"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = BorderStroke(1.dp, BentoSlate100)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -802,7 +877,7 @@ fun NewsCard(
 
                 Text(
                     text = article.timeAgo,
-                    style = MaterialTheme.typography.labelSmall.copy(color = BentoSlate400)
+                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
 
@@ -814,7 +889,7 @@ fun NewsCard(
                 query = query,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = BentoSlate900,
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 22.sp
                 )
             )
@@ -826,7 +901,7 @@ fun NewsCard(
                 text = snippetText,
                 query = query,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = BentoSlate600,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
                 )
             )

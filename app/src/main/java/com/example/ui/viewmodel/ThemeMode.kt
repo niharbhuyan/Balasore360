@@ -7,5 +7,6 @@ package com.example.ui.viewmodel
 enum class ThemeMode {
     SYSTEM,
     LIGHT,
-    DARK
+    DARK,
+    HIGH_CONTRAST_DARK
 }
