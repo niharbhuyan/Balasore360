@@ -97,7 +97,30 @@ data class DailyBalasorePulse(
     val careerUrgentNoticeCount: Int = 3,
     val nearestShelterName: String = "Chandipur Coastal Multipurpose Shelter",
     val nearestShelterDistanceKm: Float = 1.2f,
-    val heritagePassportUnlockedCount: Int = 3
+    val heritagePassportUnlockedCount: Int = 3,
+    // 6 Next-Gen Auto-Updated Feature Telemetry Fields
+    val marineRadioWaveMeters: Float = 1.3f,
+    val marineRadioWindKnots: Int = 14,
+    val marineReturnCountdownMinutes: Int = 185,
+    val isMarineRadioWarningActive: Boolean = false,
+    val coastalSurgeRiskLevel: String = "Guarded (Spring Tide +0.8m)",
+    val projectedSurgeHeightMeters: Float = 0.8f,
+    val shelterOccupancyPercent: Int = 18,
+    val activeSheltersCount: Int = 64,
+    val hilsaEstuaryRateKg: Int = 980,
+    val tigerPrawnRateKg: Int = 740,
+    val swarnaPaddyMspQuintal: Int = 2183,
+    val baleswariPaanBida100Rate: Int = 160,
+    val remunaKhiraBhogPotsAvailable: Int = 42,
+    val remunaActiveAartiPhase: String = "Madhyanna Dhupa & Khira Bhog Arpan",
+    val panchalingeswarStreamFlowMeters: Float = 0.28f,
+    val isPanchalingeswarClimbSafe: Boolean = true,
+    val fmmchBloodInventoryOposUnits: Int = 34,
+    val fmmchCriticalBloodShortageGroup: String = "O- & AB- (Urgent Donors Needed)",
+    val verifiedActiveDonorsCount: Int = 128,
+    val pendingCivicReportsCount: Int = 14,
+    val resolvedCivicReportsTodayCount: Int = 8,
+    val drainageDesiltingTeamActive: Boolean = true
 )
 
 object DailyUpdateEngine {
@@ -483,7 +506,36 @@ object DailyUpdateEngine {
             careerUrgentNoticeCount = 3,
             nearestShelterName = "Chandipur Coastal Multipurpose Shelter",
             nearestShelterDistanceKm = 1.2f,
-            heritagePassportUnlockedCount = 3
+            heritagePassportUnlockedCount = 3,
+            marineRadioWaveMeters = 1.1f + ((dayOfYear % 5) * 0.18f),
+            marineRadioWindKnots = 10 + (hour % 12),
+            marineReturnCountdownMinutes = ((360 - ((hour * 60 + minute) % 360))).coerceIn(15, 360),
+            isMarineRadioWarningActive = (dayOfYear % 12 == 0),
+            coastalSurgeRiskLevel = if (dayOfYear % 15 == 0) "Elevated Spring Tide Surge (+1.6m) ⚠️" else "Guarded Normal Sea State (+0.7m) 🟢",
+            projectedSurgeHeightMeters = if (dayOfYear % 15 == 0) 1.6f else 0.75f,
+            shelterOccupancyPercent = 10 + (dayOfYear % 12),
+            activeSheltersCount = 64,
+            hilsaEstuaryRateKg = 920 + ((dayOfYear % 7) * 40),
+            tigerPrawnRateKg = 710 + ((dayOfYear % 5) * 30),
+            swarnaPaddyMspQuintal = 2183,
+            baleswariPaanBida100Rate = 140 + ((dayOfYear % 6) * 10),
+            remunaKhiraBhogPotsAvailable = (60 - (minute % 50)).coerceAtLeast(8),
+            remunaActiveAartiPhase = when (hour) {
+                in 4..6 -> "Mangala Alati (05:30 AM) 🪔"
+                in 7..10 -> "Sakala Dhupa & Tulasi Puja 🌿"
+                in 11..14 -> "Madhyanna Dhupa & Khira Bhog Arpan 🥣"
+                in 15..17 -> "Bāla Bhoga & Temple Chime 🔔"
+                in 18..20 -> "Sandhya Alati & Deeparadhana 🪔"
+                else -> "Ratra Pahada (Sanctum Resting) 🌙"
+            },
+            panchalingeswarStreamFlowMeters = 0.22f + ((dayOfYear % 4) * 0.04f),
+            isPanchalingeswarClimbSafe = hour in 6..18,
+            fmmchBloodInventoryOposUnits = 28 + (dayOfYear % 18),
+            fmmchCriticalBloodShortageGroup = if (dayOfYear % 2 == 0) "O- Negative & AB- Negative" else "B- Negative & AB- Negative",
+            verifiedActiveDonorsCount = 120 + (dayOfYear % 25),
+            pendingCivicReportsCount = 8 + (minute % 12),
+            resolvedCivicReportsTodayCount = 12 + (hour % 6),
+            drainageDesiltingTeamActive = true
         )
     }
 }

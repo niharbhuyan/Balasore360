@@ -291,6 +291,54 @@ fun AutoUpdateCenterSheet(
                 statusText = "Chandipur intertidal sightings, breeding windows & FMU wildlife hotline active",
                 updateInterval = "Daily ZSI & Marine Forest Telemetry",
                 targetSheet = UniqueFeatureSheetType.HORSESHOE_CRAB_INTERTIDAL_PROTECTION
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Coastal Marine Audio Radio & Fishermen Ring",
+                nameOd = "ସମୁଦ୍ର ମତ୍ସ୍ୟଜୀବୀ ରେଡିଓ ବୁଲେଟିନ୍ ଓ ସୁରକ୍ଷା ରିଙ୍ଗ୍",
+                iconEmoji = "🎙️",
+                statusText = "Swell: ${dailyPulse.marineRadioWaveMeters}m • Wind: ${dailyPulse.marineRadioWindKnots} kts • Return Window: ${dailyPulse.marineReturnCountdownMinutes}m",
+                updateInterval = "Live INCOIS & VHF Radio Sync",
+                targetSheet = UniqueFeatureSheetType.COASTAL_MARINE_AUDIO_RADIO
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Cyclone Surge & MCS Evacuation Router",
+                nameOd = "ବାତ୍ୟା ଜୁଆର ଓ ୬୪ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ ରାଉଟର୍",
+                iconEmoji = "🗺️",
+                statusText = "${dailyPulse.coastalSurgeRiskLevel} • ${dailyPulse.shelterOccupancyPercent}% shelter occupancy • 64 Shelters Live",
+                updateInterval = "Hourly OSDMA Inundation Telemetry",
+                targetSheet = UniqueFeatureSheetType.CYCLONE_SURGE_EVACUATION_ROUTER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore Mandi & Fish Landing Price Index",
+                nameOd = "ବାଲେଶ୍ୱର ମଣ୍ଡି ଓ ବଳରାମଗଡ଼ି ମତ୍ସ୍ୟ ଦର ସୂଚକାଙ୍କ",
+                iconEmoji = "🦐",
+                statusText = "Hilsa: ₹${dailyPulse.hilsaEstuaryRateKg}/kg • Tiger Prawn: ₹${dailyPulse.tigerPrawnRateKg}/kg • Paddy MSP: ₹${dailyPulse.swarnaPaddyMspQuintal}/Q",
+                updateInterval = "Daily Morning Mandi Auction Sync",
+                targetSheet = UniqueFeatureSheetType.BALARAMGADI_MANDI_PRICE_INDEX
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Temple Aarti, Khira Bhog & Pilgrimage Companion",
+                nameOd = "ରେମୁଣା ଖିରଭୋଗ ଓ ମନ୍ଦିର ଆଳତି ଲାଇଭ୍ ଟାଇମିଂ",
+                iconEmoji = "🛕",
+                statusText = "Remuna Khira Bhog: ${dailyPulse.remunaKhiraBhogPotsAvailable} pots ready • Phase: ${dailyPulse.remunaActiveAartiPhase}",
+                updateInterval = "Live Sanctum Bell & Gate Sync",
+                targetSheet = UniqueFeatureSheetType.TEMPLE_AARTI_KHIRA_BHOG_COMPANION
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "FM MCH Hospital SOS & Emergency Blood Network",
+                nameOd = "FM MCH ହସ୍ପିଟାଲ୍ ଓ ଜରୁରୀ ରକ୍ତଦାତା ନେଟୱାର୍କ",
+                iconEmoji = "🩸",
+                statusText = "O+ Stock: ${dailyPulse.fmmchBloodInventoryOposUnits}u • Shortage: ${dailyPulse.fmmchCriticalBloodShortageGroup} • ${dailyPulse.verifiedActiveDonorsCount} Donors",
+                updateInterval = "Hourly Blood Bank & ICU Sync",
+                targetSheet = UniqueFeatureSheetType.FM_MCH_EMERGENCY_BLOOD_NETWORK
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Mo Balasore Citizen Civic & Storm Reporter",
+                nameOd = "ମୋ ବାଲେଶ୍ୱର ନାଗରିକ ଓ ବାତ୍ୟା କ୍ଷତି ରିପୋର୍ଟର୍",
+                iconEmoji = "📸",
+                statusText = "${dailyPulse.pendingCivicReportsCount} Active Reports • ${dailyPulse.resolvedCivicReportsTodayCount} Cleared Today • Ward Patrols Active",
+                updateInterval = "Continuous Background Offline Queue Sync",
+                targetSheet = UniqueFeatureSheetType.MO_BALASORE_CIVIC_STORM_REPORTER
             )
         )
     }

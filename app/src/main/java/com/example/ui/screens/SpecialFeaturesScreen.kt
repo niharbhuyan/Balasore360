@@ -1259,6 +1259,79 @@ fun SpecialFeaturesScreen(
                 tagText = "FIRESTORE 'FEEDBACK' SYNC",
                 primaryColor = Color(0xFFF0FDF4),
                 borderColor = Color(0xFFBBF7D0)
+            ),
+            // 6 New Auto-Updated Features
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.COASTAL_MARINE_AUDIO_RADIO,
+                titleEn = "Coastal Marine Audio Radio & Fishermen Ring",
+                titleOd = "ସମୁଦ୍ର ମତ୍ସ୍ୟଜୀବୀ ରେଡିଓ ବୁଲେଟିନ୍ ଓ ସୁରକ୍ଷା ରିଙ୍ଗ୍",
+                category = "Coastal & Estuary",
+                iconEmoji = "🎙️",
+                descriptionEn = "INCOIS wave swell audio bulletins in Odia/English, return-to-shore countdown & offshore safety rings.",
+                descriptionOd = "ଇନ୍‌କଏସ୍ ସମୁଦ୍ର ତରଙ୍ଗ ସତର୍କତା, ଘାଟ ଫେରିବା କାଉଣ୍ଟଡାଉନ୍ ଓ ମତ୍ସ୍ୟଜୀବୀ ଅଡିଓ ରେଡିଓ।",
+                tagText = "TTS AUDIO RADIO",
+                primaryColor = Color(0xFFF0F9FF),
+                borderColor = Color(0xFFBAE6FD)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.CYCLONE_SURGE_EVACUATION_ROUTER,
+                titleEn = "Cyclone Surge & MCS Evacuation Router",
+                titleOd = "ବାତ୍ୟା ଜୁଆର ଓ ୬୪ ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳ ରାଉଟର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "🗺️",
+                descriptionEn = "Projected inundation zone maps, vetted cyclone shelter capacities, warden contacts & hazard avoidance routing.",
+                descriptionOd = "ବାତ୍ୟା ସମୟରେ ସୁରକ୍ଷିତ ୬୪ ବହୁମୁଖୀ ଆଶ୍ରୟସ୍ଥଳ ରାସ୍ତା, ୱାର୍ଡେନ୍ ସୂଚୀ ଓ ଜଳବନ୍ଦୀ ବିପଦ ସତର୍କତା।",
+                tagText = "64 SHELTERS ROUTER",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFFBFDBFE)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALARAMGADI_MANDI_PRICE_INDEX,
+                titleEn = "Balasore Mandi & Fish Landing Price Index",
+                titleOd = "ବାଲେଶ୍ୱର ମଣ୍ଡି ଓ ବଳରାମଗଡ଼ି ମତ୍ସ୍ୟ ଦର ସୂଚକାଙ୍କ",
+                category = "Agro & Marine",
+                iconEmoji = "🦐",
+                descriptionEn = "Daily Hilsa, Tiger Prawn, Crab landing rates & Swarna Paddy MSP, Betel leaf spot prices with 7-day trends.",
+                descriptionOd = "ସୁବର୍ଣ୍ଣରେଖା ଇଲିଶି, ବାଘ ଚିଙ୍ଗୁଡ଼ି ଓ ଧାନ ଏମଏସପି ସରକାରୀ ଦରର ଦୈନିକ ସୂଚକାଙ୍କ।",
+                tagText = "DAILY SPOT RATES",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFF86EFAC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.TEMPLE_AARTI_KHIRA_BHOG_COMPANION,
+                titleEn = "Temple Aarti, Khira Bhog & Pilgrimage Companion",
+                titleOd = "ରେମୁଣା ଖିରଭୋଗ ଓ ମନ୍ଦିର ଆଳତି ଲାଇଭ୍ ଟାଇମିଂ",
+                category = "Artisans & Heritage",
+                iconEmoji = "🛕",
+                descriptionEn = "Remuna Khirachora Gopinath live aarti & Khira Bhog availability, Panchalingeswar hill stream flow & Chadak timings.",
+                descriptionOd = "ରେମୁଣା ଖିରଚୋରା ଗୋପୀନାଥ ଖିରଭୋଗ କାଉଣ୍ଟର୍, ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ପାହାଡ଼ ଝରଣା ଜଳସ୍ତର ଓ ଆଳତି ସୂଚୀ।",
+                tagText = "SANCTUM COMPANION",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.FM_MCH_EMERGENCY_BLOOD_NETWORK,
+                titleEn = "FM MCH Hospital SOS & Emergency Blood Network",
+                titleOd = "FM MCH ହସ୍ପିଟାଲ୍ ଓ ଜରୁରୀ ରକ୍ତଦାତା ନେଟୱାର୍କ",
+                category = "Health & Medical",
+                iconEmoji = "🩸",
+                descriptionEn = "Fakir Mohan MCH blood bank live inventory, verified voluntary donor search by block, and SOS blood beacon.",
+                descriptionOd = "ଏଫ୍ଏମ୍ ମେଡିକାଲ୍ କଲେଜ୍ ଟ୍ରମା ସହାୟତା, ଜିଲ୍ଲା ରକ୍ତ ଭଣ୍ଡାର ଲାଇଭ୍ ଷ୍ଟକ୍ ଓ ରକ୍ତଦାତା ସମ୍ପର୍କ।",
+                tagText = "HOSPITAL SOS & DONORS",
+                primaryColor = Color(0xFFFEF2F2),
+                borderColor = Color(0xFFFCA5A5)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.MO_BALASORE_CIVIC_STORM_REPORTER,
+                titleEn = "Mo Balasore Citizen Civic & Storm Reporter",
+                titleOd = "ମୋ ବାଲେଶ୍ୱର ନାଗରିକ ଓ ବାତ୍ୟା କ୍ଷତି ରିପୋର୍ଟର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "📸",
+                descriptionEn = "Report waterlogging, fallen trees, broken electric lines with GPS & photo; offline queue with auto-sync.",
+                descriptionOd = "ଜଳବନ୍ଦୀ, ଭାଙ୍ଗିଥିବା ଗଛ ଓ ବିଦ୍ୟୁତ୍ ତାର ସମସ୍ୟା ଫଟୋ ଉଠାଇ ଅଫଲାଇନରେ ଦାୟର କରନ୍ତୁ, ନେଟ୍ ଆସିଲେ ସ୍ୱତଃ ସିଙ୍କ୍।",
+                tagText = "OFFLINE AUTO-SYNC",
+                primaryColor = Color(0xFFF5F3FF),
+                borderColor = Color(0xFFDDD6FE)
             )
         )
     }

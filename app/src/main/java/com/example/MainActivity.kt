@@ -188,6 +188,12 @@ import com.example.ui.features.transit.CoastalCrutInterdistrictBusRadarSheet
 import com.example.ui.features.nature.HorseshoeCrabIntertidalProtectionSheet
 import com.example.ui.features.civic.CitizenFeedbackSheet
 import com.example.ui.features.emergency.FcmSevereWeatherAlertSheet
+import com.example.ui.features.coastal.CoastalMarineAudioRadioSheet
+import com.example.ui.features.coastal.CycloneSurgeEvacuationRouterSheet
+import com.example.ui.features.agro.BalaramgadiMandiPriceIndexSheet
+import com.example.ui.features.heritage.BalasoreTemplePilgrimageCompanionSheet
+import com.example.ui.features.emergency.FmMchEmergencyBloodNetworkSheet
+import com.example.ui.features.civic.MoBalasoreCivicStormReporterSheet
 import com.example.data.fcm.FcmManager
 import com.example.data.fcm.BalasoreNotificationHelper
 import android.content.Intent
@@ -1609,6 +1615,48 @@ fun BalasoreApp(
                     FcmSevereWeatherAlertSheet(
                         language = uiState.language,
                         onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.COASTAL_MARINE_AUDIO_RADIO -> {
+                    CoastalMarineAudioRadioSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.CYCLONE_SURGE_EVACUATION_ROUTER -> {
+                    CycloneSurgeEvacuationRouterSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALARAMGADI_MANDI_PRICE_INDEX -> {
+                    BalaramgadiMandiPriceIndexSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TEMPLE_AARTI_KHIRA_BHOG_COMPANION -> {
+                    BalasoreTemplePilgrimageCompanionSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.FM_MCH_EMERGENCY_BLOOD_NETWORK -> {
+                    FmMchEmergencyBloodNetworkSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.MO_BALASORE_CIVIC_STORM_REPORTER -> {
+                    MoBalasoreCivicStormReporterSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
                     )
                 }
                 null -> {}
