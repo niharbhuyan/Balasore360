@@ -276,4 +276,20 @@ object FcmManager {
             message = summary
         )
     }
+
+    /**
+     * Simulates a real-time Coastal Flood & Sluice Gate push notification.
+     * Triggers a heads-up alert with river gauge levels and evacuation advisories.
+     */
+    fun simulateCoastalFloodPush(context: Context) {
+        val title = "Subarnarekha River Flood & Sluice Gate Warning"
+        val message = "Rajghat river gauge has crossed warning level reaching 9.62m (Danger: 9.45m). Coastal sluice gates 3, 5, and 7 opened in Bhograi block. Riparian villages on flood watch."
+        BalasoreNotificationHelper.showCoastalFloodNotification(
+            context = context,
+            title = title,
+            message = message,
+            riverLevelGauge = "Rajghat: 9.62m (Above Danger Level)",
+            alertLevel = "CRITICAL"
+        )
+    }
 }

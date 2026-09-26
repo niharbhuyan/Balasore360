@@ -85,6 +85,14 @@ fun AutoUpdateCenterSheet(
     val telemetrySubsystems = remember(dailyPulse) {
         listOf(
             SubsystemTelemetryStatus(
+                nameEn = "FCM Severe Weather & Coastal Flood Push Alerts",
+                nameOd = "FCM ବାତ୍ୟା ଓ ଉପକୂଳ ବନ୍ୟା ତତ୍କାଳ ପୁସ୍ ସତର୍କତା",
+                iconEmoji = "🚨",
+                statusText = "Automated Real-Time Push Active • Direct to Lock Screen via IMD & CWC Telemetry",
+                updateInterval = "Instant Zero-Latency Push",
+                targetSheet = UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT
+            ),
+            SubsystemTelemetryStatus(
                 nameEn = "Subarnarekha & Budhabalanga River Levels",
                 nameOd = "ସୁବର୍ଣ୍ଣରେଖା ଓ ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ ଜଳସ୍ତର",
                 iconEmoji = "🌊",

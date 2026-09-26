@@ -45,6 +45,22 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
         val articleId = data["article_id"]
 
         when {
+            type.contains("FLOOD", ignoreCase = true) ||
+                    title.contains("Flood", ignoreCase = true) ||
+                    title.contains("River", ignoreCase = true) ||
+                    title.contains("Subarnarekha", ignoreCase = true) -> {
+                val gauge = data["gauge"] ?: "Rajghat: 9.45m (Danger Level)"
+                if (FcmManager.isWeatherAlertsEnabled(applicationContext)) {
+                    BalasoreNotificationHelper.showCoastalFloodNotification(
+                        context = applicationContext,
+                        title = title,
+                        message = body,
+                        riverLevelGauge = gauge,
+                        alertLevel = alertLevel
+                    )
+                }
+            }
+
             type.contains("WEATHER", ignoreCase = true) ||
                     title.contains("Weather", ignoreCase = true) ||
                     title.contains("Cyclone", ignoreCase = true) ||

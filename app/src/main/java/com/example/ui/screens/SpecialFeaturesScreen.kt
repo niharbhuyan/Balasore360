@@ -924,6 +924,18 @@ fun SpecialFeaturesScreen(
                 borderColor = Color(0xFF38BDF8)
             ),
             SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT,
+                titleEn = "FCM Severe Weather & Coastal Flood Push Alerts",
+                titleOd = "FCM ବାତ୍ୟା ଓ ଉପକୂଳ ବନ୍ୟା ତତ୍କାଳ ପୁସ୍ ସତର୍କତା",
+                category = "Daily Pulse",
+                iconEmoji = "🚨",
+                descriptionEn = "Automated real-time push notifications delivered directly to user devices for cyclones, squalls, tidal surges & Rajghat danger marks.",
+                descriptionOd = "ସିଧାସଳଖ ଫୋନକୁ ସ୍ୱୟଂକ୍ରିୟ ଜରୁରୀ ବନ୍ୟା ଓ ଝଡ଼ ସତର୍କତା ନୋଟିଫିକେସନ୍ ପ୍ରେରଣ।",
+                tagText = "FCM ZERO-LATENCY PUSH",
+                primaryColor = Color(0xFFFEF2F2),
+                borderColor = Color(0xFFF87171)
+            ),
+            SpecialFeatureItem(
                 sheetType = UniqueFeatureSheetType.NILAGIRI_CHHAU_CULTURAL_GUILD,
                 titleEn = "Nilagiri Chhau Dance & Cultural Guild",
                 titleOd = "ନୀଳଗିରି ଛଉ ନୃତ୍ୟ ଓ ସାଂସ୍କୃତିକ ଗିଲ୍ଡ",

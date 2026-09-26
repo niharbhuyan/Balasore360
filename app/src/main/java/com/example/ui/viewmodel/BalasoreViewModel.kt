@@ -113,8 +113,8 @@ data class BalasoreUiState(
     val autoUpdateFrequencyMinutes: Int = 60,
     val isAutoUpdateBackgroundEnabled: Boolean = true,
     val lastSyncStatusMessage: String = "All services synchronized",
-    val appVersionInstalled: String = "1.0.7",
-    val appVersionLatest: String = "1.0.7",
+    val appVersionInstalled: String = "1.0.8",
+    val appVersionLatest: String = "1.0.8",
     val isUpdateCheckLoading: Boolean = false
 )
 
@@ -230,7 +230,8 @@ enum class UniqueFeatureSheetType {
     BALESWARI_BETEL_PADDY_COOPERATIVE,
     COASTAL_CRUT_INTERDISTRICT_BUS_RADAR,
     HORSESHOE_CRAB_INTERTIDAL_PROTECTION,
-    CITIZEN_FEEDBACK_PORTAL
+    CITIZEN_FEEDBACK_PORTAL,
+    FCM_SEVERE_WEATHER_ALERT
 }
 
 data class GroundingState(
@@ -264,6 +265,7 @@ class BalasoreViewModel : ViewModel() {
         private set
     private var tideDao: ChandipurTideDao? = null
     private var newsRepo: NewsRepository? = null
+    private var appContext: Context? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
     private val weatherApiService: WeatherApiService by lazy { WeatherApiService.create() }
     private val geminiChatService: GeminiChatService by lazy { GeminiChatService() }
@@ -309,7 +311,18 @@ class BalasoreViewModel : ViewModel() {
      * Connects local Room database and streams itinerary items and tide data into UI state.
      */
     fun initDatabase(context: Context) {
-        if (itineraryRepo != null && tideDao != null) return
+        appContext = context.applicationContext
+        if (itineraryRepo != null && tideDao != null) {
+            appContext?.let { ctx ->
+                com.example.data.fcm.BalasoreAlertDispatchEngine.evaluateAndDispatchRealTimeAlerts(
+                    context = ctx,
+                    weather = _uiState.value.weather,
+                    pulse = _uiState.value.dailyPulse,
+                    emergencyAlerts = _uiState.value.liveEmergencyAlerts
+                )
+            }
+            return
+        }
         try {
             val db = AppDatabase.getInstance(context)
             val repo = ItineraryRepository(db.itineraryDao())
@@ -461,6 +474,14 @@ class BalasoreViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(
                     liveEmergencyAlerts = response.alerts
                 )
+                appContext?.let { ctx ->
+                    com.example.data.fcm.BalasoreAlertDispatchEngine.evaluateAndDispatchRealTimeAlerts(
+                        context = ctx,
+                        weather = _uiState.value.weather,
+                        pulse = _uiState.value.dailyPulse,
+                        emergencyAlerts = response.alerts
+                    )
+                }
             } catch (e: Exception) {
                 // Keep existing or fallback gracefully
             }
@@ -675,6 +696,14 @@ class BalasoreViewModel : ViewModel() {
                         forecastDays = if (parsedDays.isNotEmpty()) parsedDays else _uiState.value.forecastDays,
                         isWeatherLoading = false
                     )
+                    appContext?.let { ctx ->
+                        com.example.data.fcm.BalasoreAlertDispatchEngine.evaluateAndDispatchRealTimeAlerts(
+                            context = ctx,
+                            weather = updatedWeather,
+                            pulse = _uiState.value.dailyPulse,
+                            emergencyAlerts = _uiState.value.liveEmergencyAlerts
+                        )
+                    }
                 } else {
                     _uiState.value = _uiState.value.copy(isWeatherLoading = false)
                 }
@@ -870,9 +899,18 @@ class BalasoreViewModel : ViewModel() {
     }
 
     fun refreshDailyPulse() {
+        val newPulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
         _uiState.value = _uiState.value.copy(
-            dailyPulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+            dailyPulse = newPulse
         )
+        appContext?.let { ctx ->
+            com.example.data.fcm.BalasoreAlertDispatchEngine.evaluateAndDispatchRealTimeAlerts(
+                context = ctx,
+                weather = _uiState.value.weather,
+                pulse = newPulse,
+                emergencyAlerts = _uiState.value.liveEmergencyAlerts
+            )
+        }
     }
 
     fun toggleEmergencyKitItem(itemId: String) {
@@ -1045,8 +1083,8 @@ class BalasoreViewModel : ViewModel() {
                 kotlinx.coroutines.delay(850)
                 _uiState.value = _uiState.value.copy(
                     isUpdateCheckLoading = false,
-                    appVersionLatest = "1.0.7",
-                    lastSyncStatusMessage = "You have the latest version (v1.0.7, Build 8)"
+                    appVersionLatest = "1.0.8",
+                    lastSyncStatusMessage = "You have the latest version (v1.0.8, Build 9)"
                 )
             }
         } catch (_: Throwable) {

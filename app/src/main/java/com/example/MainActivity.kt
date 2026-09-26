@@ -187,6 +187,10 @@ import com.example.ui.features.agro.BaleswariBetelPaddyCooperativeSheet
 import com.example.ui.features.transit.CoastalCrutInterdistrictBusRadarSheet
 import com.example.ui.features.nature.HorseshoeCrabIntertidalProtectionSheet
 import com.example.ui.features.civic.CitizenFeedbackSheet
+import com.example.ui.features.emergency.FcmSevereWeatherAlertSheet
+import com.example.data.fcm.FcmManager
+import com.example.data.fcm.BalasoreNotificationHelper
+import android.content.Intent
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material3.ExtendedFloatingActionButton
 
@@ -235,6 +239,16 @@ class MainActivity : ComponentActivity() {
             Log.w("MainActivity", "SyncManager schedulePeriodicSync fallback: ${t.message}")
         }
 
+        // Initialize Firebase Cloud Messaging & Local Notification Channels
+        try {
+            FcmManager.initialize(applicationContext)
+        } catch (t: Throwable) {
+            Log.w("MainActivity", "FcmManager initialization notice: ${t.message}")
+        }
+
+        // Handle notification deep links (Severe Weather & Coastal Flood push clicks)
+        handleNotificationIntent(intent)
+
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val isDarkTheme = when (uiState.themeMode) {
@@ -261,6 +275,28 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         updateManager?.cleanup()
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent == null) return
+        val targetTab = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
+            ?: intent.getStringExtra("target_tab")
+
+        when (targetTab) {
+            "WEATHER" -> {
+                viewModel.selectTab(2)
+                viewModel.openFeatureSheet(UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT)
+            }
+            "NEWS" -> {
+                viewModel.selectTab(1)
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
     }
 }
 
@@ -1567,6 +1603,12 @@ fun BalasoreApp(
                     CitizenFeedbackSheet(
                         language = uiState.language,
                         onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT -> {
+                    FcmSevereWeatherAlertSheet(
+                        language = uiState.language,
+                        onClose = { viewModel.closeFeatureSheet() }
                     )
                 }
                 null -> {}

@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -136,6 +137,73 @@ fun WeatherScreen(
                     onOpenTideSchedule = { onOpenFeatureSheet(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
                     onOpenMarineAdvisory = { onOpenFeatureSheet(UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY) }
                 )
+            }
+        }
+
+        // Real-Time FCM Severe Weather & Coastal Flood Push Radar Banner
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT) }
+                    .testTag("fcm_alert_radar_banner"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                border = BorderStroke(1.5.dp, Color(0xFF38BDF8))
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFDC2626)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🚨", fontSize = 20.sp)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "FCM ତତ୍କାଳ ବନ୍ୟା ଓ ବାତ୍ୟା ଆଲର୍ଟ" else "FCM Severe Weather & Flood Alerts",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                color = Color(0xFF1E293B),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = "PUSH ACTIVE",
+                                    color = Color(0xFF4ADE80),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଲକ୍ ସ୍କ୍ରିନକୁ ସ୍ୱୟଂକ୍ରିୟ ଚେତାବନୀ • ପୁସ୍ ସେଟିଂସ ଓ ଲାଇଭ୍ ଟେଷ୍ଟ" else "Real-time auto-dispatch to lock screen • Manage topics & test",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color(0xFF94A3B8),
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Open Alerts",
+                        tint = Color(0xFF38BDF8),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 

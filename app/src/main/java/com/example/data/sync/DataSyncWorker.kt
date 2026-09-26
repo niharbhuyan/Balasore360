@@ -26,6 +26,13 @@ class DataSyncWorker(
             val isCacheStale = repository.isCacheOlderThan24Hours()
             val syncResult = repository.syncAllData(forceNetwork = isCacheStale)
 
+            // Automatically evaluate severe weather or coastal flood alert thresholds and notify user
+            try {
+                com.example.data.fcm.BalasoreAlertDispatchEngine.checkBackgroundAlerts(applicationContext)
+            } catch (t: Throwable) {
+                Log.w(TAG, "Background alert check notice: ${t.message}")
+            }
+
             val outputData = workDataOf(
                 KEY_SYNC_SUCCESS to syncResult.isSuccess,
                 KEY_WEATHER_UPDATED to syncResult.weatherUpdated,
