@@ -30,6 +30,8 @@ object BalasoreAlertDispatchEngine {
     private const val KEY_LAST_WEATHER_ALERT_TIME = "last_weather_alert_time"
     private const val KEY_LAST_FLOOD_ALERT_HASH = "last_flood_alert_hash"
     private const val KEY_LAST_FLOOD_ALERT_TIME = "last_flood_alert_time"
+    private const val KEY_LAST_DEFENSE_ALERT_HASH = "last_defense_alert_hash"
+    private const val KEY_LAST_DEFENSE_ALERT_TIME = "last_defense_alert_time"
 
     // Cooldown period between identical alerts (20 minutes)
     private const val ALERT_COOLDOWN_MS = 20 * 60 * 1000L
@@ -49,16 +51,17 @@ object BalasoreAlertDispatchEngine {
         emergencyAlerts: List<EmergencyAlertDto>? = null,
         force: Boolean = false
     ) {
-        if (!FcmManager.isWeatherAlertsEnabled(context)) {
-            Log.d(TAG, "Alert evaluation skipped: user opted out of weather notifications")
-            return
+        // 1. Evaluate Coastal Flood & Sluice Gate Warnings (if weather/flood alerts enabled)
+        if (FcmManager.isWeatherAlertsEnabled(context)) {
+            evaluateCoastalFloodConditions(context, pulse, emergencyAlerts, force)
+            // 2. Evaluate Severe Weather, Squalls & Cyclone Warnings
+            evaluateSevereWeatherConditions(context, weather, pulse, emergencyAlerts, force)
         }
 
-        // 1. Evaluate Coastal Flood & Sluice Gate Warnings
-        evaluateCoastalFloodConditions(context, pulse, emergencyAlerts, force)
-
-        // 2. Evaluate Severe Weather, Squalls & Cyclone Warnings
-        evaluateSevereWeatherConditions(context, weather, pulse, emergencyAlerts, force)
+        // 3. Evaluate Coastal Defense & Missile Test Advisories (if defense advisories enabled)
+        if (FcmManager.isDefenseAdvisoriesEnabled(context)) {
+            evaluateDefenseAdvisoryConditions(context, pulse, emergencyAlerts, force)
+        }
     }
 
     /**
@@ -253,6 +256,79 @@ object BalasoreAlertDispatchEngine {
                 prefs.edit()
                     .putInt(KEY_LAST_WEATHER_ALERT_HASH, alertHash)
                     .putLong(KEY_LAST_WEATHER_ALERT_TIME, now)
+                    .apply()
+            }
+        }
+    }
+
+    /**
+     * Evaluates coastal defense & missile test conditions:
+     * - ITR Chandipur / Wheeler (Dr. APJ Abdul Kalam Island) test windows.
+     * - NOTAM airspace exclusions and seaward maritime clearance perimeters.
+     * - Live emergency alerts with type DEFENSE, MISSILE, NOTAM, or ITR.
+     */
+    private fun evaluateDefenseAdvisoryConditions(
+        context: Context,
+        pulse: DailyBalasorePulse?,
+        emergencyAlerts: List<EmergencyAlertDto>?,
+        force: Boolean
+    ) {
+        var isDefenseAlertActive = false
+        var alertTitle = "ITR Chandipur Coastal Defense & NOTAM Advisory"
+        var alertMessage = "DRDO test window active from Launch Complex-3 (LC-3). Fishing boats from Balaramgadi and Kasafal must maintain minimum 18 km seaward clearance."
+        var notamWindow = "09:30 AM - 01:30 PM"
+        var exclusionPerimeter = "18 km"
+
+        // 1. Check live administrative emergency alerts
+        val defenseDto = emergencyAlerts?.firstOrNull { alert ->
+            val type = alert.type.uppercase()
+            val severity = alert.severity.uppercase()
+            (type.contains("DEFENSE") || type.contains("MISSILE") || type.contains("ITR") || type.contains("NOTAM") || type.contains("CHANDIPUR")) &&
+                    (severity.contains("CRITICAL") || severity.contains("HIGH") || severity.contains("URGENT") || severity.contains("WARNING") || severity.contains("ACTIVE"))
+        }
+
+        if (defenseDto != null) {
+            isDefenseAlertActive = true
+            alertTitle = defenseDto.title
+            alertMessage = "${defenseDto.summary}\n${defenseDto.actionRequired}"
+        } else if (pulse != null) {
+            val airspace = pulse.itrAirspaceStatus
+            val notam = pulse.itrNotamAdvisory
+            val isRestricted = airspace.contains("Amber", ignoreCase = true) ||
+                    airspace.contains("Red", ignoreCase = true) ||
+                    airspace.contains("Restriction", ignoreCase = true) ||
+                    airspace.contains("Active", ignoreCase = true) ||
+                    airspace.contains("Test", ignoreCase = true) ||
+                    notam.contains("Restriction", ignoreCase = true) ||
+                    notam.contains("Active", ignoreCase = true) ||
+                    notam.contains("Window", ignoreCase = true)
+
+            if (isRestricted) {
+                isDefenseAlertActive = true
+                alertTitle = "ITR Chandipur Coastal Defense & NOTAM Advisory"
+                alertMessage = "Airspace and maritime channel advisory: $airspace. $notam. All artisanal and mechanized fishing craft must clear outer Wheeler Island coordinates."
+            }
+        }
+
+        if (isDefenseAlertActive) {
+            val alertHash = (alertTitle + alertMessage).hashCode()
+            val prefs = getPrefs(context)
+            val lastHash = prefs.getInt(KEY_LAST_DEFENSE_ALERT_HASH, 0)
+            val lastTime = prefs.getLong(KEY_LAST_DEFENSE_ALERT_TIME, 0L)
+            val now = System.currentTimeMillis()
+
+            if (force || alertHash != lastHash || (now - lastTime) > ALERT_COOLDOWN_MS) {
+                Log.i(TAG, "Dispatching automatic Coastal Defense notification: $alertTitle")
+                BalasoreNotificationHelper.showDefenseAdvisoryNotification(
+                    context = context,
+                    title = alertTitle,
+                    message = alertMessage,
+                    notamWindow = notamWindow,
+                    exclusionPerimeterKm = exclusionPerimeter
+                )
+                prefs.edit()
+                    .putInt(KEY_LAST_DEFENSE_ALERT_HASH, alertHash)
+                    .putLong(KEY_LAST_DEFENSE_ALERT_TIME, now)
                     .apply()
             }
         }

@@ -81,6 +81,27 @@ class BalasoreFirebaseMessagingService : FirebaseMessagingService() {
                 }
             }
 
+            type.contains("DEFENSE", ignoreCase = true) ||
+                    type.contains("MISSILE", ignoreCase = true) ||
+                    title.contains("ITR", ignoreCase = true) ||
+                    title.contains("Chandipur", ignoreCase = true) ||
+                    title.contains("Launch", ignoreCase = true) ||
+                    title.contains("NOTAM", ignoreCase = true) -> {
+                val notamWindow = data["notam_window"] ?: "08:00 AM - 12:30 PM"
+                val perimeter = data["exclusion_perimeter"] ?: "15 km seaward"
+                if (FcmManager.isDefenseAdvisoriesEnabled(applicationContext)) {
+                    BalasoreNotificationHelper.showDefenseAdvisoryNotification(
+                        context = applicationContext,
+                        title = title,
+                        message = body,
+                        notamWindow = notamWindow,
+                        exclusionPerimeterKm = perimeter
+                    )
+                } else {
+                    Log.d(TAG, "Defense test notification skipped (opt-out active)")
+                }
+            }
+
             type.contains("NEWS", ignoreCase = true) ||
                     type.contains("BREAKING", ignoreCase = true) ||
                     title.contains("Breaking", ignoreCase = true) -> {

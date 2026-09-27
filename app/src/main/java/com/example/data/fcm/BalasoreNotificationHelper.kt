@@ -21,6 +21,9 @@ object BalasoreNotificationHelper {
     const val CHANNEL_ID_WEATHER = "balasore_weather_alerts"
     const val CHANNEL_NAME_WEATHER = "Urgent Weather & Tide Alerts"
 
+    const val CHANNEL_ID_DEFENSE_TEST = "balasore_defense_advisories"
+    const val CHANNEL_NAME_DEFENSE_TEST = "Coastal Defense & Missile Test Advisories"
+
     const val CHANNEL_ID_COASTAL_FLOOD = "balasore_coastal_flood_alerts"
     const val CHANNEL_NAME_COASTAL_FLOOD = "Coastal Flood & Sluice Warnings"
 
@@ -31,6 +34,7 @@ object BalasoreNotificationHelper {
     const val EXTRA_ARTICLE_ID = "article_id"
 
     const val NOTIFICATION_ID_WEATHER_BASE = 2001
+    const val NOTIFICATION_ID_DEFENSE_BASE = 5001
     const val NOTIFICATION_ID_FLOOD_BASE = 4001
     const val NOTIFICATION_ID_NEWS_BASE = 3001
 
@@ -65,7 +69,20 @@ object BalasoreNotificationHelper {
                 vibrationPattern = longArrayOf(0, 400, 200, 400)
             }
 
-            // 3. Breaking News Channel
+            // 3. Coastal Defense & Missile Test Advisories Channel
+            val defenseChannel = NotificationChannel(
+                CHANNEL_ID_DEFENSE_TEST,
+                CHANNEL_NAME_DEFENSE_TEST,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "DRDO Chandipur ITR and Kalam Island missile test windows, NOTAM airspace clearance, and coastal sea exclusions"
+                enableLights(true)
+                lightColor = Color.YELLOW
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
+            }
+
+            // 4. Breaking News Channel
             val newsChannel = NotificationChannel(
                 CHANNEL_ID_NEWS,
                 CHANNEL_NAME_NEWS,
@@ -78,6 +95,7 @@ object BalasoreNotificationHelper {
             }
 
             notificationManager.createNotificationChannel(weatherChannel)
+            notificationManager.createNotificationChannel(defenseChannel)
             notificationManager.createNotificationChannel(floodChannel)
             notificationManager.createNotificationChannel(newsChannel)
         }
@@ -262,6 +280,68 @@ object BalasoreNotificationHelper {
             .build()
 
         val notificationId = NOTIFICATION_ID_NEWS_BASE + (System.currentTimeMillis() % 100).toInt()
+        NotificationManagerCompat.from(context).notify(notificationId, notification)
+    }
+
+    fun showDefenseAdvisoryNotification(
+        context: Context,
+        title: String,
+        message: String,
+        notamWindow: String = "08:00 AM - 12:30 PM",
+        exclusionPerimeterKm: String = "15 km"
+    ) {
+        createNotificationChannels(context)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+        }
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("target_tab", "SPECIAL_FEATURES")
+            putExtra("defense_advisory", true)
+            putExtra("alert_title", title)
+            putExtra("alert_message", message)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            NOTIFICATION_ID_DEFENSE_BASE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_DEFENSE_TEST)
+            .setSmallIcon(R.drawable.ic_notification_weather)
+            .setContentTitle("🚀 $title")
+            .setContentText(message)
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("$message\n\nNOTAM Window: $notamWindow\nExclusion Perimeter: $exclusionPerimeterKm seaward\nAdvisory: Artisanal & mechanized fishing vessels must steer clear of outer Wheeler Island coordinates.")
+                    .setSummaryText("ITR Chandipur Coastal Defense Advisory")
+            )
+            .setColor(0xFFF59E0B.toInt()) // Defense Amber Gold
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setSound(soundUri)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .addAction(
+                R.drawable.ic_notification_weather,
+                "Open ITR Radar",
+                pendingIntent
+            )
+            .build()
+
+        val notificationId = NOTIFICATION_ID_DEFENSE_BASE + (System.currentTimeMillis() % 100).toInt()
         NotificationManagerCompat.from(context).notify(notificationId, notification)
     }
 }

@@ -1476,6 +1476,90 @@ fun SpecialFeaturesScreen(
                 tagText = "CASHEW SPOT RATES",
                 primaryColor = Color(0xFFFFFBEB),
                 borderColor = Color(0xFFFCD34D)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.RAIBANIA_FORTRESS_VAULT,
+                titleEn = "Raibania Medieval Fortress & Ganga Vault",
+                titleOd = "ରାଇବଣିଆ ଦୁର୍ଗ ପ୍ରତ୍ନତାତ୍ତ୍ୱିକ ଭଲ୍ଟ",
+                category = "Artisans & Heritage",
+                iconEmoji = "🏰",
+                descriptionEn = "13th-century cyclopean stone fortress, 161 defense moats, Jayachandi shrine & Ganga dynasty vault.",
+                descriptionOd = "୧୩ଶ ଶତାବ୍ଦୀର ବିଶାଳ ପ୍ରସ୍ତର ଦୁର୍ଗ, ୧୬୧ ଗଡ଼ଖାଇ, ମା' ଜୟଚଣ୍ଡୀ ପୀଠ ଓ ଗଙ୍ଗ ବଂଶ ଐତିହ୍ୟ।",
+                tagText = "13TH-CENTURY FORT",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALARAMGADI_TRAWLER_FLEET_RADAR,
+                titleEn = "Balaramgadi Deep-Sea Trawler Fleet Radar",
+                titleOd = "ବଳରାମଗଡ଼ି ଗଭୀର ସମୁଦ୍ର ଟ୍ରଲର ଫ୍ଲିଟ୍",
+                category = "Coastal & Estuary",
+                iconEmoji = "🍤",
+                descriptionEn = "Budhabalanga harbor mechanized trawler departures, daily Tiger Prawn & Hilsa catch, and marine VHF 16.",
+                descriptionOd = "ମତ୍ସ୍ୟ ବନ୍ଦର ଟ୍ରଲର ସ୍ଥିତି, ବାଘ ଚିଙ୍ଗୁଡ଼ି ଓ ଇଲିସି ଧରା ପରିମାଣ ଏବଂ ତଟରକ୍ଷୀ ୧୫୫୪।",
+                tagText = "DEEP-SEA TRAWLERS",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFF93C5FD)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.NILAGIRI_LACQUER_BAMBOO_GUILD,
+                titleEn = "Nilagiri Royal Lacquer & Bamboo Craft Guild",
+                titleOd = "ନୀଳଗିରି ଲାଖ ଶିଳ୍ପ ଓ ବାଉଁଶ ଗିଲ୍ଡ",
+                category = "Artisans & Heritage",
+                iconEmoji = "🌾",
+                descriptionEn = "Handcrafted royal lacquer bangles (ଲାଖ ଶଙ୍ଖା), lacquered toys, and Swarna Rekha bamboo weaving SHGs.",
+                descriptionOd = "ରାଜକୀୟ ଲାଖ ଶଙ୍ଖା, ଲାଖ ଖେଳଣା ଏବଂ ସୁବର୍ଣ୍ଣରେଖା ବାଉଁଶ ଶିଳ୍ପୀ ମହିଳା କ୍ଲଷ୍ଟର।",
+                tagText = "ROYAL LACQUER SHG",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALASORE_DISTRICT_BLOOD_DONOR_GRID,
+                titleEn = "Balasore District Blood Bank & Donor Grid",
+                titleOd = "ଜିଲ୍ଲା ରକ୍ତଭଣ୍ଡାର ଓ ଦାତା ଗ୍ରିଡ୍",
+                category = "Health & Medical",
+                iconEmoji = "🩸",
+                descriptionEn = "Live blood bank reserves at FM MCH & DHH Balasore, rare negative group registry & emergency donor SOS.",
+                descriptionOd = "ଏଫ୍ଏମ୍ ଏମସିଏଚ୍ ଓ ଡିଏଚ୍ଏଚ୍ ରକ୍ତ ମହଜୁଦ ତଥ୍ୟ, ନେଗେଟିଭ୍ ଗ୍ରୁପ୍ ତାଲିକା ଓ ଜରୁରୀ ସହାୟତା।",
+                tagText = "LIVE BLOOD 104",
+                primaryColor = Color(0xFFFEF2F2),
+                borderColor = Color(0xFFFCA5A5)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.SUBARNAREKHA_FLOOD_SLUICE_TELEMETRY,
+                titleEn = "Subarnarekha River Basin Flood & Sluice Radar",
+                titleOd = "ସୁବର୍ଣ୍ଣରେଖା ବନ୍ୟା ଓ ସ୍ଲୁଇସ୍ ଗେଟ୍ ରାଡାର୍",
+                category = "Coastal & Estuary",
+                iconEmoji = "🌊",
+                descriptionEn = "Rajghat hydrometric river gauge (9.45m danger), 18 coastal sluice gates telemetry & ODRAF 1077 SOS.",
+                descriptionOd = "ରାଜଘାଟ ଜଳସ୍ତର ମାପ, ଭୋଗରାଇ ୧୮ଟି ସ୍ଲୁଇସ୍ ଗେଟ୍ ସ୍ଥିତି ଏବଂ ବନ୍ୟା ନିୟନ୍ତ୍ରଣ କକ୍ଷ ୧୦୭୭।",
+                tagText = "RAJGHAT GAUGE SOS",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFF7DD3FC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALASORE_YOUTH_WELLNESS_STUDY_CIRCLE,
+                titleEn = "Youth Mental Wellness & Aspirant Study Circle",
+                titleOd = "ଯୁବ ମାନସିକ ସ୍ୱାସ୍ଥ୍ୟ ଓ ଅଧ୍ୟୟନ ସର୍କଲ",
+                category = "Daily Pulse",
+                iconEmoji = "🧘",
+                descriptionEn = "Tele-MANAS (14416) tele-counselling, exam stress wellness, and peer study circles for OPSC & Police aspirants.",
+                descriptionOd = "ଟେଲି-ମାନସ ୧୪୪୧୬ ମାଗଣା ପରାମର୍ଶ, ପରୀକ୍ଷା ଚାପ ନିରାକରଣ ଓ ପ୍ରତିଯୋଗିତା ଅଧ୍ୟୟନ ହବ୍।",
+                tagText = "TELE-MANAS 14416",
+                primaryColor = Color(0xFFFAF5FF),
+                borderColor = Color(0xFFD8B4FE)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALASORE_OFFLINE_MAP_TILES,
+                titleEn = "Google Maps Offline Tiles & Outage Navigator",
+                titleOd = "ଅଫଲାଇନ୍ ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ଟାଇଲ୍ ଓ ନାଭିଗେସନ୍",
+                category = "Emergency & Transit",
+                iconEmoji = "🗺️",
+                descriptionEn = "Pre-cached Google Maps raster tile packs for 8 key Balasore zones, zero-network turn-by-turn routing & cyclone outage simulator.",
+                descriptionOd = "ବାଲେଶ୍ୱରର ୮ଟି ପ୍ରମୁଖ ଅଞ୍ଚଳ ପାଇଁ ଅଫଲାଇନ୍ ମ୍ୟାପ୍ ଟାଇଲ୍, ନେଟୱାର୍କ ବିଚ୍ଛିନ୍ନ ସମୟରେ ଜରୁରୀ ରୁଟ୍ ନାଭିଗେସନ୍।",
+                tagText = "OFFLINE TILES & GPS",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFF34D399)
             )
         )
     }

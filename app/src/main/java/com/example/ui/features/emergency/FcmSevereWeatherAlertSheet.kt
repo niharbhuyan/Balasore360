@@ -55,6 +55,7 @@ fun FcmSevereWeatherAlertSheet(
 
     val fcmToken by FcmManager.fcmToken.collectAsState()
     val weatherEnabled by FcmManager.weatherAlertsEnabled.collectAsState()
+    val defenseEnabled by FcmManager.defenseAdvisoriesEnabled.collectAsState()
     val newsEnabled by FcmManager.breakingNewsEnabled.collectAsState()
 
     var floodAlertsEnabled by remember { mutableStateOf(true) }
@@ -405,10 +406,46 @@ fun FcmSevereWeatherAlertSheet(
                                     style = MaterialTheme.typography.bodySmall.copy(color = BentoSlate500, fontSize = 11.sp)
                                 )
                             }
-                            Switch(
+                                Switch(
                                 checked = newsEnabled,
                                 onCheckedChange = { enabled ->
                                     FcmManager.setBreakingNewsEnabled(context, enabled)
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Channel 4: Coastal Defense & Missile Test Advisories (ITR Chandipur / Kalam Island)
+                item {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "🚀", fontSize = 28.sp)
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ପ୍ରତିରକ୍ଷା ଓ କ୍ଷେପଣାସ୍ତ୍ର ପରୀକ୍ଷଣ ଆଡଭାଇଜରୀ" else "Coastal Defense & Missile Test Advisories",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoSlate900
+                                    )
+                                )
+                                Text(
+                                    text = "DRDO Chandipur ITR & Kalam Island launch test windows, NOTAM airspace exclusion & seaward clearance",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = BentoSlate500, fontSize = 11.sp)
+                                )
+                            }
+                            Switch(
+                                checked = defenseEnabled,
+                                onCheckedChange = { enabled ->
+                                    FcmManager.setDefenseAdvisoriesEnabled(context, enabled)
                                 }
                             )
                         }
@@ -459,7 +496,24 @@ fun FcmSevereWeatherAlertSheet(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Test Button 2: Coastal Flood
+                            // Test Button 2: Coastal Defense Advisory
+                            Button(
+                                onClick = {
+                                    FcmManager.simulateDefenseAdvisoryPush(context)
+                                    Toast.makeText(context, "ITR Defense & NOTAM FCM advisory dispatched to notification tray!", Toast.LENGTH_SHORT).show()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().testTag("btn_test_defense_push")
+                            ) {
+                                Icon(imageVector = Icons.Default.RocketLaunch, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("🚀 Test Coastal Defense Advisory Push", fontWeight = FontWeight.Bold)
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Test Button 3: Coastal Flood
                             Button(
                                 onClick = {
                                     FcmManager.simulateCoastalFloodPush(context)

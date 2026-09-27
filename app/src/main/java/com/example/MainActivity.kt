@@ -206,6 +206,13 @@ import com.example.ui.features.artisans.NilagiriDokraCraftGuildSheet
 import com.example.ui.features.heritage.BaghaJatinFreedomTrailSheet
 import com.example.ui.features.nature.KuldihaEcoCorridorFireRadarSheet
 import com.example.ui.features.agro.BhograiCashewGroundnutMandiSheet
+import com.example.ui.features.heritage.RaibaniaMedievalFortressVaultSheet
+import com.example.ui.features.coastal.BalaramgadiDeepSeaTrawlerFleetSheet
+import com.example.ui.features.artisans.NilagiriLacquerBambooGuildSheet
+import com.example.ui.features.health.BalasoreDistrictBloodDonorGridSheet
+import com.example.ui.features.coastal.SubarnarekhaFloodSluiceTelemetrySheet
+import com.example.ui.features.civic.BalasoreYouthWellnessStudyCircleSheet
+import com.example.ui.features.maps.BalasoreOfflineMapTileSheet
 import com.example.data.fcm.FcmManager
 import com.example.data.fcm.BalasoreNotificationHelper
 import android.content.Intent
@@ -1755,6 +1762,59 @@ fun BalasoreApp(
                         dailyPulse = uiState.dailyPulse,
                         onDismiss = { viewModel.closeFeatureSheet() }
                     )
+                }
+                UniqueFeatureSheetType.RAIBANIA_FORTRESS_VAULT -> {
+                    RaibaniaMedievalFortressVaultSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALARAMGADI_TRAWLER_FLEET_RADAR -> {
+                    BalaramgadiDeepSeaTrawlerFleetSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NILAGIRI_LACQUER_BAMBOO_GUILD -> {
+                    NilagiriLacquerBambooGuildSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_DISTRICT_BLOOD_DONOR_GRID -> {
+                    BalasoreDistrictBloodDonorGridSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SUBARNAREKHA_FLOOD_SLUICE_TELEMETRY -> {
+                    SubarnarekhaFloodSluiceTelemetrySheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_YOUTH_WELLNESS_STUDY_CIRCLE -> {
+                    BalasoreYouthWellnessStudyCircleSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onClose = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_OFFLINE_MAP_TILES -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalasoreOfflineMapTileSheet(
+                            language = uiState.language,
+                            onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
                 }
                 null -> {}
             }

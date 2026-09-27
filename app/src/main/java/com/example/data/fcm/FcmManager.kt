@@ -24,9 +24,11 @@ object FcmManager {
     private const val PREFS_NAME = "balasore_fcm_prefs"
     private const val KEY_FCM_TOKEN = "fcm_token"
     private const val KEY_WEATHER_ALERTS = "topic_weather_alerts"
+    private const val KEY_DEFENSE_ADVISORIES = "topic_defense_advisories"
     private const val KEY_BREAKING_NEWS = "topic_breaking_news"
 
     const val TOPIC_WEATHER_ALERTS = "balasore_weather_alerts"
+    const val TOPIC_DEFENSE_ADVISORIES = "balasore_defense_advisories"
     const val TOPIC_BREAKING_NEWS = "balasore_breaking_news"
 
     private val _fcmToken = MutableStateFlow<String?>(null)
@@ -34,6 +36,9 @@ object FcmManager {
 
     private val _weatherAlertsEnabled = MutableStateFlow(true)
     val weatherAlertsEnabled: StateFlow<Boolean> = _weatherAlertsEnabled.asStateFlow()
+
+    private val _defenseAdvisoriesEnabled = MutableStateFlow(true)
+    val defenseAdvisoriesEnabled: StateFlow<Boolean> = _defenseAdvisoriesEnabled.asStateFlow()
 
     private val _breakingNewsEnabled = MutableStateFlow(true)
     val breakingNewsEnabled: StateFlow<Boolean> = _breakingNewsEnabled.asStateFlow()
@@ -77,6 +82,7 @@ object FcmManager {
         val prefs = getPrefs(context)
         _fcmToken.value = prefs.getString(KEY_FCM_TOKEN, null)
         _weatherAlertsEnabled.value = prefs.getBoolean(KEY_WEATHER_ALERTS, true)
+        _defenseAdvisoriesEnabled.value = prefs.getBoolean(KEY_DEFENSE_ADVISORIES, true)
         _breakingNewsEnabled.value = prefs.getBoolean(KEY_BREAKING_NEWS, true)
 
         isFirebaseReady = isFirebaseConfigured(context)
@@ -101,6 +107,9 @@ object FcmManager {
             // Ensure topics are subscribed if enabled
             if (_weatherAlertsEnabled.value) {
                 subscribeToTopic(TOPIC_WEATHER_ALERTS)
+            }
+            if (_defenseAdvisoriesEnabled.value) {
+                subscribeToTopic(TOPIC_DEFENSE_ADVISORIES)
             }
             if (_breakingNewsEnabled.value) {
                 subscribeToTopic(TOPIC_BREAKING_NEWS)
@@ -142,6 +151,10 @@ object FcmManager {
         return getPrefs(context).getBoolean(KEY_WEATHER_ALERTS, true)
     }
 
+    fun isDefenseAdvisoriesEnabled(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_DEFENSE_ADVISORIES, true)
+    }
+
     fun isBreakingNewsEnabled(context: Context): Boolean {
         return getPrefs(context).getBoolean(KEY_BREAKING_NEWS, true)
     }
@@ -153,6 +166,16 @@ object FcmManager {
             subscribeToTopic(TOPIC_WEATHER_ALERTS)
         } else {
             unsubscribeFromTopic(TOPIC_WEATHER_ALERTS)
+        }
+    }
+
+    fun setDefenseAdvisoriesEnabled(context: Context, enabled: Boolean) {
+        _defenseAdvisoriesEnabled.value = enabled
+        getPrefs(context).edit().putBoolean(KEY_DEFENSE_ADVISORIES, enabled).apply()
+        if (enabled) {
+            subscribeToTopic(TOPIC_DEFENSE_ADVISORIES)
+        } else {
+            unsubscribeFromTopic(TOPIC_DEFENSE_ADVISORIES)
         }
     }
 
@@ -290,6 +313,22 @@ object FcmManager {
             message = message,
             riverLevelGauge = "Rajghat: 9.62m (Above Danger Level)",
             alertLevel = "CRITICAL"
+        )
+    }
+
+    /**
+     * Simulates an urgent real-time Coastal Defense & Missile Test Advisory push notification.
+     * Triggers a heads-up alert with NOTAM airspace window and maritime exclusion radius for Chandipur / Kalam Island.
+     */
+    fun simulateDefenseAdvisoryPush(context: Context) {
+        val title = "ITR Chandipur Coastal Defense & NOTAM Advisory"
+        val message = "DRDO test range window active from Launch Complex-3 (LC-3). Airspace exclusion active under NOTAM A0412/26. All mechanized and artisanal fishing vessels from Balaramgadi and Kasafal must maintain minimum 18 km seaward clearance."
+        BalasoreNotificationHelper.showDefenseAdvisoryNotification(
+            context = context,
+            title = title,
+            message = message,
+            notamWindow = "09:30 AM - 01:30 PM",
+            exclusionPerimeterKm = "18 km"
         )
     }
 }

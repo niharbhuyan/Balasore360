@@ -151,7 +151,28 @@ data class DailyBalasorePulse(
     val kuldihaForestFireRisk: String = "Low (Moist Deciduous Canopy 🟢)",
     val bhograiRawCashewRateKg: Int = 122,
     val cashewOutTurnKor: String = "48-50 lbs (Premium Grade-A)",
-    val bhograiGroundnutRateQuintal: Int = 6550
+    val bhograiGroundnutRateQuintal: Int = 6550,
+    // 6 Next-Gen Raibania Fortress, Trawler Fleet, Lacquer Bamboo, District Blood Grid, Subarnarekha Sluice & Youth Wellness Telemetry Fields:
+    val raibaniaDailyVisitorsCount: Int = 165,
+    val raibaniaExcavationStatus: String = "Moat & Jayachandi Temple Preservation Active 🟢",
+    val raibaniaGoldenHourPhotoWindow: String = "04:30 PM - 05:45 PM",
+    val balaramgadiActiveTrawlersCount: Int = 210,
+    val balaramgadiTigerPrawnLandingKg: Int = 1420,
+    val balaramgadiHilsaSeaCatchKg: Int = 890,
+    val balaramgadiDieselSubsidyActive: Boolean = true,
+    val nilagiriLacquerArtisansCount: Int = 42,
+    val nilagiriBambooClustersActive: Int = 16,
+    val nilagiriLacquerBangleOrdersToday: Int = 78,
+    val dhhBloodUnitsStoredTotal: Int = 186,
+    val fmmchNegativeUnitsReserve: Int = 22,
+    val rareBloodDonorHelplineActive: Boolean = true,
+    val subarnarekhaRajghatGaugeMeters: Float = 8.72f,
+    val subarnarekhaDangerMarkMeters: Float = 9.45f,
+    val bhograiActiveSluiceGatesCount: Int = 14,
+    val subarnarekhaUpstreamReleaseCusecs: Int = 18500,
+    val youthWellnessTeleManasActive: Boolean = true,
+    val youthStudyCirclesActiveCount: Int = 9,
+    val examPeerAspirantsConnected: Int = 145
 )
 
 object DailyUpdateEngine {
@@ -595,7 +616,27 @@ object DailyUpdateEngine {
             kuldihaForestFireRisk = if (dayOfYear % 30 == 0) "Moderate Thermal Anomaly (Forest Beat Patrol Active) 🟡" else "Low Fire Risk (Moist Deciduous Canopy 🟢)",
             bhograiRawCashewRateKg = 118 + (dayOfYear % 12),
             cashewOutTurnKor = "48-50 lbs (Export Grade-A)",
-            bhograiGroundnutRateQuintal = 6400 + ((dayOfYear % 15) * 20)
+            bhograiGroundnutRateQuintal = 6400 + ((dayOfYear % 15) * 20),
+            raibaniaDailyVisitorsCount = 145 + (hour * 9 % 65),
+            raibaniaExcavationStatus = "Moat & Jayachandi Temple Preservation Active 🟢",
+            raibaniaGoldenHourPhotoWindow = "04:30 PM - 05:45 PM",
+            balaramgadiActiveTrawlersCount = 195 + (dayOfYear % 25),
+            balaramgadiTigerPrawnLandingKg = 1250 + ((dayOfYear % 10) * 45),
+            balaramgadiHilsaSeaCatchKg = 820 + ((dayOfYear % 8) * 35),
+            balaramgadiDieselSubsidyActive = true,
+            nilagiriLacquerArtisansCount = 38 + (dayOfYear % 6),
+            nilagiriBambooClustersActive = 15 + (dayOfYear % 4),
+            nilagiriLacquerBangleOrdersToday = 65 + (hour * 3 % 40),
+            dhhBloodUnitsStoredTotal = 175 + (dayOfYear % 25),
+            fmmchNegativeUnitsReserve = 18 + (dayOfYear % 8),
+            rareBloodDonorHelplineActive = true,
+            subarnarekhaRajghatGaugeMeters = 8.55f + ((dayOfYear % 10) * 0.08f),
+            subarnarekhaDangerMarkMeters = 9.45f,
+            bhograiActiveSluiceGatesCount = 14 + (dayOfYear % 3),
+            subarnarekhaUpstreamReleaseCusecs = 16500 + ((dayOfYear % 8) * 800),
+            youthWellnessTeleManasActive = true,
+            youthStudyCirclesActiveCount = 8 + (dayOfYear % 4),
+            examPeerAspirantsConnected = 130 + (dayOfYear % 35)
         )
     }
 }

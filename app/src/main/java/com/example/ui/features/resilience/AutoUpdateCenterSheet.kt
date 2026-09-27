@@ -435,6 +435,54 @@ fun AutoUpdateCenterSheet(
                 statusText = "Raw Cashew RCN: ₹${dailyPulse.bhograiRawCashewRateKg}/kg • Groundnut: ₹${dailyPulse.bhograiGroundnutRateQuintal}/Q",
                 updateInterval = "Daily Mandi Spot Rates & Mills Sync",
                 targetSheet = UniqueFeatureSheetType.BHOGRAI_CASHEW_GROUNDNUT_MANDI
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Raibania Medieval Fortress & Archaeological Vault",
+                nameOd = "ରାଇବଣିଆ ଦୁର୍ଗ ପ୍ରତ୍ନତାତ୍ତ୍ୱିକ ଭଲ୍ଟ",
+                iconEmoji = "🏰",
+                statusText = "${dailyPulse.raibaniaExcavationStatus} • Visitors Today: ${dailyPulse.raibaniaDailyVisitorsCount}",
+                updateInterval = "Daily Archaeological & Heritage Sync",
+                targetSheet = UniqueFeatureSheetType.RAIBANIA_FORTRESS_VAULT
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balaramgadi Deep-Sea Trawler Fleet Radar",
+                nameOd = "ବଳରାମଗଡ଼ି ଗଭୀର ସମୁଦ୍ର ଟ୍ରଲର ଫ୍ଲିଟ୍",
+                iconEmoji = "🍤",
+                statusText = "${dailyPulse.balaramgadiActiveTrawlersCount} Trawlers Active • Prawn Landings: ${dailyPulse.balaramgadiTigerPrawnLandingKg} kg",
+                updateInterval = "Real-Time Harbor Fleet & Catch Sync",
+                targetSheet = UniqueFeatureSheetType.BALARAMGADI_TRAWLER_FLEET_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Nilagiri Royal Lacquer & Bamboo Craft Guild",
+                nameOd = "ନୀଳଗିରି ଲାଖ ଶିଳ୍ପ ଓ ବାଉଁଶ ଗିଲ୍ଡ",
+                iconEmoji = "🌾",
+                statusText = "${dailyPulse.nilagiriLacquerArtisansCount} Master Artisans • Orders Today: ${dailyPulse.nilagiriLacquerBangleOrdersToday}",
+                updateInterval = "Daily Artisan SHG Guild Sync",
+                targetSheet = UniqueFeatureSheetType.NILAGIRI_LACQUER_BAMBOO_GUILD
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore District Blood Bank & Donor Grid",
+                nameOd = "ଜିଲ୍ଲା ରକ୍ତଭଣ୍ଡାର ଓ ଦାତା ଗ୍ରିଡ୍",
+                iconEmoji = "🩸",
+                statusText = "Total Reserves: ${dailyPulse.dhhBloodUnitsStoredTotal} units • Negatives: ${dailyPulse.fmmchNegativeUnitsReserve} • 104 SOS Active",
+                updateInterval = "Live FM MCH & DHH Blood Bank Telemetry",
+                targetSheet = UniqueFeatureSheetType.BALASORE_DISTRICT_BLOOD_DONOR_GRID
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Subarnarekha River Basin Flood & Sluice Radar",
+                nameOd = "ସୁବର୍ଣ୍ଣରେଖା ବନ୍ୟା ଓ ସ୍ଲୁଇସ୍ ଗେଟ୍ ରାଡାର୍",
+                iconEmoji = "🌊",
+                statusText = "Rajghat: ${"%.2f".format(dailyPulse.subarnarekhaRajghatGaugeMeters)}m (Danger 9.45m) • Sluice Gates: ${dailyPulse.bhograiActiveSluiceGatesCount}/18",
+                updateInterval = "Real-Time River Hydrometric Telemetry",
+                targetSheet = UniqueFeatureSheetType.SUBARNAREKHA_FLOOD_SLUICE_TELEMETRY
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Youth Mental Wellness & Aspirant Study Circle",
+                nameOd = "ଯୁବ ମାନସିକ ସ୍ୱାସ୍ଥ୍ୟ ଓ ଅଧ୍ୟୟନ ସର୍କଲ",
+                iconEmoji = "🧘",
+                statusText = "Tele-MANAS 14416 Active • ${dailyPulse.youthStudyCirclesActiveCount} Peer Study Circles • ${dailyPulse.examPeerAspirantsConnected} Aspirants",
+                updateInterval = "24x7 Student Support & Study Desk Sync",
+                targetSheet = UniqueFeatureSheetType.BALASORE_YOUTH_WELLNESS_STUDY_CIRCLE
             )
         )
     }
