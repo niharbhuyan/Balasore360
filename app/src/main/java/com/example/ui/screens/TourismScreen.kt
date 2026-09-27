@@ -80,6 +80,7 @@ import com.example.data.remote.EmergencyAlertDto
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.components.BalasoreItineraryPlanner
 import com.example.ui.components.DashboardWeatherWidget
+import com.example.ui.components.WeatherSummaryCard
 import com.example.ui.components.HotspotWeatherBadge
 import com.example.ui.components.HotspotWeatherIcon
 import com.example.ui.components.LiveEmergencyAlertBanner
@@ -137,6 +138,7 @@ fun TourismScreen(
     onClearItinerary: () -> Unit = {},
     dailyPulse: DailyBalasorePulse = DailyUpdateEngine.getDailyPulse(),
     onRefreshDailyPulse: () -> Unit = {},
+    onRefreshWeather: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -320,6 +322,19 @@ fun TourismScreen(
                     }
                 }
             }
+        }
+
+        // Dedicated 'Weather Summary' Card (Open-Meteo Public API • Current Temp, Humidity & 3-Day Forecast)
+        item {
+            WeatherSummaryCard(
+                weather = weather,
+                forecastDays = forecastDays,
+                language = language,
+                isFahrenheit = isFahrenheit,
+                onToggleTempUnit = onToggleTempUnit,
+                onRefresh = onRefreshWeather,
+                onNavigateToWeather = onNavigateToWeather
+            )
         }
 
         // Interactive Dashboard Weather Widget (Current Conditions, 3-Day Forecast & Severe Alerts)

@@ -33,10 +33,10 @@ class DataSyncWorker(
                 Log.w(TAG, "Background alert check notice: ${t.message}")
             }
 
-            // Automatically refresh daily telemetry pulse (Fishermen radio, Mandi rates, Cyclone surge, Blood network)
+            // Automatically refresh daily telemetry pulse (Fishermen radio, Mandi rates, Cyclone surge, ITR radar, Transit & TPNODL)
             try {
                 val freshPulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
-                Log.d(TAG, "DataSyncWorker: Auto-updated DailyBalasorePulse (Mandi Hilsa: ₹${freshPulse.hilsaEstuaryRateKg}, Surge: ${freshPulse.projectedSurgeHeightMeters}m, Radio Swell: ${freshPulse.marineRadioWaveMeters}m)")
+                Log.d(TAG, "DataSyncWorker: Auto-updated DailyBalasorePulse (Mandi Hilsa: ₹${freshPulse.hilsaEstuaryRateKg}, ITR: ${freshPulse.itrNextTestWindow}, Transit: ${freshPulse.nextBusesCount} buses, TPNODL: ${freshPulse.tpnodlRestorationEta})")
             } catch (t: Throwable) {
                 Log.w(TAG, "Daily pulse refresh notice: ${t.message}")
             }

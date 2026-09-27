@@ -339,6 +339,102 @@ fun AutoUpdateCenterSheet(
                 statusText = "${dailyPulse.pendingCivicReportsCount} Active Reports • ${dailyPulse.resolvedCivicReportsTodayCount} Cleared Today • Ward Patrols Active",
                 updateInterval = "Continuous Background Offline Queue Sync",
                 targetSheet = UniqueFeatureSheetType.MO_BALASORE_CIVIC_STORM_REPORTER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "ITR Missile & Airspace Defense Radar",
+                nameOd = "ଚାନ୍ଦିପୁର ITR କ୍ଷେପଣାସ୍ତ୍ର ପରୀକ୍ଷା ଓ ଉପକୂଳ ରାଡାର୍",
+                iconEmoji = "🚀",
+                statusText = "${dailyPulse.itrNextTestWindow} • Zone: ${dailyPulse.itrRestrictedZoneKm}km",
+                updateInterval = "Live DRDO NOTAM Airspace Feed",
+                targetSheet = UniqueFeatureSheetType.ITR_MISSILE_COASTAL_TRACKER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Subarnarekha Basin Soil & Betel Vine Advisory",
+                nameOd = "ସୁବର୍ଣ୍ଣରେଖା କୃଷି ଓ ପାନ ବରଜ ପରାମର୍ଶ",
+                iconEmoji = "🌾",
+                statusText = "${dailyPulse.soilSalinityStatus} • ${dailyPulse.betelBlightRisk}",
+                updateInterval = "Daily KVK Agronomy Advisory Sync",
+                targetSheet = UniqueFeatureSheetType.SUBARNAREKHA_CROP_ADVISORY
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore Smart Transit & Terminal Radar",
+                nameOd = "ବାଲେଶ୍ୱର ସ୍ମାର୍ଟ ଯାତ୍ରୀ ଓ ବସ୍ ଟ୍ରାକର୍",
+                iconEmoji = "🚌",
+                statusText = "${dailyPulse.busTerminalStatus} • ${dailyPulse.nextBusesCount} scheduled buses",
+                updateInterval = "Live Transit Schedule Feed",
+                targetSheet = UniqueFeatureSheetType.BALASORE_SMART_TRANSIT_TRACKER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Fakir Mohan University Campus Hub",
+                nameOd = "ଫକୀର ମୋହନ ବିଶ୍ୱବିଦ୍ୟାଳୟ ଓ ଛାତ୍ର ହବ୍",
+                iconEmoji = "🎓",
+                statusText = "${dailyPulse.fmuCampusNotice} • ${dailyPulse.fmuUpcomingEventsCount} Active Alerts",
+                updateInterval = "Daily Academic & Exam Feed",
+                targetSheet = UniqueFeatureSheetType.FAKIR_MOHAN_STUDENT_HUB
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Baleswari Cuisine & Sweet Trails Explorer",
+                nameOd = "ବାଲେଶ୍ୱର ଖାଦ୍ୟ ଓ ମିଠା ପରିକ୍ରମା",
+                iconEmoji = "🥘",
+                statusText = "Spotlight: ${dailyPulse.cuisineSpotlightItem} • ${dailyPulse.sweetShopsOpenCount} Heritage Shops Open",
+                updateInterval = "Daily Culinary Guide Sync",
+                targetSheet = UniqueFeatureSheetType.BALESWARI_CUISINE_EXPLORER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "TPNODL Power Outage & Grid Radar",
+                nameOd = "TPNODL ବିଦ୍ୟୁତ୍ ସରବରାହ ଓ କଟ୍ ରାଡାର୍",
+                iconEmoji = "⚡",
+                statusText = "${dailyPulse.tpnodlRestorationEta} • Feeders Monitored: 5",
+                updateInterval = "Real-Time 33/11kV Substation Telemetry",
+                targetSheet = UniqueFeatureSheetType.TPNODL_POWER_OUTAGE_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Chandipur Bioluminescence & Nocturnal Trail",
+                nameOd = "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ନୀଳ ଆଲୋକ ଓ ରାତ୍ରି ୱାଚ୍",
+                iconEmoji = "🌊",
+                statusText = "Glow Index: ${dailyPulse.chandipurBioluminescenceIndex.toInt()}% • Walk: ${dailyPulse.nightTideSafeWalkingMinutes}m safe window",
+                updateInterval = "Live Ebb-Tide & Dark Sky Sync",
+                targetSheet = UniqueFeatureSheetType.CHANDIPUR_BIOLUMINESCENCE_EXPLORER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore Snakebite & ASV Emergency Network",
+                nameOd = "ବାଲେଶ୍ୱର ସର୍ପାଘାତ ଓ ଆଣ୍ଟି-ଭେନମ୍ ରାଡାର",
+                iconEmoji = "🐍",
+                statusText = "FM MCH: ${dailyPulse.fmmchAsvVialsAvailable} vials • Nilagiri: ${dailyPulse.nilagiriAsvVials} • 108 Dispatch Active",
+                updateInterval = "Live District Hospital ASV Stock",
+                targetSheet = UniqueFeatureSheetType.BALASORE_SNAKEBITE_ANTI_VENOM
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Nilagiri Dokra & Lost-Wax Metal Craft Guild",
+                nameOd = "ନୀଳଗିରି ଡୋକ୍ରା ଓ କଂସା-ପିତ୍ତଳ ଗିଲ୍ଡ",
+                iconEmoji = "🎨",
+                statusText = "${dailyPulse.activeDokraArtisansCount} Master Artisans • Direct Fair-Trade Catalog",
+                updateInterval = "Verified Artisan Guild Sync",
+                targetSheet = UniqueFeatureSheetType.NILAGIRI_DOKRA_CRAFT_GUILD
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Bagha Jatin & Chasakhand Freedom Trail",
+                nameOd = "ବାଘା ଯତୀନ ଓ ଚାଷାଖଣ୍ଡ ସ୍ୱାଧୀନତା ଟ୍ରେଲ୍",
+                iconEmoji = "🇮🇳",
+                statusText = "${dailyPulse.baghaJatinAudioGuidesCount} Audio Stops • ${dailyPulse.chasakhandMemorialVisitorsToday} Pilgrims Today",
+                updateInterval = "Heritage Audio & GPS Walk Sync",
+                targetSheet = UniqueFeatureSheetType.BAGHA_JATIN_FREEDOM_TRAIL
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Kuldiha Eco-Corridor & Forest Fire Watch",
+                nameOd = "କୁଲଡିହା କରିଡର ଓ ବନାଗ୍ନି ରାଡାର୍",
+                iconEmoji = "🐘",
+                statusText = "${dailyPulse.kuldihaElephantMovementSector} • ${dailyPulse.kuldihaForestFireRisk}",
+                updateInterval = "Hourly Satellite & Forest Beat Sync",
+                targetSheet = UniqueFeatureSheetType.KULDIHA_ECO_CORRIDOR_FIRE_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Bhograi Cashew & Groundnut Mandi Radar",
+                nameOd = "ଭୋଗରାଇ କାଜୁ ଓ ଚିନାବାଦାମ ମଣ୍ଡି ରାଡାର୍",
+                iconEmoji = "🥜",
+                statusText = "Raw Cashew RCN: ₹${dailyPulse.bhograiRawCashewRateKg}/kg • Groundnut: ₹${dailyPulse.bhograiGroundnutRateQuintal}/Q",
+                updateInterval = "Daily Mandi Spot Rates & Mills Sync",
+                targetSheet = UniqueFeatureSheetType.BHOGRAI_CASHEW_GROUNDNUT_MANDI
             )
         )
     }

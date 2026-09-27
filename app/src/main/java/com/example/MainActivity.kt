@@ -194,6 +194,18 @@ import com.example.ui.features.agro.BalaramgadiMandiPriceIndexSheet
 import com.example.ui.features.heritage.BalasoreTemplePilgrimageCompanionSheet
 import com.example.ui.features.emergency.FmMchEmergencyBloodNetworkSheet
 import com.example.ui.features.civic.MoBalasoreCivicStormReporterSheet
+import com.example.ui.features.coastal.ItrChandipurMissileTrackerSheet
+import com.example.ui.features.agro.SubarnarekhaCropAdvisorySheet
+import com.example.ui.features.transit.BalasoreSmartTransitTrackerSheet
+import com.example.ui.features.education.FakirMohanStudentHubSheet
+import com.example.ui.features.heritage.BaleswariCuisineExplorerSheet
+import com.example.ui.features.resilience.TpnodlPowerOutageRadarSheet
+import com.example.ui.features.coastal.ChandipurBioluminescenceExplorerSheet
+import com.example.ui.features.emergency.BalasoreSnakebiteAntiVenomSheet
+import com.example.ui.features.artisans.NilagiriDokraCraftGuildSheet
+import com.example.ui.features.heritage.BaghaJatinFreedomTrailSheet
+import com.example.ui.features.nature.KuldihaEcoCorridorFireRadarSheet
+import com.example.ui.features.agro.BhograiCashewGroundnutMandiSheet
 import com.example.data.fcm.FcmManager
 import com.example.data.fcm.BalasoreNotificationHelper
 import android.content.Intent
@@ -698,7 +710,8 @@ fun BalasoreApp(
                             onRemoveFromItinerary = { viewModel.removeFromItinerary(it) },
                             onClearItinerary = { viewModel.clearItinerary() },
                             dailyPulse = uiState.dailyPulse,
-                            onRefreshDailyPulse = { viewModel.refreshDailyPulse() }
+                            onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
+                            onRefreshWeather = { viewModel.fetchRealTimeWeather() }
                         )
                         1 -> SpecialFeaturesScreen(
                             dailyPulse = uiState.dailyPulse,
@@ -1654,6 +1667,90 @@ fun BalasoreApp(
                 }
                 UniqueFeatureSheetType.MO_BALASORE_CIVIC_STORM_REPORTER -> {
                     MoBalasoreCivicStormReporterSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.ITR_MISSILE_COASTAL_TRACKER -> {
+                    ItrChandipurMissileTrackerSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.SUBARNAREKHA_CROP_ADVISORY -> {
+                    SubarnarekhaCropAdvisorySheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_SMART_TRANSIT_TRACKER -> {
+                    BalasoreSmartTransitTrackerSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.FAKIR_MOHAN_STUDENT_HUB -> {
+                    FakirMohanStudentHubSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALESWARI_CUISINE_EXPLORER -> {
+                    BaleswariCuisineExplorerSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.TPNODL_POWER_OUTAGE_RADAR -> {
+                    TpnodlPowerOutageRadarSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.CHANDIPUR_BIOLUMINESCENCE_EXPLORER -> {
+                    ChandipurBioluminescenceExplorerSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BALASORE_SNAKEBITE_ANTI_VENOM -> {
+                    BalasoreSnakebiteAntiVenomSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.NILAGIRI_DOKRA_CRAFT_GUILD -> {
+                    NilagiriDokraCraftGuildSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BAGHA_JATIN_FREEDOM_TRAIL -> {
+                    BaghaJatinFreedomTrailSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.KULDIHA_ECO_CORRIDOR_FIRE_RADAR -> {
+                    KuldihaEcoCorridorFireRadarSheet(
+                        language = uiState.language,
+                        dailyPulse = uiState.dailyPulse,
+                        onDismiss = { viewModel.closeFeatureSheet() }
+                    )
+                }
+                UniqueFeatureSheetType.BHOGRAI_CASHEW_GROUNDNUT_MANDI -> {
+                    BhograiCashewGroundnutMandiSheet(
                         language = uiState.language,
                         dailyPulse = uiState.dailyPulse,
                         onDismiss = { viewModel.closeFeatureSheet() }
