@@ -101,11 +101,11 @@ fun AutoUpdateCenterSheet(
                 targetSheet = UniqueFeatureSheetType.SUBARNAREKHA_SLUICE_FLOOD_RADAR
             ),
             SubsystemTelemetryStatus(
-                nameEn = "Chandipur Vanishing Sea & Tide Reversal Alarm",
-                nameOd = "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ଭଟ୍ଟା ସମୟ ନିୟନ୍ତ୍ରକ ଓ ଆଲାର୍ମ",
+                nameEn = "Chandipur Vanishing Sea & 72h Recharts Tide Telemetry",
+                nameOd = "ଚାନ୍ଦିପୁର ୭୨-ଘଣ୍ଟା Recharts ଗ୍ରାଫ୍ ଓ ଭଟ୍ଟା ଆଲାର୍ମ",
                 iconEmoji = "🏖️",
-                statusText = "${dailyPulse.chandipurLowTideWindow} • ${if (dailyPulse.isChandipurWalkSafeNow) "Safe Intertidal Walking 🟢" else "⚠️ Tide Returning (High Tide ${dailyPulse.chandipurNextHighTide})"}",
-                updateInterval = "Continuous Lunar Algorithmic Sync",
+                statusText = "${dailyPulse.chandipurLowTideWindow} • 72h Recharts High/Low Cycle Telemetry Active • ${if (dailyPulse.isChandipurWalkSafeNow) "Safe Intertidal Walking 🟢" else "⚠️ Tide Returning (High Tide ${dailyPulse.chandipurNextHighTide})"}",
+                updateInterval = "Automated Continuous Lunar Recharts Telemetry",
                 targetSheet = UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER
             ),
             SubsystemTelemetryStatus(
@@ -483,6 +483,14 @@ fun AutoUpdateCenterSheet(
                 statusText = "Tele-MANAS 14416 Active • ${dailyPulse.youthStudyCirclesActiveCount} Peer Study Circles • ${dailyPulse.examPeerAspirantsConnected} Aspirants",
                 updateInterval = "24x7 Student Support & Study Desk Sync",
                 targetSheet = UniqueFeatureSheetType.BALASORE_YOUTH_WELLNESS_STUDY_CIRCLE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Google Maps Offline Tiles & Outage Navigator",
+                nameOd = "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ଅଫଲାଇନ୍ ଟାଇଲ୍ସ ଓ ନେଭିଗେସନ୍",
+                iconEmoji = "🗺️",
+                statusText = "8 Balasore Key Zones Pre-cached • Turn-by-Turn Offline Routing • Blackout Network Resilience",
+                updateInterval = "Automated Map Cache & Tile Registry Sync",
+                targetSheet = UniqueFeatureSheetType.BALASORE_OFFLINE_MAP_TILES
             )
         )
     }

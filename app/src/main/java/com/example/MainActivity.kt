@@ -723,6 +723,7 @@ fun BalasoreApp(
                         1 -> SpecialFeaturesScreen(
                             dailyPulse = uiState.dailyPulse,
                             language = uiState.language,
+                            newsArticles = uiState.newsArticles,
                             onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
                             onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
                             onLanguageSelected = { viewModel.setLanguage(it) }
@@ -854,7 +855,8 @@ fun BalasoreApp(
                     ) {
                         ChandipurTideTimerSheet(
                             onClose = { viewModel.closeFeatureSheet() },
-                            lastKnownTide = uiState.lastKnownTideForecast
+                            lastKnownTide = uiState.lastKnownTideForecast,
+                            language = uiState.language
                         )
                     }
                 }
@@ -1817,6 +1819,7 @@ fun BalasoreApp(
                     }
                 }
                 null -> {}
+                else -> {}
             }
         }
     }

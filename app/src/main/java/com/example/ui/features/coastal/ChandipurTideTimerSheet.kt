@@ -65,6 +65,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.model.AppLanguage
 import com.example.data.local.ChandipurTideEntity
 import kotlinx.coroutines.delay
 
@@ -77,6 +78,7 @@ import kotlinx.coroutines.delay
 fun ChandipurTideTimerSheet(
     onClose: () -> Unit,
     lastKnownTide: ChandipurTideEntity? = null,
+    language: AppLanguage = AppLanguage.ENGLISH,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -419,6 +421,15 @@ fun ChandipurTideTimerSheet(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 72-Hour Interactive Tidal Wave Cycle Telemetry (Recharts Engine)
+        ChandipurTidalRechartsCard(
+            dailyPulse = dailyPulse,
+            language = language,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

@@ -261,7 +261,14 @@ enum class UniqueFeatureSheetType {
     SUBARNAREKHA_FLOOD_SLUICE_TELEMETRY,
     BALASORE_YOUTH_WELLNESS_STUDY_CIRCLE,
     // Google Maps Pre-cached Offline Map Tiles & Outage Navigation
-    BALASORE_OFFLINE_MAP_TILES
+    BALASORE_OFFLINE_MAP_TILES,
+    // 6 Coastal SOS, Culinary GI, Micro-Ward Flood, Elephant Sentinel, Student Career & Solar Radar Suites:
+    MARINE_FISHERMEN_HIGH_SEAS_SOS,
+    BALESWARI_CULINARY_GI_TRAIL,
+    WARD_FLOOD_EVACUATION_ROUTER,
+    KULDIHA_ELEPHANT_CORRIDOR_SENTINEL,
+    STUDENT_CAREER_LIBRARY_PULSE,
+    ROOFTOP_SOLAR_TPNODL_RADAR
 }
 
 data class GroundingState(

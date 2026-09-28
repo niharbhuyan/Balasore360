@@ -53,12 +53,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ManageSearch
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.daily.DailyBalasorePulse
 import com.example.data.model.AppLanguage
+import com.example.data.model.NewsArticle
+import com.example.data.repository.BalasoreRepository
 import com.example.ui.components.DailyAutoUpdateCard
 import com.example.ui.components.LanguageSwitcherBannerCard
 import com.example.ui.theme.BentoSlate100
@@ -71,6 +82,12 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.UniqueFeatureSheetType
+
+enum class FeaturesSearchScope {
+    ALL,
+    FEATURE_CARDS,
+    NEWS_ARTICLES
+}
 
 data class SpecialFeatureItem(
     val sheetType: UniqueFeatureSheetType,
@@ -98,9 +115,11 @@ fun SpecialFeaturesScreen(
     onRefreshDailyPulse: () -> Unit,
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit,
     onLanguageSelected: ((AppLanguage) -> Unit)? = null,
+    newsArticles: List<NewsArticle> = BalasoreRepository.newsArticles,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var selectedScope by remember { mutableStateOf(FeaturesSearchScope.ALL) }
     var selectedCategory by remember { mutableStateOf("All") }
 
     val allFeatures = remember {
@@ -108,13 +127,13 @@ fun SpecialFeaturesScreen(
             // Daily Coastal & Intertidal
             SpecialFeatureItem(
                 sheetType = UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER,
-                titleEn = "Chandipur Safe Tide Clock",
-                titleOd = "ଚାନ୍ଦିପୁର ସୁରକ୍ଷିତ ଭଟ୍ଟା ସମୟ କାଳ",
+                titleEn = "Chandipur Safe Tide & 72h Recharts Telemetry",
+                titleOd = "ଚାନ୍ଦିପୁର ୭୨-ଘଣ୍ଟା Recharts ଗ୍ରାଫ୍ ଓ ଭଟ୍ଟା ସମୟ କାଳ",
                 category = "Coastal & Estuary",
                 iconEmoji = "🌊",
-                descriptionEn = "Real-time 1-4 km vanishing sea recession tracker & safe walk window.",
-                descriptionOd = "୧-୪ କିଲୋମିଟର ପଛକୁ ଯାଉଥିବା ସମୁଦ୍ରର ସୁରକ୍ଷିତ ଚଲାବୁଲା ସମୟ।",
-                tagText = "DAILY TIDE",
+                descriptionEn = "Interactive 72-hour Recharts tidal graph with high/low tide cycle telemetry & automated live updates.",
+                descriptionOd = "୭୨-ଘଣ୍ଟା Recharts ଜୁଆର-ଭଟ୍ଟା ଗ୍ରାଫ୍, ସମୁଦ୍ର ଜଳସ୍ତର (ମିଟର) ଓ ସ୍ୱୟଂକ୍ରିୟ ନବୀକରଣ।",
+                tagText = "72H RECHARTS",
                 primaryColor = Color(0xFFF0F9FF),
                 borderColor = Color(0xFFBAE6FD)
             ),
@@ -1576,14 +1595,40 @@ fun SpecialFeaturesScreen(
         "Emergency & Transit"
     )
 
-    val filteredFeatures = remember(searchQuery, selectedCategory) {
+    val cleanQuery = searchQuery.trim()
+
+    val filteredFeatures = remember(cleanQuery, selectedCategory, selectedScope) {
+        if (selectedScope == FeaturesSearchScope.NEWS_ARTICLES) return@remember emptyList()
         allFeatures.filter { item ->
             val matchesCategory = (selectedCategory == "All" || item.category == selectedCategory)
-            val matchesSearch = searchQuery.isBlank() ||
-                item.titleEn.contains(searchQuery, ignoreCase = true) ||
-                item.titleOd.contains(searchQuery, ignoreCase = true) ||
-                item.descriptionEn.contains(searchQuery, ignoreCase = true) ||
-                item.tagText.contains(searchQuery, ignoreCase = true)
+            val matchesSearch = cleanQuery.isBlank() ||
+                item.titleEn.contains(cleanQuery, ignoreCase = true) ||
+                item.titleOd.contains(cleanQuery, ignoreCase = true) ||
+                item.descriptionEn.contains(cleanQuery, ignoreCase = true) ||
+                item.descriptionOd.contains(cleanQuery, ignoreCase = true) ||
+                item.tagText.contains(cleanQuery, ignoreCase = true) ||
+                item.category.contains(cleanQuery, ignoreCase = true)
+            matchesCategory && matchesSearch
+        }
+    }
+
+    val filteredNews = remember(cleanQuery, selectedCategory, selectedScope, newsArticles) {
+        if (selectedScope == FeaturesSearchScope.FEATURE_CARDS) return@remember emptyList()
+        newsArticles.filter { article ->
+            val matchesCategory = (selectedCategory == "All" ||
+                article.category.equals(selectedCategory, ignoreCase = true) ||
+                (selectedCategory == "Emergency & Transit" && (article.category.equals("Safety", ignoreCase = true) || article.category.equals("Transit", ignoreCase = true) || article.category.equals("Emergency", ignoreCase = true))) ||
+                (selectedCategory == "Health & Medical" && article.category.equals("Health", ignoreCase = true)) ||
+                (selectedCategory == "Coastal & Estuary" && (article.category.equals("Coastal", ignoreCase = true) || article.category.equals("Maritime", ignoreCase = true))) ||
+                (selectedCategory == "Agro & Marine" && (article.category.equals("Agro", ignoreCase = true) || article.category.equals("Agriculture", ignoreCase = true) || article.category.equals("Fisheries", ignoreCase = true))))
+            val matchesSearch = cleanQuery.isBlank() ||
+                article.title.contains(cleanQuery, ignoreCase = true) ||
+                article.odiaTitle.contains(cleanQuery, ignoreCase = true) ||
+                article.snippet.contains(cleanQuery, ignoreCase = true) ||
+                article.odiaSnippet.contains(cleanQuery, ignoreCase = true) ||
+                article.category.contains(cleanQuery, ignoreCase = true) ||
+                article.source.contains(cleanQuery, ignoreCase = true) ||
+                article.content.contains(cleanQuery, ignoreCase = true)
             matchesCategory && matchesSearch
         }
     }
@@ -1742,7 +1787,7 @@ fun SpecialFeaturesScreen(
             }
         }
 
-        // Search Field
+        // Search Field with Dynamic Real-Time Filtering
         item {
             OutlinedTextField(
                 value = searchQuery,
@@ -1753,8 +1798,8 @@ fun SpecialFeaturesScreen(
                     .testTag("special_features_search_input"),
                 placeholder = {
                     Text(
-                        text = if (language == AppLanguage.ODIA) "ବିଶେଷ ସୁବିଧା ଖୋଜନ୍ତୁ (ଯଥା: ଟାଇଡ୍, ଡାକ୍ତର, ଲାଖ, କଙ୍କଡ଼ା)..."
-                        else "Search features (e.g. tide, doctors, lac bangles, flood)...",
+                        text = if (language == AppLanguage.ODIA) "ଫିଚର୍ କିମ୍ବା ଖବର ଖୋଜନ୍ତୁ (ଯଥା: ଟାଇଡ୍, ବାତ୍ୟା, ଡାକ୍ତର, ରେଳ)..."
+                        else "Search features or news (e.g. tide, cyclone, hospital, train)...",
                         style = MaterialTheme.typography.bodyMedium,
                         color = BentoSlate400,
                         fontSize = 13.sp
@@ -1791,12 +1836,102 @@ fun SpecialFeaturesScreen(
             )
         }
 
+        // Scope Filter Chips Row (All / Feature Cards / News Articles)
+        item {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    FilterChip(
+                        selected = selectedScope == FeaturesSearchScope.ALL,
+                        onClick = { selectedScope = FeaturesSearchScope.ALL },
+                        label = {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ସବୁ (${filteredFeatures.size + filteredNews.size})" else "All (${filteredFeatures.size + filteredNews.size})",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedScope == FeaturesSearchScope.ALL) FontWeight.Bold else FontWeight.Normal
+                                )
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OceanBlue,
+                            selectedLabelColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (selectedScope == FeaturesSearchScope.ALL) OceanBlue else MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.testTag("features_search_scope_all")
+                    )
+                }
+                item {
+                    FilterChip(
+                        selected = selectedScope == FeaturesSearchScope.FEATURE_CARDS,
+                        onClick = { selectedScope = FeaturesSearchScope.FEATURE_CARDS },
+                        label = {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "✨ ଫିଚର୍ କାର୍ଡ (${filteredFeatures.size})" else "✨ Feature Cards (${filteredFeatures.size})",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedScope == FeaturesSearchScope.FEATURE_CARDS) FontWeight.Bold else FontWeight.Normal
+                                )
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OceanBlue,
+                            selectedLabelColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (selectedScope == FeaturesSearchScope.FEATURE_CARDS) OceanBlue else MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.testTag("features_search_scope_cards")
+                    )
+                }
+                item {
+                    FilterChip(
+                        selected = selectedScope == FeaturesSearchScope.NEWS_ARTICLES,
+                        onClick = { selectedScope = FeaturesSearchScope.NEWS_ARTICLES },
+                        label = {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "📰 ଖବର (${filteredNews.size})" else "📰 News Articles (${filteredNews.size})",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (selectedScope == FeaturesSearchScope.NEWS_ARTICLES) FontWeight.Bold else FontWeight.Normal
+                                )
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OceanBlue,
+                            selectedLabelColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (selectedScope == FeaturesSearchScope.NEWS_ARTICLES) OceanBlue else MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.testTag("features_search_scope_news")
+                    )
+                }
+            }
+        }
+
         // Category Filter Chips Row
         item {
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp),
+                    .padding(vertical = 4.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -1829,49 +1964,244 @@ fun SpecialFeaturesScreen(
             }
         }
 
-        // Feature Count & Quick Info Banner
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${filteredFeatures.size} SPECIAL HUBS AVAILABLE",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 0.5.sp
-                    )
-                )
-
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
+        // Dynamic Search Match Count Summary Banner
+        if (cleanQuery.isNotEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = OceanBlue.copy(alpha = 0.08f)),
+                    border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.3f))
                 ) {
-                    Text(
-                        text = "TOUCH TO OPEN SHEET",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ManageSearch,
+                                contentDescription = "Search Matches",
+                                tint = OceanBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA)
+                                    "\"$cleanQuery\" ପାଇଁ ${filteredFeatures.size}ଟି ଫିଚର୍ ଓ ${filteredNews.size}ଟି ଖବର ମିଳିଲା"
+                                else
+                                    "\"$cleanQuery\": Found ${filteredFeatures.size} features & ${filteredNews.size} news",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 11.5.sp
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସଫା କରନ୍ତୁ" else "Clear",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = OceanBlue,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            ),
+                            modifier = Modifier
+                                .clickable { searchQuery = "" }
+                                .padding(start = 8.dp)
                         )
-                    )
+                    }
                 }
             }
         }
 
-        // Curated Feature Cards List
-        items(filteredFeatures, key = { it.sheetType.name }) { feature ->
-            SpecialFeatureCardItem(
-                item = feature,
-                language = language,
-                onClick = { onOpenFeatureSheet(feature.sheetType) },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-            )
+        // Empty State when no results found for query
+        if (cleanQuery.isNotEmpty() && filteredFeatures.isEmpty() && filteredNews.isEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = OceanBlue.copy(alpha = 0.15f),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.SearchOff,
+                                    contentDescription = "No Results",
+                                    tint = OceanBlue,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "କୌଣସି ଫଳାଫଳ ମିଳିଲା ନାହିଁ" else "No Features or News Found",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA)
+                                "\"$cleanQuery\" ସହିତ ମେଳ ଖାଉଥିବା କୌଣସି ଫିଚର୍ କାର୍ଡ ବା ଖବର ମିଳିଲାନାହିଁ।"
+                            else
+                                "No features or news articles matched your search query \"$cleanQuery\".",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            ),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଏହି ଶବ୍ଦଗୁଡ଼ିକ ଚେଷ୍ଟା କରନ୍ତୁ:" else "Popular Balasore Topics:",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate500
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        // Suggested Query Quick Chips
+                        val suggestions = listOf("Chandipur", "Cyclone", "Hospital", "Tide", "DRDO", "Railway", "Nilagiri", "Blood", "Remuna", "Hilsa")
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(suggestions) { suggestion ->
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = OceanBlue.copy(alpha = 0.12f),
+                                    border = BorderStroke(0.5.dp, OceanBlue.copy(alpha = 0.3f)),
+                                    modifier = Modifier.clickable { searchQuery = suggestion }
+                                ) {
+                                    Text(
+                                        text = suggestion,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = OceanBlue,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 11.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // SECTION 1: Feature Cards List
+        if (filteredFeatures.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (language == AppLanguage.ODIA) "${filteredFeatures.size}ଟି ବିଶେଷ ସୁବିଧା ହବ୍" else "${filteredFeatures.size} SPECIAL HUBS AVAILABLE",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = "TOUCH TO OPEN SHEET",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
+            }
+
+            items(filteredFeatures, key = { it.sheetType.name }) { feature ->
+                SpecialFeatureCardItem(
+                    item = feature,
+                    language = language,
+                    onClick = { onOpenFeatureSheet(feature.sheetType) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        // SECTION 2: Filtered News Articles List
+        if (filteredNews.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (language == AppLanguage.ODIA) "${filteredNews.size}ଟି ପ୍ରାସଙ୍ଗିକ ଜିଲ୍ଲା ଖବର" else "${filteredNews.size} MATCHED NEWS ARTICLES",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = OceanBlueDark,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = OceanBlue.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = "LIVE BULLETINS",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlue
+                            )
+                        )
+                    }
+                }
+            }
+
+            items(filteredNews, key = { "news_${it.id}" }) { article ->
+                SpecialFeatureNewsCardItem(
+                    article = article,
+                    language = language,
+                    searchQuery = cleanQuery,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
         }
     }
 }
@@ -2001,6 +2331,173 @@ fun SpecialFeatureCardItem(
                         contentDescription = null,
                         tint = OceanBlue,
                         modifier = Modifier.size(13.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SpecialFeatureNewsCardItem(
+    article: NewsArticle,
+    language: AppLanguage,
+    searchQuery: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val titleText = if (language == AppLanguage.ODIA) article.odiaTitle else article.title
+    val snippetText = if (language == AppLanguage.ODIA) article.odiaSnippet else article.snippet
+    val contentText = if (language == AppLanguage.ODIA) article.odiaContent else article.content
+    val effectiveContent = if (contentText.isNotBlank()) contentText else snippetText
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .testTag("features_news_card_${article.id}"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Top Row: Category chip & Source/Time
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = OceanBlue.copy(alpha = 0.12f),
+                    border = BorderStroke(0.5.dp, OceanBlue.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Article,
+                            contentDescription = null,
+                            tint = OceanBlue,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = article.category.uppercase(),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = OceanBlue,
+                                fontSize = 9.sp
+                            )
+                        )
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = BentoSlate400,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${article.source} • ${article.timeAgo}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Article Title
+            Text(
+                text = titleText,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 20.sp,
+                    fontSize = 14.5.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Article Snippet / Expanded Content
+            Text(
+                text = if (isExpanded) effectiveContent else snippetText,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp,
+                    fontSize = 12.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Action Row: Expand / Read full, and Share
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Expand toggle button
+                Surface(
+                    onClick = { isExpanded = !isExpanded },
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (isExpanded) {
+                                if (language == AppLanguage.ODIA) "ସଂକ୍ଷିପ୍ତ କରନ୍ତୁ" else "Show Less"
+                            } else {
+                                if (language == AppLanguage.ODIA) "ସମ୍ପୂର୍ଣ୍ଣ ଖବର ପଢ଼ନ୍ତୁ" else "Read Full Article"
+                            },
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlue,
+                                fontSize = 10.5.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = "Toggle article content",
+                            tint = OceanBlue,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+
+                // Share button
+                IconButton(
+                    onClick = {
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, titleText)
+                            putExtra(Intent.EXTRA_TEXT, "$titleText\n\n$snippetText\n\nVia Balasore 360 App")
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Balasore News"))
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share Article",
+                        tint = OceanBlue,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }

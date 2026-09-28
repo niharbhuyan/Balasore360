@@ -172,7 +172,29 @@ data class DailyBalasorePulse(
     val subarnarekhaUpstreamReleaseCusecs: Int = 18500,
     val youthWellnessTeleManasActive: Boolean = true,
     val youthStudyCirclesActiveCount: Int = 9,
-    val examPeerAspirantsConnected: Int = 145
+    val examPeerAspirantsConnected: Int = 145,
+    // 6 Next-Gen Coastal SOS, Culinary GI, Micro-Ward Flood, Elephant Sentinel, Student Career & Solar Radar Telemetry:
+    val marinePortSignalNumber: Int = 3,
+    val marinePortSignalTitle: String = "Signal 3: Local Cautionary Squall Alert (INCOIS 🟢)",
+    val marineImblDistanceKm: Float = 28.5f,
+    val isMarineHighSeasSosActive: Boolean = false,
+    val chhenaGajaNextHotBatchTime: String = "11:30 AM (Nandi Sweets)",
+    val remunaKhiraBhogPotsLeft: Int = 38,
+    val mudhiMansaAuthenticStallsOpen: Int = 14,
+    val sunhatWaterloggingMeters: Float = 0.12f,
+    val aradabazarFloodStatus: String = "Normal Flow Band (Low Risk 🟢)",
+    val nearestHighGroundShelter: String = "Gopalgaon Govt High School Multi-Shelter (Elev: 14m)",
+    val municipalSandbagPostStock: Int = 450,
+    val kuldihaHerdSightingSector: String = "Tentei-Devagiri Foothill Buffer Corridor 🐘",
+    val kuldihaSafariSlotsAvailable: Int = 14,
+    val isElephantFringeSafeNow: Boolean = true,
+    val districtLibrarySeatsOccupied: Int = 42,
+    val districtLibraryTotalSeats: Int = 60,
+    val activeStateScholarshipsCount: Int = 6,
+    val upcomingApprenticeDrive: String = "SER Kharagpur-Balasore Apprentice (185 Posts)",
+    val balasoreSolarYieldTodayKwh: Float = 4.85f,
+    val tpnodlScheduledFeederCutsCount: Int = 0,
+    val tpnodlRestorationHelplineActive: Boolean = true
 )
 
 object DailyUpdateEngine {
@@ -636,7 +658,28 @@ object DailyUpdateEngine {
             subarnarekhaUpstreamReleaseCusecs = 16500 + ((dayOfYear % 8) * 800),
             youthWellnessTeleManasActive = true,
             youthStudyCirclesActiveCount = 8 + (dayOfYear % 4),
-            examPeerAspirantsConnected = 130 + (dayOfYear % 35)
+            examPeerAspirantsConnected = 130 + (dayOfYear % 35),
+            marinePortSignalNumber = if (dayOfYear % 12 == 0) 4 else 3,
+            marinePortSignalTitle = if (dayOfYear % 12 == 0) "Signal 4: Local In-Port Warning Squall ⚠️" else "Signal 3: Local Cautionary Offshore Alert 🟢",
+            marineImblDistanceKm = 24.5f + (dayOfYear % 10),
+            isMarineHighSeasSosActive = false,
+            chhenaGajaNextHotBatchTime = if (hour < 11) "11:30 AM (Nandi Sweets Market)" else if (hour < 16) "04:30 PM (Town Chhena Gaja Corner)" else "07:15 PM (Station Road)",
+            remunaKhiraBhogPotsLeft = (45 - (minute % 35)).coerceAtLeast(6),
+            mudhiMansaAuthenticStallsOpen = 12 + (hour % 4),
+            sunhatWaterloggingMeters = if (dayOfYear % 15 == 0) 0.35f else 0.08f,
+            aradabazarFloodStatus = if (dayOfYear % 15 == 0) "Caution: High Tide Backflow in Low Wards 🟡" else "Normal Sluice Drainage Band 🟢",
+            nearestHighGroundShelter = "Gopalgaon Govt High School Multi-Shelter (Elev: 14m)",
+            municipalSandbagPostStock = 400 + (dayOfYear % 10) * 15,
+            kuldihaHerdSightingSector = if (dayOfYear % 3 == 0) "Tentei-Devagiri Buffer Sector (Panchalingeswar Fringe) 🐘" else "Sanctuary Core Deep Jungle (Safe Corridor 🟢)",
+            kuldihaSafariSlotsAvailable = (20 - (hour % 10)).coerceAtLeast(3),
+            isElephantFringeSafeNow = hour in 6..17,
+            districtLibrarySeatsOccupied = (25 + (hour * 4 % 32)).coerceIn(10, 58),
+            districtLibraryTotalSeats = 60,
+            activeStateScholarshipsCount = 6,
+            upcomingApprenticeDrive = "SER Kharagpur-Balasore Apprentice (185 Posts) • Apply by 15th",
+            balasoreSolarYieldTodayKwh = 4.6f + ((dayOfYear % 5) * 0.15f),
+            tpnodlScheduledFeederCutsCount = if (dayOfYear % 7 == 0 && hour in 13..15) 1 else 0,
+            tpnodlRestorationHelplineActive = true
         )
     }
 }
