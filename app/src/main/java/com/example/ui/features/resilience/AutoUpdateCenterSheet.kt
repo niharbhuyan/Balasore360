@@ -794,7 +794,7 @@ fun AutoUpdateCenterSheet(
                                             )
                                         )
                                         Text(
-                                            text = "Installed: v$appVersionInstalled (Build 8)",
+                                            text = "Installed: v$appVersionInstalled (Build ${com.example.BuildConfig.VERSION_CODE})",
                                             style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF15803D))
                                         )
                                     }

@@ -165,7 +165,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="file-meta">
             <div><strong>File:</strong> Balasore360-release.aab</div>
             <div><strong>Package:</strong> com.niharsales.balasore360</div>
-            <div><strong>Version:</strong> 1.0.0 (Version Code: 1)</div>
+            <div><strong>Version:</strong> 1.0.9 (Version Code: 10)</div>
             <div><strong>Target SDK:</strong> Android 15+ (API 36)</div>
             <div><strong>Signing:</strong> Release Signed (my-upload-key.jks)</div>
         </div>

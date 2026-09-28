@@ -113,8 +113,8 @@ data class BalasoreUiState(
     val autoUpdateFrequencyMinutes: Int = 60,
     val isAutoUpdateBackgroundEnabled: Boolean = true,
     val lastSyncStatusMessage: String = "All services synchronized",
-    val appVersionInstalled: String = "1.0.8",
-    val appVersionLatest: String = "1.0.8",
+    val appVersionInstalled: String = com.example.BuildConfig.VERSION_NAME,
+    val appVersionLatest: String = com.example.BuildConfig.VERSION_NAME,
     val isUpdateCheckLoading: Boolean = false
 )
 
@@ -1120,8 +1120,8 @@ class BalasoreViewModel : ViewModel() {
                 kotlinx.coroutines.delay(850)
                 _uiState.value = _uiState.value.copy(
                     isUpdateCheckLoading = false,
-                    appVersionLatest = "1.0.8",
-                    lastSyncStatusMessage = "You have the latest version (v1.0.8, Build 9)"
+                    appVersionLatest = com.example.BuildConfig.VERSION_NAME,
+                    lastSyncStatusMessage = "You have the latest version (v${com.example.BuildConfig.VERSION_NAME}, Build ${com.example.BuildConfig.VERSION_CODE})"
                 )
             }
         } catch (_: Throwable) {
