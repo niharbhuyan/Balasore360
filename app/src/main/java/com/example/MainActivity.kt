@@ -213,6 +213,12 @@ import com.example.ui.features.health.BalasoreDistrictBloodDonorGridSheet
 import com.example.ui.features.coastal.SubarnarekhaFloodSluiceTelemetrySheet
 import com.example.ui.features.civic.BalasoreYouthWellnessStudyCircleSheet
 import com.example.ui.features.maps.BalasoreOfflineMapTileSheet
+import com.example.ui.features.coastal.MarineFishermenHighSeasSosSheet
+import com.example.ui.features.heritage.BaleswariGiCulinaryTrailSheet
+import com.example.ui.features.resilience.MicroWardFloodEvacuationSheet
+import com.example.ui.features.nature.KuldihaElephantCorridorSentinelSheet
+import com.example.ui.features.civic.StudentCareerLibraryPulseSheet
+import com.example.ui.features.resilience.RooftopSolarTpnodlRadarSheet
 import com.example.data.fcm.FcmManager
 import com.example.data.fcm.BalasoreNotificationHelper
 import android.content.Intent
@@ -1815,6 +1821,78 @@ fun BalasoreApp(
                         BalasoreOfflineMapTileSheet(
                             language = uiState.language,
                             onDismiss = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.MARINE_FISHERMEN_HIGH_SEAS_SOS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        MarineFishermenHighSeasSosSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALESWARI_CULINARY_GI_TRAIL -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BaleswariGiCulinaryTrailSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.WARD_FLOOD_EVACUATION_ROUTER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        MicroWardFloodEvacuationSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.KULDIHA_ELEPHANT_CORRIDOR_SENTINEL -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        KuldihaElephantCorridorSentinelSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.STUDENT_CAREER_LIBRARY_PULSE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        StudentCareerLibraryPulseSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ROOFTOP_SOLAR_TPNODL_RADAR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        RooftopSolarTpnodlRadarSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
                         )
                     }
                 }

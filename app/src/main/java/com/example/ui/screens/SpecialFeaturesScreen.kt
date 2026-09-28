@@ -1579,6 +1579,78 @@ fun SpecialFeaturesScreen(
                 tagText = "OFFLINE TILES & GPS",
                 primaryColor = Color(0xFFF0FDF4),
                 borderColor = Color(0xFF34D399)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.MARINE_FISHERMEN_HIGH_SEAS_SOS,
+                titleEn = "High-Seas Marine Fishermen SOS & Port Distress",
+                titleOd = "ଗଭୀର ସମୁଦ୍ର ମତ୍ସ୍ୟଜୀବୀ ଜରୁରୀକାଳୀନ SOS ଡେସ୍କ",
+                category = "Coastal & Estuary",
+                iconEmoji = "🚨",
+                descriptionEn = "11 Port warning distress signals, Coast Guard SOS 1554 audio beacon, wave height gauges & safe harbor vector routing.",
+                descriptionOd = "୧୧ଟି ବନ୍ଦର ବିପଦ ସଙ୍କେତ, କୋଷ୍ଟଗାର୍ଡ ୧୫୫୪ ଜରୁରୀକାଳୀନ ଅଡିଓ ବିକନ୍, ତରଙ୍ଗ ଉଚ୍ଚତା ଓ ନିରାପଦ ପୋତାଶ୍ରୟ ନାଭିଗେସନ୍।",
+                tagText = "COAST GUARD 1554",
+                primaryColor = Color(0xFFFEF2F2),
+                borderColor = Color(0xFFFCA5A5)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALESWARI_CULINARY_GI_TRAIL,
+                titleEn = "Baleswari Heritage Cuisine & Remuna Gaja Trail",
+                titleOd = "ବାଲେଶ୍ୱରୀ ଖିରି, ଛେନା ଗଜା ଓ ଘୃତ କ୍ଷୀର ଭୋଗ",
+                category = "Agro & Food",
+                iconEmoji = "🍲",
+                descriptionEn = "Remuna Khirachora Gopinath Amruta Keli, Balasore Chhena Gaja GI heritage trail & certified traditional sweetmakers.",
+                descriptionOd = "ରେମୁଣା ଖିରଚୋରା ଗୋପୀନାଥଙ୍କ ଅମୃତ କେଳି, ବାଲେଶ୍ୱର ଛେନା ଗଜା ଜିଆଇ ଇତିହାସ ଓ ବିଶୁଦ୍ଧ ମିଠା ଦୋକାନ ସୂଚୀ।",
+                tagText = "GI HERITAGE FOOD",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.WARD_FLOOD_EVACUATION_ROUTER,
+                titleEn = "Micro-Ward Inundation & Flood Evacuation Router",
+                titleOd = "ମାଇକ୍ରୋ-ୱାର୍ଡ ଜଳବନ୍ଦୀ ଓ ସୁରକ୍ଷିତ ଉଚ୍ଚସ୍ଥାନ ରାଉଟର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "🌊",
+                descriptionEn = "Waterlogging telemetry in low-lying Balasore municipal wards, high-ground evacuation routing & dry relief posts.",
+                descriptionOd = "ନୀଳଗିରି, ମୋତିଗଞ୍ଜ ଓ ତଳିଆ ୱାର୍ଡ ଜଳବନ୍ଦୀ ଟେଲିମେଟ୍ରି, ଉଚ୍ଚସ୍ଥାନ ଆଶ୍ରୟସ୍ଥଳକୁ ସୁରକ୍ଷିତ ରାସ୍ତା ଓ ରିଲିଫ୍ କେନ୍ଦ୍ର।",
+                tagText = "HIGH-GROUND GPS",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFF7DD3FC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.KULDIHA_ELEPHANT_CORRIDOR_SENTINEL,
+                titleEn = "Kuldiha Elephant Corridor Sentinel & Early Warning",
+                titleOd = "କୁଲଡିହା ହାତୀ ଚଳପ୍ରଚଳ ସେଣ୍ଟିନେଲ୍ ଓ ଆଗୁଆ ସତର୍କତା",
+                category = "Defense & Wildlife",
+                iconEmoji = "🐘",
+                descriptionEn = "Elephant herd migration radar across Kuldiha-Similipal corridor, solar thermal fences & forest patrol SOS alerts.",
+                descriptionOd = "କୁଲଡିହା-ଶିମିଳିପାଳ କରିଡରରେ ହାତୀପଲ ଚଳପ୍ରଚଳ ରାଡାର, ସୌର ବାଡ଼ ସ୍ଥିତି ଓ ବନ ବିଭାଗ କଣ୍ଟ୍ରୋଲ ରୁମ୍ ତତ୍କାଳ ସୂଚନା।",
+                tagText = "WILDLIFE TELEMETRY",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFF86EFAC)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.STUDENT_CAREER_LIBRARY_PULSE,
+                titleEn = "Balasore Student Career & Digital Library Pulse",
+                titleOd = "ବାଲେଶ୍ୱର ଛାତ୍ର ବୃତ୍ତି, ଡିଜିଟାଲ୍ ଲାଇବ୍ରେରୀ ଓ ନିଯୁକ୍ତି",
+                category = "AI Innovations",
+                iconEmoji = "📚",
+                descriptionEn = "District e-library seat availability, Medhabruti & PRERANA scholarship deadlines & OPSC/SSC exam study desks.",
+                descriptionOd = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ଲାଇବ୍ରେରୀ ସିଟ୍ ସ୍ଥିତି, ମେଧାବୃତ୍ତି ଓ ପ୍ରେରଣା ସ୍କଲାରସିପ୍ ତାରିଖ ଏବଂ ପ୍ରତିଯୋଗିତା ଅଧ୍ୟୟନ ଡେସ୍କ।",
+                tagText = "CAREER & SCHOLARSHIP",
+                primaryColor = Color(0xFFFAF5FF),
+                borderColor = Color(0xFFD8B4FE)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ROOFTOP_SOLAR_TPNODL_RADAR,
+                titleEn = "TPNODL Rooftop Solar & Surya Ghar Muft Bijli Radar",
+                titleOd = "ଛାତ ସୌର ଶକ୍ତି, TPNODL ନେଟ୍-ମିଟର ଓ ସୂର୍ଯ୍ୟ ଘର",
+                category = "Emergency & Transit",
+                iconEmoji = "☀️",
+                descriptionEn = "Live coastal solar radiation telemetry, net-metering tracker, ₹78,000 subsidy calculator & zero-bill estimator.",
+                descriptionOd = "ବାଲେଶ୍ୱର ସୌର ବିକିରଣ ତଥ୍ୟ, TPNODL ନେଟ୍-ମିଟର ଆବେଦନ, ପିଏମ୍ ସୂର୍ଯ୍ୟ ଘର ₹୭୮,୦୦୦ ସବସିଡି କାଲକୁଲେଟର।",
+                tagText = "₹78K SUBSIDY DESK",
+                primaryColor = Color(0xFFFEF3C7),
+                borderColor = Color(0xFFFCD34D)
             )
         )
     }
@@ -1694,9 +1766,9 @@ fun SpecialFeaturesScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (language == AppLanguage.ODIA)
-                            "ଭଟ୍ଟା ସମୟ, ହାତୀ କରିଡର, ଇଲିଶି ମାଛ, ଲବଣ ସତ୍ୟାଗ୍ରହ, ସ୍ୱାସ୍ଥ୍ୟସେବା ଓ ୩୮ଟି ଦୈନିକ ଲାଇଭ୍ ହବ୍‌।"
+                            "ଭଟ୍ଟା ସମୟ, ହାତୀ କରିଡର, ୭୨-ଘଣ୍ଟା Recharts ଗ୍ରାଫ୍, ସ୍ୱାସ୍ଥ୍ୟସେବା, ସୌର ଶକ୍ତି ଓ ${allFeatures.size}ଟି ଦୈନିକ ଲାଇଭ୍ ହବ୍‌।"
                         else
-                            "38 curated live hubs: private hospitals, tidal clocks, salt pans, Hilsa run, elephant radar, chhena gaja timers, 24x7 healthcare rosters and flood telemetry.",
+                            "${allFeatures.size} curated live hubs: 72h Recharts tidal telemetry, private hospitals, salt pans, elephant radar, solar radar and flood telemetry.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color(0xFFE2E8F0),
                             lineHeight = 20.sp

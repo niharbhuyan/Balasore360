@@ -491,6 +491,54 @@ fun AutoUpdateCenterSheet(
                 statusText = "8 Balasore Key Zones Pre-cached • Turn-by-Turn Offline Routing • Blackout Network Resilience",
                 updateInterval = "Automated Map Cache & Tile Registry Sync",
                 targetSheet = UniqueFeatureSheetType.BALASORE_OFFLINE_MAP_TILES
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "High-Seas Marine Fishermen SOS & Distress",
+                nameOd = "ଗଭୀର ସମୁଦ୍ର ମତ୍ସ୍ୟଜୀବୀ SOS ଓ ସତର୍କତା",
+                iconEmoji = "🚨",
+                statusText = "Port Warning Signal #${dailyPulse.marinePortSignalNumber} • Coast Guard 1554 Beacon Active",
+                updateInterval = "Real-Time Coast Guard & Port Telemetry",
+                targetSheet = UniqueFeatureSheetType.MARINE_FISHERMEN_HIGH_SEAS_SOS
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Baleswari Heritage Cuisine & Remuna Gaja",
+                nameOd = "ବାଲେଶ୍ୱରୀ ଖାଦ୍ୟ ଓ ରେମୁଣା ଖିରି ଗଜା",
+                iconEmoji = "🍲",
+                statusText = "GI Tag Application Active • Remuna Khirachora Gopinath Bhog Timetable Verified",
+                updateInterval = "Daily Heritage & Culinary Desk Sync",
+                targetSheet = UniqueFeatureSheetType.BALESWARI_CULINARY_GI_TRAIL
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Micro-Ward Inundation & Flood Evacuation",
+                nameOd = "ୱାର୍ଡ ଜଳବନ୍ଦୀ ଓ ସୁରକ୍ଷିତ ଉଚ୍ଚସ୍ଥାନ ରାଉଟର୍",
+                iconEmoji = "🌊",
+                statusText = "Municipal Low-Lying Wards Monitored • High-Ground Shelters Ready • Emergency 1929 Active",
+                updateInterval = "Hourly Urban Drainage & Hydrology Sync",
+                targetSheet = UniqueFeatureSheetType.WARD_FLOOD_EVACUATION_ROUTER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Kuldiha Elephant Corridor Sentinel",
+                nameOd = "କୁଲଡିହା ହାତୀ କରିଡର ସେଣ୍ଟିନେଲ୍",
+                iconEmoji = "🐘",
+                statusText = "Herd Movement Monitored • Solar Power Fences 100% Active • Forest DFO SOS Ready",
+                updateInterval = "Real-Time Wildlife Early Warning Telemetry",
+                targetSheet = UniqueFeatureSheetType.KULDIHA_ELEPHANT_CORRIDOR_SENTINEL
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Student Career & Digital Library Pulse",
+                nameOd = "ବାଲେଶ୍ୱର ଛାତ୍ର ବୃତ୍ତି ଓ ଡିଜିଟାଲ୍ ଲାଇବ୍ରେରୀ",
+                iconEmoji = "📚",
+                statusText = "District e-Library Open • Medhabruti & PRERANA Portal Synced • OPSC/SSC Desks Live",
+                updateInterval = "Daily Higher Education & Scholarship Sync",
+                targetSheet = UniqueFeatureSheetType.STUDENT_CAREER_LIBRARY_PULSE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "TPNODL Rooftop Solar & Surya Ghar Radar",
+                nameOd = "ଛାତ ସୌର ଶକ୍ତି ଓ TPNODL ସୂର୍ଯ୍ୟ ଘର",
+                iconEmoji = "☀️",
+                statusText = "5.4 kWh/m²/day Solar Radiation • 1,842 Active Net-Meters • Up to ₹78,000 Subsidy Desk",
+                updateInterval = "Live Coastal Solar & Net-Metering Telemetry",
+                targetSheet = UniqueFeatureSheetType.ROOFTOP_SOLAR_TPNODL_RADAR
             )
         )
     }
