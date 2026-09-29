@@ -566,6 +566,39 @@ fun FcmSevereWeatherAlertSheet(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("📰 Test Breaking News Push", fontWeight = FontWeight.Bold)
                             }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Share Current Advisory via Android ShareSheet
+                            OutlinedButton(
+                                onClick = {
+                                    val pulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+                                    val alertText = "⚡ BALASORE LIVE COASTAL & WEATHER ADVISORY\n\n" +
+                                            "Date: ${pulse.formattedDate}\n" +
+                                            "Coastal Safety Index: ${pulse.coastalSafetyIndex}\n" +
+                                            "Bathing & Maritime Advisory: ${pulse.bathingAdvisory}\n" +
+                                            "Red Ghost Crab Window: ${pulse.crabWindowStatusMessage}\n" +
+                                            "Panchalingeswar Cascade: ${pulse.panchalingeswarFlowStatus}\n" +
+                                            "Subarnarekha Boating: ${pulse.bichitrapurStatusMessage}\n\n" +
+                                            "Shared via Balasore 360 Emergency Alert Center"
+                                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_SUBJECT, "Balasore Live Weather Advisory")
+                                        putExtra(Intent.EXTRA_TEXT, alertText)
+                                    }
+                                    context.startActivity(Intent.createChooser(sendIntent, "Share Advisory via").apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    })
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0284C7)),
+                                border = BorderStroke(1.dp, Color(0xFF38BDF8)),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().testTag("btn_share_fcm_live_advisory")
+                            ) {
+                                Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("📤 Share Live Coastal Advisory via ShareSheet", fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }

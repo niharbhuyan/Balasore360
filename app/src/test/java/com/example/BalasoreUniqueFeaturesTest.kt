@@ -354,4 +354,36 @@ class BalasoreUniqueFeaturesTest {
         viewModel.closeFeatureSheet()
         assertNull(viewModel.uiState.value.activeFeatureSheet)
     }
+
+    @Test
+    fun testNewAutoUpdatedFeaturesSheetNavigation() {
+        val viewModel = BalasoreViewModel()
+
+        // 1. Olive Ridley Marine Wildlife
+        viewModel.openFeatureSheet(UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE)
+        assertEquals(UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE, viewModel.uiState.value.activeFeatureSheet)
+
+        // 2. AIIMS & DHH OPD Bed Tracker
+        viewModel.openFeatureSheet(UniqueFeatureSheetType.AIIMS_DHH_OPD_BED_TRACKER)
+        assertEquals(UniqueFeatureSheetType.AIIMS_DHH_OPD_BED_TRACKER, viewModel.uiState.value.activeFeatureSheet)
+
+        // 3. Offline Cyclone Safety Toolkit
+        viewModel.openFeatureSheet(UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT)
+        assertEquals(UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT, viewModel.uiState.value.activeFeatureSheet)
+
+        viewModel.closeFeatureSheet()
+        assertNull(viewModel.uiState.value.activeFeatureSheet)
+    }
+
+    @Test
+    fun testNewAutoUpdatedTelemetryPulse() {
+        val pulse = com.example.data.daily.DailyUpdateEngine.getDailyPulse()
+        assertTrue("Olive ridley nesting count should be positive", pulse.oliveRidleyNestingCount > 0)
+        assertTrue("Beach sighting status should not be blank", pulse.oliveRidleyBeachSightingStatus.isNotBlank())
+        assertTrue("AIIMS OPD specialists count should be positive", pulse.aiimsOpdSpecialistsAvailable > 0)
+        assertTrue("AIIMS wait minutes should be positive", pulse.aiimsSatelliteCentreQueueWaitMins > 0)
+        assertTrue("DHH ICU beds available should be positive", pulse.dhhIcuBedsAvailable > 0)
+        assertEquals(64, pulse.offlineCycloneSheltersReadyCount)
+        assertTrue(pulse.isOfflineSurvivalSirenReady)
+    }
 }

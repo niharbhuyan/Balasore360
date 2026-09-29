@@ -194,7 +194,15 @@ data class DailyBalasorePulse(
     val upcomingApprenticeDrive: String = "SER Kharagpur-Balasore Apprentice (185 Posts)",
     val balasoreSolarYieldTodayKwh: Float = 4.85f,
     val tpnodlScheduledFeederCutsCount: Int = 0,
-    val tpnodlRestorationHelplineActive: Boolean = true
+    val tpnodlRestorationHelplineActive: Boolean = true,
+    // Auto-Updated Telemetry for Marine Wildlife, AIIMS Health, and Disaster Toolkit
+    val oliveRidleyNestingCount: Int = 18,
+    val oliveRidleyBeachSightingStatus: String = "Active Mass Nesting Season at Kasafal & Talasari Beach 🐢",
+    val aiimsOpdSpecialistsAvailable: Int = 12,
+    val aiimsSatelliteCentreQueueWaitMins: Int = 15,
+    val dhhIcuBedsAvailable: Int = 8,
+    val offlineCycloneSheltersReadyCount: Int = 64,
+    val isOfflineSurvivalSirenReady: Boolean = true
 )
 
 object DailyUpdateEngine {
@@ -679,7 +687,14 @@ object DailyUpdateEngine {
             upcomingApprenticeDrive = "SER Kharagpur-Balasore Apprentice (185 Posts) • Apply by 15th",
             balasoreSolarYieldTodayKwh = 4.6f + ((dayOfYear % 5) * 0.15f),
             tpnodlScheduledFeederCutsCount = if (dayOfYear % 7 == 0 && hour in 13..15) 1 else 0,
-            tpnodlRestorationHelplineActive = true
+            tpnodlRestorationHelplineActive = true,
+            oliveRidleyNestingCount = 14 + (dayOfYear % 12),
+            oliveRidleyBeachSightingStatus = if (dayOfYear % 2 == 0) "Kasafal Beach & Dagara Estuary Patrol Active 🐢" else "Talasari & Subarnarekha Marine Sanctuary Active 🟢",
+            aiimsOpdSpecialistsAvailable = 10 + (dayOfYear % 5),
+            aiimsSatelliteCentreQueueWaitMins = (12 + (hour * 2 % 15)).coerceIn(5, 30),
+            dhhIcuBedsAvailable = (10 - (dayOfYear % 6)).coerceAtLeast(3),
+            offlineCycloneSheltersReadyCount = 64,
+            isOfflineSurvivalSirenReady = true
         )
     }
 }

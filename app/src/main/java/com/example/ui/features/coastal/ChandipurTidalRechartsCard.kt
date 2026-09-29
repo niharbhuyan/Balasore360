@@ -7,6 +7,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import com.example.ui.components.TidalTelemetryCardSkeleton
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -155,15 +156,25 @@ fun ChandipurTidalRechartsCard(
         )
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("chandipur_tide_recharts_card"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)), // Bento Slate 900
-        border = BorderStroke(1.5.dp, Color(0xFF0284C7).copy(alpha = 0.6f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
+    LaunchedEffect(isManualRefreshing) {
+        if (isManualRefreshing) {
+            delay(800L)
+            isManualRefreshing = false
+        }
+    }
+
+    if (isManualRefreshing) {
+        TidalTelemetryCardSkeleton(modifier = modifier)
+    } else {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("chandipur_tide_recharts_card"),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)), // Bento Slate 900
+            border = BorderStroke(1.5.dp, Color(0xFF0284C7).copy(alpha = 0.6f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header: Title & Engine Badge
             Row(
@@ -508,6 +519,7 @@ fun ChandipurTidalRechartsCard(
             }
         }
     }
+}
 }
 
 /**

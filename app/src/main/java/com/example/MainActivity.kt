@@ -219,6 +219,17 @@ import com.example.ui.features.resilience.MicroWardFloodEvacuationSheet
 import com.example.ui.features.nature.KuldihaElephantCorridorSentinelSheet
 import com.example.ui.features.civic.StudentCareerLibraryPulseSheet
 import com.example.ui.features.resilience.RooftopSolarTpnodlRadarSheet
+import com.example.ui.features.coastal.TalasariRedCrabSafariSheet
+import com.example.ui.features.nature.PanchalingeswarWaterfallTrekSheet
+import com.example.ui.features.heritage.EmamiJagannathRemunaHeritageSheet
+import com.example.ui.features.coastal.BalaramgadiFishMandiSheet
+import com.example.ui.features.transit.TownAutoFareCalculatorSheet
+import com.example.ui.features.civic.WardSanitationVehicleTrackerSheet
+import com.example.ui.features.education.BalasoreIndustrialJobApprenticeSheet
+import com.example.ui.features.agro.KrushakPacsMandiGrainSheet
+import com.example.ui.features.nature.OliveRidleyMarineWildlifeSheet
+import com.example.ui.features.health.AiimsDhhOpdBedTrackerSheet
+import com.example.ui.features.resilience.OfflineCycloneSafetyToolkitSheet
 import com.example.data.fcm.FcmManager
 import com.example.data.fcm.BalasoreNotificationHelper
 import android.content.Intent
@@ -1892,6 +1903,138 @@ fun BalasoreApp(
                         RooftopSolarTpnodlRadarSheet(
                             dailyPulse = uiState.dailyPulse,
                             language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TALASARI_UDAYPUR_RED_CRAB_SAFARI -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TalasariRedCrabSafariSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.PANCHALINGESWAR_WATERFALL_TREK_MONITOR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        PanchalingeswarWaterfallTrekSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.EMAMI_JAGANNATH_REMUNA_HERITAGE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        EmamiJagannathRemunaHeritageSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALARAMGADI_FISH_MANDI_RATES -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalaramgadiFishMandiSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TOWN_AUTO_RICKSHAW_FARE_CALCULATOR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TownAutoFareCalculatorSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.WARD_SANITATION_GARBAGE_VEHICLE_TRACKER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        WardSanitationVehicleTrackerSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.BALASORE_INDUSTRIAL_JOB_APPRENTICE_BOARD -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        BalasoreIndustrialJobApprenticeSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.KRUSHAK_PACS_MANDI_GRAIN_RADAR -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        KrushakPacsMandiGrainSheet(
+                            dailyPulse = uiState.dailyPulse,
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        OliveRidleyMarineWildlifeSheet(
+                            language = uiState.language,
+                            dailyPulse = uiState.dailyPulse,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.AIIMS_DHH_OPD_BED_TRACKER -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        AiimsDhhOpdBedTrackerSheet(
+                            language = uiState.language,
+                            dailyPulse = uiState.dailyPulse,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        OfflineCycloneSafetyToolkitSheet(
+                            language = uiState.language,
+                            dailyPulse = uiState.dailyPulse,
                             onClose = { viewModel.closeFeatureSheet() }
                         )
                     }

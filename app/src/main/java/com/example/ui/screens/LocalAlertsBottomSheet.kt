@@ -32,7 +32,9 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
+import com.example.util.ShareHelper
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -397,8 +399,54 @@ fun LocalAlertsBottomSheet(
                             Spacer(modifier = Modifier.height(10.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Surface(
+                                    onClick = {
+                                        val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(android.content.Intent.EXTRA_SUBJECT, "⚠️ Balasore Weather Advisory: ${weather.alertTitle}")
+                                            putExtra(
+                                                android.content.Intent.EXTRA_TEXT,
+                                                "⚠️ BALASORE WEATHER ADVISORY\n\n" +
+                                                "Level: ${weather.alertLevel}\n" +
+                                                "Title: ${weather.alertTitle}\n\n" +
+                                                "${weather.alertMessage}\n\n" +
+                                                "Area: Chandipur / Bay of Bengal Coastal Zone\n\n" +
+                                                "Shared via Balasore 360 App - Stay Alert!"
+                                            )
+                                        }
+                                        context.startActivity(
+                                            android.content.Intent.createChooser(sendIntent, "Share Weather Advisory").apply {
+                                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.35f)),
+                                    modifier = Modifier.testTag("share_active_weather_alert_button")
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Share Advisory",
+                                            tint = BentoPrimaryBlue,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Share Alert",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = BentoPrimaryBlue
+                                        )
+                                    }
+                                }
+
                                 Text(
                                     text = "View Weather Details →",
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
@@ -464,6 +512,54 @@ fun LocalAlertsBottomSheet(
                                         color = BentoSlate500,
                                         maxLines = 2
                                     )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            onClick = {
+                                                ShareHelper.shareNewsArticle(
+                                                    context = context,
+                                                    title = article.title,
+                                                    snippet = article.summary,
+                                                    source = article.source,
+                                                    category = article.category
+                                                )
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = BentoBlueLight,
+                                            border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.3f)),
+                                            modifier = Modifier.testTag("share_breaking_news_button_${article.id}")
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Share,
+                                                    contentDescription = "Share",
+                                                    tint = BentoPrimaryBlue,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(3.dp))
+                                                Text(
+                                                    text = "Share",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = BentoPrimaryBlue
+                                                    )
+                                                )
+                                            }
+                                        }
+
+                                        Text(
+                                            text = "Read Full Story →",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = BentoPrimaryBlue
+                                        )
+                                    }
                                 }
                             }
                         }

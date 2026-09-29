@@ -646,6 +646,53 @@ fun NewsDetailScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Prominent Share Article Call-to-Action
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Share Local Story",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Spread local awareness via WhatsApp, SMS, or socials using Android's ShareSheet.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Button(
+                            onClick = { shareNewsArticle(context, article) },
+                            colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.testTag("news_detail_share_cta_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Share", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Community Discussion & Reactions Section
@@ -710,14 +757,18 @@ private fun getNewsCategoryIcon(category: String): ImageVector {
 private fun shareNewsArticle(context: Context, article: NewsArticleEntity) {
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, article.title)
+        putExtra(Intent.EXTRA_SUBJECT, "Balasore News: ${article.title}")
         putExtra(
             Intent.EXTRA_TEXT,
-            "${article.title}\n\n" +
+            "📰 ${article.title}\n\n" +
                     "${article.summary}\n\n" +
+                    "Category: ${article.category}\n" +
                     "Source: ${article.source} • ${article.publishedAt}\n\n" +
-                    "Read full coverage on Balasore 360 App by Nihar Sales"
+                    "Read full coverage on Balasore 360 App - Hyperlocal News & Alerts"
         )
     }
-    context.startActivity(Intent.createChooser(shareIntent, "Share News Story"))
+    val chooser = Intent.createChooser(shareIntent, "Share Balasore News").apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(chooser)
 }

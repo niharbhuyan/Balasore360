@@ -124,6 +124,47 @@ fun SpecialFeaturesScreen(
 
     val allFeatures = remember {
         listOf(
+            // Auto-Updated Innovations
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE,
+                titleEn = "Olive Ridley & Marine Life Sighting Tracker",
+                titleOd = "ଅଲିଭ୍ ରିଡଲେ ଓ ସାମୁଦ୍ରିକ ଜୀବ ସଂରକ୍ଷଣ",
+                category = "Coastal & Estuary",
+                iconEmoji = "🐢",
+                descriptionEn = "Live nesting season telemetry, citizen sighting logger & direct Balasore Wildlife Division hotline.",
+                descriptionOd = "କାସାଫାଳ ଓ ତାଳସାରୀ କଇଁଛ ବସା ସୂଚନା, ନାଗରିକ ରିପୋର୍ଟ ଓ ବନ ବିଭାଗ ହଟଲାଇନ୍।",
+                tagText = "LIVE WILDLIFE SENTINEL",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFFBBF7D0),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.AIIMS_DHH_OPD_BED_TRACKER,
+                titleEn = "AIIMS Satellite Centre & DHH OPD & Bed Pulse",
+                titleOd = "AIIMS ଓ DHH ବାଲେଶ୍ୱର OPD ଓ ବେଡ୍ ଟ୍ରାକର୍",
+                category = "Health & Safety",
+                iconEmoji = "🏥",
+                descriptionEn = "Real-time doctor chamber roster, OPD token wait estimates, ICU bed vacancy & 108 ambulance dial.",
+                descriptionOd = "ବାସ୍ତବ ସମୟ ଡାକ୍ତର ତାଲିକା, ଟୋକନ୍ ଅପେକ୍ଷା ସମୟ, ଆଇସିୟୁ ବେଡ୍ ଓ ୧୦୮ ଆମ୍ବୁଲାନ୍ସ।",
+                tagText = "LIVE OPD & BEDS",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFFBFDBFE),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT,
+                titleEn = "Offline Cyclone & Flood Safety Toolkit",
+                titleOd = "ଅଫଲାଇନ୍ ବାତ୍ୟା ଓ ବନ୍ୟା ସୁରକ୍ଷା ଟୁଲକିଟ୍",
+                category = "Health & Safety",
+                iconEmoji = "🛡️",
+                descriptionEn = "100% offline-ready shelter directory, interactive 72h survival checklist & emergency SOS screen strobe beacon.",
+                descriptionOd = "ଇଣ୍ଟରନେଟ୍ ବିନା ବାତ୍ୟା ଆଶ୍ରୟସ୍ଥଳୀ ତାଲିକା, ୭୨-ଘଣ୍ଟା କିଟ୍ ଓ SOS ସ୍କ୍ରିନ୍ ବିକନ୍।",
+                tagText = "100% OFFLINE READY",
+                primaryColor = Color(0xFFFEF3C7),
+                borderColor = Color(0xFFFDE68A),
+                isAutoUpdated = true
+            ),
+
             // Daily Coastal & Intertidal
             SpecialFeatureItem(
                 sheetType = UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER,
@@ -1651,6 +1692,102 @@ fun SpecialFeaturesScreen(
                 tagText = "₹78K SUBSIDY DESK",
                 primaryColor = Color(0xFFFEF3C7),
                 borderColor = Color(0xFFFCD34D)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.TALASARI_UDAYPUR_RED_CRAB_SAFARI,
+                titleEn = "Talasari & Udaypur Red Ghost Crab Safari",
+                titleOd = "ତାଳସାରୀ ଓ ଉଦୟପୁର ଲାଲ୍ କଙ୍କଡ଼ା ସଫାରୀ",
+                category = "Coastal & Estuary",
+                iconEmoji = "🦀",
+                descriptionEn = "Live intertidal red ghost crab colony windows, Subarnarekha estuary ferry schedule & safe sandbar walking guide.",
+                descriptionOd = "ଭଟ୍ଟା ସମୟରେ ଲାଲ୍ କଙ୍କଡ଼ା କଲୋନୀ ପର୍ଯ୍ୟବେକ୍ଷଣ, ସୁବର୍ଣ୍ଣରେଖା ମୁହାଣ ଡଙ୍ଗା ଚଳାଚଳ ଓ ନିରାପଦ ବେଳାଭୂମି ରାସ୍ତା।",
+                tagText = "RED CRAB SAFARI",
+                primaryColor = Color(0xFFFFF1F2),
+                borderColor = Color(0xFFFECDD3)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.PANCHALINGESWAR_WATERFALL_TREK_MONITOR,
+                titleEn = "Panchalingeswar Waterfall & Devagiri Trek",
+                titleOd = "ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ଝରଣା ପ୍ରପାତ ଓ ୨୬୩ ପାହାଚ ଟ୍ରେକ୍",
+                category = "Defense & Wildlife",
+                iconEmoji = "⛰️",
+                descriptionEn = "Devagiri hill perennial waterfall flow velocity gauge, 263-step climb safety status, sanctum queue wait & eco-camp desk.",
+                descriptionOd = "ଦେବଗିରି ପାହାଡ଼ ଝରଣା ଜଳପ୍ରପାତ ବେଗ, ୨୬୩ ପାହାଚ ଚଢ଼ିବା ସୁରକ୍ଷା ପରାମର୍ଶ ଓ ପଞ୍ଚଲିଙ୍ଗ ସ୍ପର୍ଶ ଦର୍ଶନ ସୂଚୀ।",
+                tagText = "WATERFALL TREK",
+                primaryColor = Color(0xFFF0FDFA),
+                borderColor = Color(0xFF99F6E4)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.EMAMI_JAGANNATH_REMUNA_HERITAGE,
+                titleEn = "Emami Jagannath & Remuna Amruta Keli Bhog",
+                titleOd = "ଇମାମୀ ଜଗନ୍ନାଥ ମନ୍ଦିର ଓ ରେମୁଣା କ୍ଷୀରଭୋଗ",
+                category = "Artisans & Heritage",
+                iconEmoji = "🛕",
+                descriptionEn = "Khirachora Gopinath Amruta Keli pot counter, Emami Jagannath daily ritual clock & Remuna brass bell-metal guild.",
+                descriptionOd = "ରେମୁଣା ଖିରଚୋରା ଗୋପୀନାଥଙ୍କ ଅମୃତ କେଳି ମାଟି ହାଣ୍ଡି କାଉଣ୍ଟର, ଇମାମୀ ମନ୍ଦିର ନୀତିକାନ୍ତି ଓ କଂସା ଶିଳ୍ପୀ ହାଟ।",
+                tagText = "AMRUTA KELI BHOG",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALARAMGADI_FISH_MANDI_RATES,
+                titleEn = "Balaramgadi Fish Mandi & Trawler Landing Rates",
+                titleOd = "ବଳରାମଗଡ଼ି ମତ୍ସ୍ୟ ମଣ୍ଡି ଓ ଟ୍ରଲର ନିଲାମ ଦର",
+                category = "Agro & Food",
+                iconEmoji = "🐟",
+                descriptionEn = "Daily Hilsa, Tiger Prawn, White Pomfret, Mud Crab wholesale & retail price index from Budhabalanga estuary.",
+                descriptionOd = "ବଳରାମଗଡ଼ି ମୁହାଣ ଇଲିଶି, ବାଘ ଚିଙ୍ଗୁଡ଼ି, ପମ୍ଫ୍ରେଟ୍ ଓ କଙ୍କଡ଼ା ନିଲାମ ଦର ଏବଂ ଟ୍ରଲର ଅବତରଣ ସୂଚନା।",
+                tagText = "FRESH CATCH RADAR",
+                primaryColor = Color(0xFFF0F9FF),
+                borderColor = Color(0xFFBAE6FD)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.TOWN_AUTO_RICKSHAW_FARE_CALCULATOR,
+                titleEn = "Town Auto & Toto Benchmark Fare Calculator",
+                titleOd = "ବାଲେଶ୍ୱର ଅଟୋ ଓ ଟୋଟୋ ନ୍ୟାଯ୍ୟ ଭଡ଼ା କାଲକୁଲେଟର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "🛺",
+                descriptionEn = "RTO Balasore fair route fare estimator (Station, Chandipur, Remuna), day vs. night surcharge & police hotline.",
+                descriptionOd = "ରେଳ ଷ୍ଟେସନ, ଚାନ୍ଦିପୁର, ରେମୁଣା ରୁଟ୍ ରିଜର୍ଭ ଓ ଶେୟାରିଂ ଭଡ଼ା, ଅଧିକ ଭଡ଼ା ନିୟନ୍ତ୍ରଣ ଓ ଆରଟିଓ ହେଲ୍ପଲାଇନ।",
+                tagText = "RTO FARE METER",
+                primaryColor = Color(0xFFFFF7ED),
+                borderColor = Color(0xFFFED7AA)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.WARD_SANITATION_GARBAGE_VEHICLE_TRACKER,
+                titleEn = "Ward Sanitation & Door-to-Door Waste Radar",
+                titleOd = "ୱାର୍ଡ ପରିମଳ ଓ ଘରକୁ ଘର ଅଳିଆ ଗାଡ଼ି ଟ୍ରାକର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "🚛",
+                descriptionEn = "Balasore Municipality ward-wise door-to-door collection vehicle ETAs, driver roster & wet/dry segregation guide.",
+                descriptionOd = "ବାଲେଶ୍ୱର ପୌରପାଳିକା ୱାର୍ଡ ନମ୍ବର ଅନୁସାରେ ଟିପର/ଇ-କାର୍ଟ ଆଗମନ ସମୟ ଓ ସ୍ୱଚ୍ଛ ସର୍ଭେକ୍ଷଣ ପରାମର୍ଶ।",
+                tagText = "SWACCH BALASORE",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFFBBF7D0)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.BALASORE_INDUSTRIAL_JOB_APPRENTICE_BOARD,
+                titleEn = "Balasore Industrial Corridor Job & Apprentice Board",
+                titleOd = "ବାଲେଶ୍ୱର ଶିଳ୍ପାଞ୍ଚଳ ନିଯୁକ୍ତି ଓ ଆପ୍ରେଣ୍ଟିସ୍ ବୋର୍ଡ",
+                category = "Emergency & Transit",
+                iconEmoji = "🏭",
+                descriptionEn = "Verified vacancies & NATS/NAPS apprentice stipends across Somnathpur, Kuruda, Emami Paper, Balasore Alloys & Birla.",
+                descriptionOd = "ସୋମନାଥପୁର, କୁରୁଡ଼ା ଓ ଛାନପୁର କାରଖାନାରେ ଆଇଟିଆଇ, ଡିପ୍ଲୋମା ଓ ଇଞ୍ଜିନିୟରିଂ ଶିକ୍ଷାନବିଶ ଓ ସ୍ଥାୟୀ ନିଯୁକ୍ତି।",
+                tagText = "IDCO JOB BOARD",
+                primaryColor = Color(0xFFEEF2FF),
+                borderColor = Color(0xFFC7D2FE)
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.KRUSHAK_PACS_MANDI_GRAIN_RADAR,
+                titleEn = "Krushak PACS Dhan Mandi & MSP Procurement",
+                titleOd = "କୃଷକ PACS ଧାନ ମଣ୍ଡି ଓ ସରକାରୀ ଏମଏସପି କ୍ରୟ",
+                category = "Agro & Food",
+                iconEmoji = "🌾",
+                descriptionEn = "Official paddy MSP rates (₹2,320/Qtl), moisture limit FAQ (<17%), PACS mandi token status & direct DBT payments.",
+                descriptionOd = "ରେମୁଣା, ସୋର, ଜଳେଶ୍ୱର ଧାନ ମଣ୍ଡି ଟୋକନ୍ ନମ୍ବର, ୧୭% ରୁ କମ୍ ଆର୍ଦ୍ରତା ନିୟମ ଓ କୃଷି ବିଭାଗ ସହାୟତା।",
+                tagText = "PACS DHAN MANDI",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFFBBF7D0)
             )
         )
     }
@@ -2554,23 +2691,47 @@ fun SpecialFeatureNewsCardItem(
                 }
 
                 // Share button
-                IconButton(
+                Surface(
                     onClick = {
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, titleText)
-                            putExtra(Intent.EXTRA_TEXT, "$titleText\n\n$snippetText\n\nVia Balasore 360 App")
+                            putExtra(Intent.EXTRA_SUBJECT, "Balasore News: $titleText")
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "📰 $titleText\n\n$snippetText\n\nSource: ${article.source}\nShared via Balasore 360 App"
+                            )
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Balasore News"))
+                        context.startActivity(
+                            Intent.createChooser(shareIntent, "Share Balasore News").apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        )
                     },
-                    modifier = Modifier.size(32.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    color = OceanBlue.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.25f)),
+                    modifier = Modifier.testTag("special_news_share_button_${article.id}")
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share Article",
-                        tint = OceanBlue,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share Article",
+                            tint = OceanBlue,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସେୟାର୍" else "Share",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlue,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
                 }
             }
         }

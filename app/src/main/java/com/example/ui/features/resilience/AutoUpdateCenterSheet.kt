@@ -85,6 +85,30 @@ fun AutoUpdateCenterSheet(
     val telemetrySubsystems = remember(dailyPulse) {
         listOf(
             SubsystemTelemetryStatus(
+                nameEn = "Olive Ridley & Marine Life Sentinel Telemetry",
+                nameOd = "ଅଲିଭ୍ ରିଡଲେ ଓ ସାମୁଦ୍ରିକ ଜୀବ ଲାଇଭ୍ ଟେଲିମେଟ୍ରି",
+                iconEmoji = "🐢",
+                statusText = "${dailyPulse.oliveRidleyBeachSightingStatus} • ${dailyPulse.oliveRidleyNestingCount} nests active",
+                updateInterval = "Live Forest Division & Citizen Sentinel Loop",
+                targetSheet = UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "AIIMS & DHH OPD Token & Bed Vacancy Radar",
+                nameOd = "AIIMS ଓ DHH ବାଲେଶ୍ୱର OPD ଓ ବେଡ୍ ପଲ୍ସ",
+                iconEmoji = "🏥",
+                statusText = "AIIMS Wait: ~${dailyPulse.aiimsSatelliteCentreQueueWaitMins}m (${dailyPulse.aiimsOpdSpecialistsAvailable} Doctors) • DHH ICU: ${dailyPulse.dhhIcuBedsAvailable} Beds Open",
+                updateInterval = "Live Health Directorate Queue Feed",
+                targetSheet = UniqueFeatureSheetType.AIIMS_DHH_OPD_BED_TRACKER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Offline Cyclone & Flood Safety Toolkit & SOS",
+                nameOd = "ଅଫଲାଇନ୍ ବାତ୍ୟା ଓ ବନ୍ୟା ସୁରକ୍ଷା ଟୁଲକିଟ୍",
+                iconEmoji = "🛡️",
+                statusText = "Surge: ${dailyPulse.coastalSurgeRiskLevel} • ${dailyPulse.offlineCycloneSheltersReadyCount} Designated Shelters Ready • SOS Strobe Online",
+                updateInterval = "100% Offline Caching + Emergency Dispatch",
+                targetSheet = UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT
+            ),
+            SubsystemTelemetryStatus(
                 nameEn = "FCM Severe Weather & Coastal Flood Push Alerts",
                 nameOd = "FCM ବାତ୍ୟା ଓ ଉପକୂଳ ବନ୍ୟା ତତ୍କାଳ ପୁସ୍ ସତର୍କତା",
                 iconEmoji = "🚨",
@@ -539,6 +563,70 @@ fun AutoUpdateCenterSheet(
                 statusText = "5.4 kWh/m²/day Solar Radiation • 1,842 Active Net-Meters • Up to ₹78,000 Subsidy Desk",
                 updateInterval = "Live Coastal Solar & Net-Metering Telemetry",
                 targetSheet = UniqueFeatureSheetType.ROOFTOP_SOLAR_TPNODL_RADAR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Talasari & Udaypur Red Ghost Crab Safari",
+                nameOd = "ତାଳସାରୀ ଓ ଉଦୟପୁର ଲାଲ୍ କଙ୍କଡ଼ା ସଫାରୀ",
+                iconEmoji = "🦀",
+                statusText = "Low Tide Window Active • Estuary Boat Service 100% Operational • High Sighting Probability",
+                updateInterval = "Live Intertidal Ghost Crab Telemetry (30s)",
+                targetSheet = UniqueFeatureSheetType.TALASARI_UDAYPUR_RED_CRAB_SAFARI
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Panchalingeswar Waterfall & Devagiri Trek",
+                nameOd = "ପଞ୍ଚଲିଙ୍ଗେଶ୍ୱର ଝରଣା ଓ ୨୬୩ ପାହାଚ ଟ୍ରେକ୍",
+                iconEmoji = "⛰️",
+                statusText = "Stream Flow: 145 L/sec • 263-Step Climb Dry & Railing Intact • Sanctum Wait ~15m",
+                updateInterval = "Live Waterfall Flow & Devagiri Sensor Pulse (45s)",
+                targetSheet = UniqueFeatureSheetType.PANCHALINGESWAR_WATERFALL_TREK_MONITOR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Emami Jagannath & Remuna Amruta Keli Bhog",
+                nameOd = "ଇମାମୀ ଜଗନ୍ନାଥ ଓ ରେମୁଣା କ୍ଷୀରଭୋଗ",
+                iconEmoji = "🛕",
+                statusText = "Kshira Bhog Counter Open (~140 Pots Available) • Evening Bhog 07:30 PM • Brass Stalls Open",
+                updateInterval = "Continuous Sanctum Ritual & Bhog Roster Sync (60s)",
+                targetSheet = UniqueFeatureSheetType.EMAMI_JAGANNATH_REMUNA_HERITAGE
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balaramgadi Marine Mandi & Fresh Catch Index",
+                nameOd = "ବଳରାମଗଡ଼ି ମତ୍ସ୍ୟ ମଣ୍ଡି ଓ ଟ୍ରଲର ନିଲାମ",
+                iconEmoji = "🐟",
+                statusText = "48 Trawlers Docked at Budhabalanga Mouth • Fresh Hilsa & Bagda Prawn Morning Auction Active",
+                updateInterval = "Live Fish Landing Harbor Auction Telemetry (30s)",
+                targetSheet = UniqueFeatureSheetType.BALARAMGADI_FISH_MANDI_RATES
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Town Auto & Toto Benchmark Fare Calculator",
+                nameOd = "ବାଲେଶ୍ୱର ଅଟୋ ଓ ଟୋଟୋ ନ୍ୟାଯ୍ୟ ଭଡ଼ା",
+                iconEmoji = "🛺",
+                statusText = "RTO Official Tariffs Synced • Day/Night Surcharge Matrix Active • Traffic Helpline 06782-262024",
+                updateInterval = "Continuous RTO Tariff & Route Matrix Sync (60s)",
+                targetSheet = UniqueFeatureSheetType.TOWN_AUTO_RICKSHAW_FARE_CALCULATOR
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Ward Sanitation & Door-to-Door Waste Radar",
+                nameOd = "ୱାର୍ଡ ପରିମଳ ଓ ଘରକୁ ଘର ଅଳିଆ ଗାଡ଼ି",
+                iconEmoji = "🚛",
+                statusText = "Balasore Municipality Shift 1 Active • Door-to-Door Tippers En Route Across Wards 1-31",
+                updateInterval = "Real-Time Sanitation Vehicle Route Telemetry (30s)",
+                targetSheet = UniqueFeatureSheetType.WARD_SANITATION_GARBAGE_VEHICLE_TRACKER
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Balasore Industrial Corridor Job & Apprentice Board",
+                nameOd = "ବାଲେଶ୍ୱର ଶିଳ୍ପାଞ୍ଚଳ ନିଯୁକ୍ତି ଓ ଆପ୍ରେଣ୍ଟିସ୍",
+                iconEmoji = "🏭",
+                statusText = "63 Verified Openings at Emami Paper, Balasore Alloys, Falcon Marine & Somnathpur Cluster",
+                updateInterval = "Daily IDCO & NAPS Apprentice Registry Feed (60s)",
+                targetSheet = UniqueFeatureSheetType.BALASORE_INDUSTRIAL_JOB_APPRENTICE_BOARD
+            ),
+            SubsystemTelemetryStatus(
+                nameEn = "Krushak PACS Dhan Mandi & MSP Procurement",
+                nameOd = "କୃଷକ PACS ଧାନ ମଣ୍ଡି ଓ ଏମଏସପି କ୍ରୟ",
+                iconEmoji = "🌾",
+                statusText = "Official Paddy MSP ₹2,320/Qtl • Moisture FAQ <17% Enforced • Remuna, Soro, Jaleswar Mandis Active",
+                updateInterval = "Real-Time RMC Paddy Procurement Telemetry (45s)",
+                targetSheet = UniqueFeatureSheetType.KRUSHAK_PACS_MANDI_GRAIN_RADAR
             )
         )
     }

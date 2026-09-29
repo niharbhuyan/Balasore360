@@ -32,8 +32,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Flood
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Waves
+import com.example.util.ShareHelper
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -349,6 +351,32 @@ fun EmergencyAlertCard(
                         )
                     }
                 }
+
+                // Share Alert Button invoking Android's ShareSheet
+                OutlinedButton(
+                    onClick = {
+                        ShareHelper.shareEmergencyAlert(context, alert)
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor),
+                    border = BorderStroke(1.dp, accentColor),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .testTag("share_emergency_alert_button_${alert.id}")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share",
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "Share",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -565,29 +593,53 @@ fun EmergencyAlertCard(
                 }
             },
             confirmButton = {
-                androidx.compose.material3.Button(
-                    onClick = {
-                        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                            data = Uri.parse("tel:${alert.emergencyHelpline}")
-                        }
-                        context.startActivity(dialIntent)
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = accentColor)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Phone,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Call Control Room",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                            ShareHelper.shareEmergencyAlert(context, alert)
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor),
+                        border = BorderStroke(1.dp, accentColor),
+                        modifier = Modifier.testTag("share_alert_dialog_button_${alert.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Share Alert",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                                data = Uri.parse("tel:${alert.emergencyHelpline}")
+                            }
+                            context.startActivity(dialIntent)
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Call",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             },
             dismissButton = {

@@ -679,3 +679,102 @@ fun BentoHeroSkeleton(
         }
     }
 }
+
+/**
+ * Skeleton placeholder for Tidal Telemetry and 72-hour Recharts graph cards.
+ * Renders an animated shimmering chart area, metric pills, and telemetry badges.
+ */
+@Composable
+fun TidalTelemetryCardSkeleton(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BentoCardWhite),
+        border = BorderStroke(1.dp, BentoBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .testTag("tidal_telemetry_skeleton")
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            // Header: Tidal icon, title, and live pulse badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ShimmerBox(shape = CircleShape, width = 40.dp, height = 40.dp)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        ShimmerBox(shape = RoundedCornerShape(6.dp), width = 150.dp, height = 16.dp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 100.dp, height = 11.dp)
+                    }
+                }
+                ShimmerBox(shape = RoundedCornerShape(12.dp), width = 75.dp, height = 24.dp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Timeframe Filter Chips Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ShimmerBox(shape = RoundedCornerShape(16.dp), width = 60.dp, height = 28.dp)
+                ShimmerBox(shape = RoundedCornerShape(16.dp), width = 60.dp, height = 28.dp)
+                ShimmerBox(shape = RoundedCornerShape(16.dp), width = 60.dp, height = 28.dp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Recharts Chart Simulated Graph Canvas
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .shimmerPlaceholder(shape = RoundedCornerShape(16.dp))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 45.dp, height = 12.dp)
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 55.dp, height = 12.dp)
+                    }
+                    ShimmerBox(shape = RoundedCornerShape(4.dp), modifier = Modifier.fillMaxWidth(0.9f), height = 2.dp)
+                    ShimmerBox(shape = RoundedCornerShape(4.dp), modifier = Modifier.fillMaxWidth(0.9f), height = 2.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 35.dp, height = 10.dp)
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 35.dp, height = 10.dp)
+                        ShimmerBox(shape = RoundedCornerShape(4.dp), width = 35.dp, height = 10.dp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3 Bottom Metric Tiles: Water Level, Recession Km, Safe Walk Window
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ShimmerBox(shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f), height = 64.dp)
+                ShimmerBox(shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f), height = 64.dp)
+                ShimmerBox(shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f), height = 64.dp)
+            }
+        }
+    }
+}

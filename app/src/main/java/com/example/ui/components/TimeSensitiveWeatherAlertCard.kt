@@ -33,8 +33,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.platform.LocalContext
+import com.example.util.ShareHelper
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -101,6 +104,7 @@ fun TimeSensitiveWeatherAlertCard(
     onEmergencyCallClick: ((phoneNumber: String) -> Unit)? = null,
     onAcknowledgeAlert: ((alertId: String) -> Unit)? = null
 ) {
+    val context = LocalContext.current
     var isExpanded by remember { mutableStateOf(initialExpanded) }
     var currentTimeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
@@ -184,31 +188,68 @@ fun TimeSensitiveWeatherAlertCard(
                     }
                 }
 
-                // Time validity pill
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isUrgent && !isExpired) BentoRedBg.copy(alpha = 0.7f) else BentoBlueLight,
-                    border = BorderStroke(0.5.dp, BentoBorder)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // Time validity pill
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isUrgent && !isExpired) BentoRedBg.copy(alpha = 0.7f) else BentoBlueLight,
+                        border = BorderStroke(0.5.dp, BentoBorder)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = "Alert validity",
-                            tint = if (isUrgent && !isExpired) BentoRedText else BentoPrimaryBlue,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Text(
-                            text = timeRemainingText,
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp
-                            ),
-                            color = if (isUrgent && !isExpired) BentoRedText else BentoPrimaryBlue
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccessTime,
+                                contentDescription = "Alert validity",
+                                tint = if (isUrgent && !isExpired) BentoRedText else BentoPrimaryBlue,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = timeRemainingText,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                ),
+                                color = if (isUrgent && !isExpired) BentoRedText else BentoPrimaryBlue
+                            )
+                        }
+                    }
+
+                    // Share Alert Action Pill
+                    Surface(
+                        onClick = {
+                            ShareHelper.shareWeatherAlert(context, alert, timeRemainingText)
+                        },
+                        shape = RoundedCornerShape(20.dp),
+                        color = BentoBlueLight,
+                        border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.3f)),
+                        modifier = Modifier.testTag("share_weather_alert_button_${alert.id}")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share Weather Alert",
+                                tint = BentoPrimaryBlue,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = "Share",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                ),
+                                color = BentoPrimaryBlue
+                            )
+                        }
                     }
                 }
             }
@@ -504,22 +545,57 @@ fun TimeSensitiveWeatherAlertCard(
                                         )
                                     }
 
-                                    if (onEmergencyCallClick != null) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
                                         Surface(
                                             shape = RoundedCornerShape(6.dp),
-                                            color = BentoPrimaryBlue,
+                                            color = BentoPrimaryBlue.copy(alpha = 0.12f),
+                                            border = BorderStroke(1.dp, BentoPrimaryBlue.copy(alpha = 0.35f)),
                                             modifier = Modifier
-                                                .clickable { onEmergencyCallClick("06782-262244") }
+                                                .clickable {
+                                                    ShareHelper.shareWeatherAlert(context, alert, timeRemainingText)
+                                                }
+                                                .testTag("share_guidelines_weather_alert_button_${alert.id}")
                                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                                         ) {
-                                            Text(
-                                                text = "Call Control",
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 9.sp
-                                                ),
-                                                color = Color.White
-                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Share,
+                                                    contentDescription = "Share",
+                                                    tint = BentoPrimaryBlue,
+                                                    modifier = Modifier.size(11.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(3.dp))
+                                                Text(
+                                                    text = "Share",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 9.sp
+                                                    ),
+                                                    color = BentoPrimaryBlue
+                                                )
+                                            }
+                                        }
+
+                                        if (onEmergencyCallClick != null) {
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = BentoPrimaryBlue,
+                                                modifier = Modifier
+                                                    .clickable { onEmergencyCallClick("06782-262244") }
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Call Control",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 9.sp
+                                                    ),
+                                                    color = Color.White
+                                                )
+                                            }
                                         }
                                     }
                                 }

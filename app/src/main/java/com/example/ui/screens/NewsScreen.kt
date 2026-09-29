@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.NightlightRound
 import androidx.compose.material3.Switch
+import com.example.util.ShareHelper
 import androidx.compose.material3.Surface
 import com.example.ui.viewmodel.ThemeMode
 import com.example.ui.theme.LocalBentoPalette
@@ -81,6 +82,8 @@ import com.example.data.model.CycloneShelter
 import com.example.data.model.NewsArticle
 import com.example.data.model.RiverGauge
 import com.example.ui.components.AdMobBannerCard
+import com.example.ui.components.NewsListSkeleton
+import com.example.ui.components.NewsCardSkeleton
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -96,6 +99,7 @@ import com.example.ui.theme.OceanBlueDark
 import com.example.ui.viewmodel.UniqueFeatureSheetType
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun NewsScreen(
@@ -714,8 +718,12 @@ fun NewsScreen(
             }
         }
 
-        // Empty state when search keywords produce no matches
-        if (filteredArticles.isEmpty()) {
+        // Loading skeleton when data is being fetched or refreshed
+        if (isRefreshing) {
+            item {
+                NewsListSkeleton(count = 4, showBreakingBanner = true)
+            }
+        } else if (filteredArticles.isEmpty()) {
             item {
                 Card(
                     modifier = Modifier
@@ -766,29 +774,24 @@ fun NewsScreen(
                     }
                 }
             }
-        }
-
-        // Articles List
-        items(filteredArticles, key = { it.id }) { article ->
-            NewsCard(
-                article = article,
-                language = language,
-                searchQuery = searchQuery,
-                isBookmarked = bookmarkedIds.contains(article.id),
-                onToggleBookmark = { onToggleBookmark(article.id) },
-                onShare = {
-                    val sendIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(
-                            Intent.EXTRA_TEXT,
-                            "${article.title}\n\nRead more on Balasore 360 app."
+        } else {
+            // Articles List
+            items(filteredArticles, key = { it.id }) { article ->
+                NewsCard(
+                    article = article,
+                    language = language,
+                    searchQuery = searchQuery,
+                    isBookmarked = bookmarkedIds.contains(article.id),
+                    onToggleBookmark = { onToggleBookmark(article.id) },
+                    onShare = {
+                        ShareHelper.shareNews(
+                            context = context,
+                            article = article,
+                            isOdia = language == AppLanguage.ODIA
                         )
-                        type = "text/plain"
                     }
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    context.startActivity(shareIntent)
-                }
-            )
+                )
+            }
         }
 
         // AdMob Banner Placement in News feed
@@ -1053,6 +1056,32 @@ fun NewsCard(
                                 lineHeight = 22.sp
                             )
                         )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        OutlinedButton(
+                            onClick = onShare,
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.4f)),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = OceanBlue
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("share_full_news_button_${article.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଏହି ସମ୍ପୂର୍ଣ୍ଣ ଖବର ସେୟାର୍ କରନ୍ତୁ (Share)" else "Share This Full Story via ShareSheet",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
             }
@@ -1072,22 +1101,44 @@ fun NewsCard(
                     )
                 )
 
-                Row {
-                    IconButton(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Dedicated Share Button with Android ShareSheet invocation
+                    Surface(
                         onClick = onShare,
-                        modifier = Modifier.size(32.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        color = OceanBlue.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.2f)),
+                        modifier = Modifier.testTag("share_news_button_${article.id}")
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Share",
-                            tint = BentoSlate400,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share",
+                                tint = OceanBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ସେୟାର୍" else "Share",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = OceanBlue
+                                )
+                            )
+                        }
                     }
 
                     IconButton(
                         onClick = onToggleBookmark,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("bookmark_news_button_${article.id}")
                     ) {
                         Icon(
                             imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,

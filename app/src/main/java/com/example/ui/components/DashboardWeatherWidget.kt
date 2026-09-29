@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.*
 import com.example.ui.theme.*
+import com.example.util.ShareHelper
 
 /**
  * Interactive Weather Widget for the Balasore 360 Dashboard.
@@ -638,6 +639,7 @@ fun SevereWeatherAlertCard(
     onAcknowledge: () -> Unit,
     onCallHelpline: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val bgBrush = when (alert.severity) {
         AlertSeverity.CYCLONE_ALERT -> Brush.horizontalGradient(listOf(Color(0xFFFEF2F2), Color(0xFFFEE2E2)))
         AlertSeverity.WARNING -> Brush.horizontalGradient(listOf(Color(0xFFFFFBEB), Color(0xFFFEF3C7)))
@@ -702,15 +704,33 @@ fun SevereWeatherAlertCard(
                         }
                     }
 
-                    IconButton(
-                        onClick = onToggleExpand,
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = if (isExpanded) "Collapse" else "Expand",
-                            tint = BentoSlate700
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = {
+                                ShareHelper.shareWeatherAlert(context, alert)
+                            },
+                            modifier = Modifier
+                                .size(28.dp)
+                                .testTag("quick_share_severe_weather_alert_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share Alert",
+                                tint = BentoSlate700,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = onToggleExpand,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                tint = BentoSlate700
+                            )
+                        }
                     }
                 }
 
@@ -779,40 +799,61 @@ fun SevereWeatherAlertCard(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Action Buttons: Call Helpline + Acknowledge
+                        // Action Buttons: Share + Call Helpline + Acknowledge
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
+                            OutlinedButton(
+                                onClick = {
+                                    ShareHelper.shareWeatherAlert(context, alert)
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("share_severe_weather_alert_button"),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
+                                border = BorderStroke(1.dp, OceanBlue),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = OceanBlue)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share",
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text("Share", fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                            }
+
                             Button(
                                 onClick = { onCallHelpline("06782-262244") },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626)),
                                 shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.weight(1.2f),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Phone,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
                                 Text("Control Room", fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                             }
 
                             OutlinedButton(
                                 onClick = onAcknowledge,
                                 shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.weight(0.9f),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
                                 Text("Dismiss", fontSize = 10.5.sp)
                             }
                         }
