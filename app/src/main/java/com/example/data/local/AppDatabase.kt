@@ -17,13 +17,19 @@ import androidx.room.TypeConverters
         ReviewEntity::class,
         ItineraryItemEntity::class,
         TravelJournalEntity::class,
-        ChandipurTideEntity::class
+        ChandipurTideEntity::class,
+        CivicReportEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
+
+    /**
+     * Abstract getter method for Citizen Civic Reports DAO (offline issue tracking & progression).
+     */
+    abstract fun civicReportDao(): CivicReportDao
 
     /**
      * Abstract getter method for News DAO to enable CRUD operations for local news and district bulletins.

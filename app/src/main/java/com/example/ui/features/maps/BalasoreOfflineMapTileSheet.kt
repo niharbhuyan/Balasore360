@@ -1,5 +1,6 @@
 package com.example.ui.features.maps
 
+import java.util.Locale
 import android.os.Bundle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -550,7 +551,7 @@ fun BalasoreOfflineMapTileSheet(
                                     },
                                     label = {
                                         Text(
-                                            text = cat.name.replace("_", " ").lowercase().capitalize(),
+                                            text = cat.name.replace("_", " ").lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
                                             fontSize = 10.sp
                                         )
                                     },

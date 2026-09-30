@@ -47,7 +47,7 @@ fun CoastalMarineAudioRadioSheet(
         val tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 // Default to Indian English / Hindi / Odia fallback
-                ttsEngine?.language = Locale("en", "IN")
+                ttsEngine?.language = Locale.Builder().setLanguage("en").setRegion("IN").build()
             }
         }
         ttsEngine = tts

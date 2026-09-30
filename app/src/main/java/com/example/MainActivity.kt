@@ -92,6 +92,7 @@ import com.example.ui.components.CycloneResilienceSheet
 import com.example.ui.components.DefenseTrailSheet
 import com.example.ui.components.ElephantPassportSheet
 import com.example.ui.features.civic.CitizenCivicEyeSheet
+import com.example.ui.features.civic.MyCivicReportsSheet
 import com.example.ui.components.HarborCatchRatesSheet
 import com.example.ui.components.HorseshoeCrabSheet
 import com.example.ui.components.RemunaPrasadArtisansSheet
@@ -1338,6 +1339,35 @@ fun BalasoreApp(
                     ) {
                         CitizenCivicEyeSheet(
                             language = uiState.language,
+                            myReports = uiState.myCivicReports,
+                            onSubmitReport = { title, cat, ward, desc, urgency, photo ->
+                                viewModel.submitCivicReport(title, cat, ward, desc, urgency, photo)
+                            },
+                            onAdvanceStatus = { id -> viewModel.advanceCivicReportStatus(id) },
+                            onDeleteReport = { id -> viewModel.deleteCivicReport(id) },
+                            onAutoProgress = { viewModel.autoProgressCivicReports() },
+                            autoUpdateMinutes = uiState.autoUpdateFrequencyMinutes,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.MY_CIVIC_REPORTS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        MyCivicReportsSheet(
+                            language = uiState.language,
+                            myReports = uiState.myCivicReports,
+                            selectedFilter = uiState.selectedMyReportsFilter,
+                            onFilterChange = { filter -> viewModel.setMyReportsFilter(filter) },
+                            onSubmitReport = { title, cat, ward, desc, urgency, photo ->
+                                viewModel.submitCivicReport(title, cat, ward, desc, urgency, photo)
+                            },
+                            onAdvanceStatus = { id -> viewModel.advanceCivicReportStatus(id) },
+                            onDeleteReport = { id -> viewModel.deleteCivicReport(id) },
+                            onAutoProgress = { viewModel.autoProgressCivicReports() },
+                            autoUpdateMinutes = uiState.autoUpdateFrequencyMinutes,
                             onClose = { viewModel.closeFeatureSheet() }
                         )
                     }

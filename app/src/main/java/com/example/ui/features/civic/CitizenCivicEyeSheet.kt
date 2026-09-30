@@ -27,22 +27,31 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FlashlightOn
+import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Traffic
 import androidx.compose.material.icons.filled.WaterDamage
+import com.example.data.local.CivicReportEntity
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -110,13 +119,28 @@ data class CivicCategory(
     val color: Color
 )
 
+data class CivicQuadColor(
+    val bg: Color,
+    val fg: Color,
+    val label: String,
+    val icon: ImageVector
+)
+
 @Composable
 fun CitizenCivicEyeSheet(
     language: AppLanguage,
+    myReports: List<CivicReportEntity> = emptyList(),
+    onSubmitReport: ((title: String, category: String, wardLocation: String, description: String, urgency: String, hasPhotoAttached: Boolean) -> Unit)? = null,
+    onAdvanceStatus: ((String) -> Unit)? = null,
+    onDeleteReport: ((String) -> Unit)? = null,
+    onAutoProgress: (() -> Unit)? = null,
+    autoUpdateMinutes: Int = 60,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var activeSection by remember { mutableStateOf("COMMUNITY") } // "COMMUNITY" or "MY_REPORTS"
+    var myReportsFilter by remember { mutableStateOf("ALL") } // "ALL", "PENDING", "IN_PROGRESS", "RESOLVED"
 
     val categories = remember {
         listOf(
@@ -317,6 +341,62 @@ fun CitizenCivicEyeSheet(
                                 Icon(imageVector = Icons.Default.Call, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Call", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Section Switcher: Community Feed vs My Reports (Room DB)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(BentoSlate100)
+                        .padding(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (activeSection == "COMMUNITY") Color.White else Color.Transparent)
+                            .clickable { activeSection = "COMMUNITY" }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ନାଗରିକ ଫିଡ୍" else "Community Feed",
+                            fontSize = 12.sp,
+                            fontWeight = if (activeSection == "COMMUNITY") FontWeight.Bold else FontWeight.Medium,
+                            color = if (activeSection == "COMMUNITY") BentoPrimaryBlue else BentoSlate600
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (activeSection == "MY_REPORTS") Color.White else Color.Transparent)
+                            .clickable { activeSection = "MY_REPORTS" }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ମୋ ଅଭିଯୋଗ (${myReports.size})" else "My Reports (${myReports.size})",
+                                fontSize = 12.sp,
+                                fontWeight = if (activeSection == "MY_REPORTS") FontWeight.Bold else FontWeight.Medium,
+                                color = if (activeSection == "MY_REPORTS") BentoPrimaryBlue else BentoSlate600
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFF10B981).copy(alpha = 0.2f))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text("ROOM", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF059669))
                             }
                         }
                     }
@@ -606,12 +686,21 @@ fun CitizenCivicEyeSheet(
                                         upvotes = 1,
                                         trackingId = newTrackId
                                     )
+                                    onSubmitReport?.invoke(
+                                        issueTitle,
+                                        selectedCategory.nameEn,
+                                        selectedLocation,
+                                        if (issueDetails.isNotBlank()) issueDetails else "Reported by citizen via Balasore 360",
+                                        urgencyLevel,
+                                        hasPhotoAttached
+                                    )
                                     civicIssues.add(0, newIssue)
                                     lastSubmittedTrackingId = newTrackId
                                     issueTitle = ""
                                     issueDetails = ""
                                     showReportForm = false
-                                    Toast.makeText(context, "Logged grievance $newTrackId with Balasore Municipality", Toast.LENGTH_LONG).show()
+                                    activeSection = "MY_REPORTS"
+                                    Toast.makeText(context, "Logged grievance $newTrackId with Balasore Municipality (Room DB)", Toast.LENGTH_LONG).show()
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
@@ -630,52 +719,203 @@ fun CitizenCivicEyeSheet(
                 }
             }
 
-            // Filter Tabs for Civic Issues
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (language == AppLanguage.ODIA) "ସାମ୍ପ୍ରତିକ ନାଗରିକ ଅଭିଯୋଗ ଟ୍ରାକର୍" else "Active Community Civic Tracker",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate900)
-                    )
+            if (activeSection == "MY_REPORTS") {
+                // My Reports Section (Offline Room Database Tracking)
+                item {
+                    val myPending = myReports.count { it.status == "PENDING" }
+                    val myProgress = myReports.count { it.status == "IN_PROGRESS" }
+                    val myResolved = myReports.count { it.status == "RESOLVED" }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        listOf("ALL" to "All", "ACTIVE" to "Active", "RESOLVED" to "Resolved").forEach { (key, label) ->
-                            val isSel = filterStatus == key
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSel) BentoPrimaryBlue else BentoSlate100)
-                                    .clickable { filterStatus = key }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                        // Telemetry Sync Banner
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFF1F5F9))
+                                .border(BorderStroke(1.dp, BentoSlate200), RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF10B981))
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (language == AppLanguage.ODIA) "ଲୋକାଲ୍ Room DB ସକ୍ରିୟ" else "Local Room DB Active",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0F172A)
+                                    )
+                                }
                                 Text(
-                                    text = label,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSel) Color.White else BentoSlate700
+                                    text = if (language == AppLanguage.ODIA) "ସ୍ୱୟଂକ୍ରିୟ ସିଙ୍କ୍ ପ୍ରତି $autoUpdateMinutes ମିନିଟରେ" else "Auto-updates active every ${autoUpdateMinutes}m",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF64748B)
                                 )
+                            }
+
+                            Button(
+                                onClick = {
+                                    onAutoProgress?.invoke()
+                                    Toast.makeText(context, "Synced status with Balasore Municipality", Toast.LENGTH_SHORT).show()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
+                                shape = RoundedCornerShape(6.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.Sync, contentDescription = null, modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(if (language == AppLanguage.ODIA) "ସିଙ୍କ୍" else "Sync", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Filter Chips for My Reports
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ମୋ ଅଭିଯୋଗ ସ୍ଥିତି:" else "Track Status:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                listOf(
+                                    "ALL" to (if (language == AppLanguage.ODIA) "ସମସ୍ତ (${myReports.size})" else "All (${myReports.size})"),
+                                    "PENDING" to (if (language == AppLanguage.ODIA) "ବକେୟା ($myPending)" else "Pending ($myPending)"),
+                                    "IN_PROGRESS" to (if (language == AppLanguage.ODIA) "ଚାଲୁ ($myProgress)" else "Active ($myProgress)"),
+                                    "RESOLVED" to (if (language == AppLanguage.ODIA) "ସମାହିତ ($myResolved)" else "Resolved ($myResolved)")
+                                ).forEach { (key, label) ->
+                                    val isSel = myReportsFilter == key
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(if (isSel) BentoPrimaryBlue else BentoSlate100)
+                                            .clickable { myReportsFilter = key }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSel) Color.White else BentoSlate700
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // Civic Issues List
-            val filteredIssues = civicIssues.filter { issue ->
-                when (filterStatus) {
-                    "ACTIVE" -> issue.status != "RESOLVED"
-                    "RESOLVED" -> issue.status == "RESOLVED"
-                    else -> true
+                val myFilteredReports = myReports.filter { report ->
+                    when (myReportsFilter) {
+                        "PENDING" -> report.status == "PENDING"
+                        "IN_PROGRESS" -> report.status == "IN_PROGRESS"
+                        "RESOLVED" -> report.status == "RESOLVED"
+                        else -> true
+                    }
                 }
-            }
 
-            items(filteredIssues, key = { it.id }) { issue ->
+                if (myFilteredReports.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("📋", fontSize = 36.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଏହି ସ୍ଥିତିରେ କୌଣସି ଅଭିଯୋଗ ନାହିଁ" else "No Reports in this Status Category",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate700
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(myFilteredReports, key = { it.id }) { report ->
+                        MyCivicReportItemRow(
+                            report = report,
+                            language = language,
+                            onAdvanceStatus = { onAdvanceStatus?.invoke(report.id) },
+                            onDelete = { onDeleteReport?.invoke(report.id) },
+                            onShare = {
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "Balasore Civic Issue [${report.id}]: ${report.title} at ${report.wardLocation}. Status: ${report.status}. Notes: ${report.resolutionNotes}. Track on Balasore 360 app."
+                                    )
+                                    type = "text/plain"
+                                }
+                                context.startActivity(Intent.createChooser(sendIntent, null))
+                            }
+                        )
+                    }
+                }
+            } else {
+                // Community Civic Issues Feed
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସାମ୍ପ୍ରତିକ ନାଗରିକ ଅଭିଯୋଗ ଟ୍ରାକର୍" else "Active Community Civic Tracker",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = BentoSlate900)
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf("ALL" to "All", "ACTIVE" to "Active", "RESOLVED" to "Resolved").forEach { (key, label) ->
+                                val isSel = filterStatus == key
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSel) BentoPrimaryBlue else BentoSlate100)
+                                        .clickable { filterStatus = key }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSel) Color.White else BentoSlate700
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Civic Issues List
+                val filteredIssues = civicIssues.filter { issue ->
+                    when (filterStatus) {
+                        "ACTIVE" -> issue.status != "RESOLVED"
+                        "RESOLVED" -> issue.status == "RESOLVED"
+                        else -> true
+                    }
+                }
+
+                items(filteredIssues, key = { it.id }) { issue ->
                 CivicIssueCard(
                     issue = issue,
                     language = language,
@@ -704,6 +944,7 @@ fun CitizenCivicEyeSheet(
             }
         }
     }
+}
 }
 
 @Composable
@@ -886,3 +1127,292 @@ fun CivicIssueCard(
         }
     }
 }
+
+@Composable
+private fun MyCivicReportItemRow(
+    report: CivicReportEntity,
+    language: AppLanguage,
+    onAdvanceStatus: () -> Unit,
+    onDelete: () -> Unit,
+    onShare: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val (statusBg, statusFg, statusLabel, statusIcon) = when (report.status) {
+        "RESOLVED" -> CivicQuadColor(Color(0xFFDCFCE7), Color(0xFF15803D), if (language == AppLanguage.ODIA) "ସମାହିତ" else "RESOLVED", Icons.Default.CheckCircle)
+        "IN_PROGRESS" -> CivicQuadColor(Color(0xFFDBEAFE), Color(0xFF1D4ED8), if (language == AppLanguage.ODIA) "ଚାଲୁଅଛି" else "IN PROGRESS", Icons.Default.Build)
+        else -> CivicQuadColor(Color(0xFFFEF3C7), Color(0xFFB45309), if (language == AppLanguage.ODIA) "ବକେୟା" else "PENDING", Icons.Default.HourglassTop)
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BentoSlate200)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            // Category & Status Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFFEFF6FF))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = report.category,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BentoPrimaryBlue
+                        )
+                    }
+
+                    if (report.urgency == "CRITICAL" || report.urgency == "HIGH") {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFFEE2E2))
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "⚠️ ${report.urgency}",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFB91C1C)
+                            )
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(statusBg)
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = statusIcon, contentDescription = null, tint = statusFg, modifier = Modifier.size(12.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = statusLabel,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = statusFg
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Title
+            Text(
+                text = report.title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = BentoSlate900,
+                lineHeight = 20.sp
+            )
+
+            // Location
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(13.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = report.wardLocation,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF64748B)
+                )
+                if (report.hasPhotoAttached) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        text = "Photo Attached",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF16A34A)
+                    )
+                }
+            }
+
+            // Description
+            if (report.description.isNotBlank()) {
+                Text(
+                    text = report.description,
+                    fontSize = 12.sp,
+                    color = BentoSlate700,
+                    modifier = Modifier.padding(top = 6.dp),
+                    lineHeight = 17.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Stepper
+            val currentStep = when (report.status) {
+                "RESOLVED" -> 3
+                "IN_PROGRESS" -> 2
+                else -> 1
+            }
+
+            val steps = listOf(
+                if (language == AppLanguage.ODIA) "୧. ଦାଖଲ (Room DB)" else "1. Logged",
+                if (language == AppLanguage.ODIA) "୨. ଯାଞ୍ଚ ଚାଲୁ" else "2. In Progress",
+                if (language == AppLanguage.ODIA) "୩. ସମାଧାନ" else "3. Resolved"
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                steps.forEachIndexed { index, title ->
+                    val stepNumber = index + 1
+                    val isDone = stepNumber <= currentStep
+                    val stepColor = if (isDone) {
+                        if (stepNumber == 3) Color(0xFF16A34A) else BentoPrimaryBlue
+                    } else Color(0xFFCBD5E1)
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(stepColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isDone) {
+                                Text("✓", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            } else {
+                                Text(stepNumber.toString(), fontSize = 9.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = title,
+                            fontSize = 10.sp,
+                            fontWeight = if (isDone) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isDone) BentoSlate900 else Color(0xFF94A3B8)
+                        )
+                    }
+
+                    if (index < steps.size - 1) {
+                        Box(
+                            modifier = Modifier
+                                .height(2.dp)
+                                .weight(1f)
+                                .padding(horizontal = 4.dp)
+                                .background(if (stepNumber < currentStep) BentoPrimaryBlue else Color(0xFFE2E8F0))
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Assigned Department & Resolution Notes Box
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .border(BorderStroke(1.dp, BentoSlate100), RoundedCornerShape(8.dp))
+                    .padding(10.dp)
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Dept: ${report.assignedDepartment}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF475569)
+                        )
+                        Text(
+                            text = report.id,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BentoPrimaryBlue
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = report.resolutionNotes,
+                        fontSize = 11.sp,
+                        color = Color(0xFF334155),
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (report.status != "RESOLVED") {
+                    OutlinedButton(
+                        onClick = onAdvanceStatus,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BentoPrimaryBlue),
+                        border = BorderStroke(1.dp, BentoPrimaryBlue),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(13.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (report.status == "PENDING") "Advance Status" else "Mark Resolved",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = Icons.Default.AssignmentTurnedIn, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "କାର୍ଯ୍ୟ ସମାପ୍ତ ✓" else "Closed in Registry ✓",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF16A34A)
+                        )
+                    }
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(
+                        onClick = onShare,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color(0xFF64748B), modifier = Modifier.size(16.dp))
+                    }
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+

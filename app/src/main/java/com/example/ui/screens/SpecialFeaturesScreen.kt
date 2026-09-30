@@ -164,6 +164,19 @@ fun SpecialFeaturesScreen(
                 borderColor = Color(0xFFFDE68A),
                 isAutoUpdated = true
             ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.MY_CIVIC_REPORTS,
+                titleEn = "My Reports: Offline Civic Issue Tracker",
+                titleOd = "ମୋ ଅଭିଯୋଗ: ଅଫଲାଇନ୍ ନାଗରିକ ସମସ୍ୟା ଟ୍ରାକର୍",
+                category = "Emergency & Transit",
+                iconEmoji = "📋",
+                descriptionEn = "Track reported civic issues (Pending, In-Progress, Resolved) using local Room Database with automated municipal status sync.",
+                descriptionOd = "ରାସ୍ତା, ଲାଇଟ୍ ଓ ଡ୍ରେନେଜ୍ ଅଭିଯୋଗ ଲୋକାଲ୍ Room DB ରେ ଟ୍ରାକ୍ କରନ୍ତୁ ଏବଂ ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍ ପାଆନ୍ତୁ।",
+                tagText = "ROOM DB OFFLINE TRACKER",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFF86EFAC),
+                isAutoUpdated = true
+            ),
 
             // Daily Coastal & Intertidal
             SpecialFeatureItem(

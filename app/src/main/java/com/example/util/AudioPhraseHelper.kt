@@ -35,12 +35,12 @@ class AudioPhraseHelper private constructor(context: Context) : TextToSpeech.OnI
         if (status == TextToSpeech.SUCCESS) {
             isInitialized = true
             // Attempt to set Odia or Indian English
-            val odiaLocale = Locale("or", "IN")
+            val odiaLocale = Locale.Builder().setLanguage("or").setRegion("IN").build()
             val available = tts?.isLanguageAvailable(odiaLocale) ?: TextToSpeech.LANG_NOT_SUPPORTED
             if (available >= TextToSpeech.LANG_AVAILABLE) {
                 tts?.language = odiaLocale
             } else {
-                tts?.language = Locale("en", "IN")
+                tts?.language = Locale.Builder().setLanguage("en").setRegion("IN").build()
             }
             tts?.setPitch(1.05f)
             tts?.setSpeechRate(0.95f)

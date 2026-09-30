@@ -1,5 +1,6 @@
 package com.example.data.repository
 
+import com.example.data.local.CivicReportEntity
 import com.example.data.local.HotspotEntity
 import com.example.data.local.ItineraryItemEntity
 import com.example.data.local.NewsArticleEntity
@@ -560,5 +561,67 @@ object DefaultData {
             emergencyHelpline = "06781-222045"
         )
     )
+
+    fun getDefaultCivicReports(): List<CivicReportEntity> {
+        val now = System.currentTimeMillis()
+        return listOf(
+            CivicReportEntity(
+                id = "BLS-CIVIC-2026-4821",
+                title = "Deep pothole cluster near Phandi Chhak on OT Road",
+                category = "Road Pothole",
+                wardLocation = "Ward 14 - OT Road / Phandi Chhak",
+                description = "Vehicles and two-wheelers risk skidding during rain. Urgent bitumen filling needed.",
+                status = "IN_PROGRESS",
+                urgency = "HIGH",
+                assignedDepartment = "PWD & Balasore Municipality Road Div",
+                reportedTimestamp = now - (3 * 3600 * 1000L),
+                lastUpdatedTimestamp = now - (30 * 60 * 1000L),
+                hasPhotoAttached = true,
+                resolutionNotes = "Road contractor assigned. Bitumen hot-mix batch dispatched to Phandi Chhak."
+            ),
+            CivicReportEntity(
+                id = "BLS-CIVIC-2026-3914",
+                title = "Solid waste accumulation near Nuabazar Sabzi Mandi",
+                category = "Garbage Heap / Waste",
+                wardLocation = "Ward 4 - Sahadevkhunta",
+                description = "Vegetable waste spillover blocking pedestrian passage. Municipal dumper required.",
+                status = "PENDING",
+                urgency = "NORMAL",
+                assignedDepartment = "BMC Sanitation Wing",
+                reportedTimestamp = now - (1 * 3600 * 1000L),
+                lastUpdatedTimestamp = now - (1 * 3600 * 1000L),
+                hasPhotoAttached = true,
+                resolutionNotes = "Report logged in municipal grievance queue. Scheduled for evening sanitation beat."
+            ),
+            CivicReportEntity(
+                id = "BLS-CIVIC-2026-2105",
+                title = "Solar streetlights not turning on along FM University Road",
+                category = "Faulty Streetlight",
+                wardLocation = "Ward 1 - Azimabad",
+                description = "Dark stretch at night causing safety concern for evening student commuters.",
+                status = "RESOLVED",
+                urgency = "NORMAL",
+                assignedDepartment = "TPNODL & Balasore Municipal Electrical Div",
+                reportedTimestamp = now - (24 * 3600 * 1000L),
+                lastUpdatedTimestamp = now - (2 * 3600 * 1000L),
+                hasPhotoAttached = false,
+                resolutionNotes = "Faulty solar charge controller replaced by TPNODL lineman. Streetlights tested and fully operational."
+            ),
+            CivicReportEntity(
+                id = "BLS-CIVIC-2026-5129",
+                title = "Storm drain choked with plastic bags near Cinema Chhak",
+                category = "Drain Clog / Waterlogging",
+                wardLocation = "Ward 12 - Cinema Chhak",
+                description = "Rainwater overflowing onto merchant storefronts during heavy downpours. Suction tank truck requested.",
+                status = "IN_PROGRESS",
+                urgency = "HIGH",
+                assignedDepartment = "Drainage Desiltation Taskforce",
+                reportedTimestamp = now - (5 * 3600 * 1000L),
+                lastUpdatedTimestamp = now - (45 * 60 * 1000L),
+                hasPhotoAttached = true,
+                resolutionNotes = "Desiltation crew on site with vacuum suction gear. Primary culvert cleared."
+            )
+        )
+    }
 }
 

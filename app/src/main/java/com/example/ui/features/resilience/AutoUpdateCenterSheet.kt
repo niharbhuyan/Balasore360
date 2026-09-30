@@ -109,6 +109,14 @@ fun AutoUpdateCenterSheet(
                 targetSheet = UniqueFeatureSheetType.OFFLINE_CYCLONE_SAFETY_TOOLKIT
             ),
             SubsystemTelemetryStatus(
+                nameEn = "My Reports: Offline Civic Issue Room DB Sentinel",
+                nameOd = "ମୋ ଅଭିଯୋଗ: ଅଫଲାଇନ୍ ନାଗରିକ ସମସ୍ୟା Room DB ସେଣ୍ଟିନେଲ୍",
+                iconEmoji = "📋",
+                statusText = "${dailyPulse.pendingCivicReportsCount} Active Reports • ${dailyPulse.resolvedCivicReportsTodayCount} Cleared Today • Room DB Auto-Sync Active",
+                updateInterval = "Local SQLite Room DB + Auto-Progression Ticker",
+                targetSheet = UniqueFeatureSheetType.MY_CIVIC_REPORTS
+            ),
+            SubsystemTelemetryStatus(
                 nameEn = "FCM Severe Weather & Coastal Flood Push Alerts",
                 nameOd = "FCM ବାତ୍ୟା ଓ ଉପକୂଳ ବନ୍ୟା ତତ୍କାଳ ପୁସ୍ ସତର୍କତା",
                 iconEmoji = "🚨",

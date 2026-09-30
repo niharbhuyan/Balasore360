@@ -386,4 +386,77 @@ class BalasoreUniqueFeaturesTest {
         assertEquals(64, pulse.offlineCycloneSheltersReadyCount)
         assertTrue(pulse.isOfflineSurvivalSirenReady)
     }
+
+    @Test
+    fun testMyCivicReportsSheetNavigation() {
+        val viewModel = BalasoreViewModel()
+        viewModel.openFeatureSheet(UniqueFeatureSheetType.MY_CIVIC_REPORTS)
+        assertEquals(UniqueFeatureSheetType.MY_CIVIC_REPORTS, viewModel.uiState.value.activeFeatureSheet)
+        viewModel.closeFeatureSheet()
+        assertNull(viewModel.uiState.value.activeFeatureSheet)
+    }
+
+    @Test
+    fun testMyCivicReportsSubmissionAndProgression() {
+        val viewModel = BalasoreViewModel()
+        val initialCount = viewModel.uiState.value.myCivicReports.size
+        assertTrue("Initial seeded civic reports should exist", initialCount > 0)
+
+        // Submit new civic issue report
+        viewModel.submitCivicReport(
+            title = "Test Pothole on Station Road",
+            category = "Road Pothole",
+            wardLocation = "Ward 18 - Station Square",
+            description = "Dangerous road crater right outside Balasore railway station gate.",
+            urgency = "HIGH",
+            hasPhotoAttached = true
+        )
+
+        val updatedList = viewModel.uiState.value.myCivicReports
+        assertEquals(initialCount + 1, updatedList.size)
+        val submitted = updatedList.first()
+        assertEquals("Test Pothole on Station Road", submitted.title)
+        assertEquals("Road Pothole", submitted.category)
+        assertEquals("PENDING", submitted.status)
+        assertEquals("HIGH", submitted.urgency)
+        assertTrue(submitted.hasPhotoAttached)
+
+        // Advance status to IN_PROGRESS
+        viewModel.advanceCivicReportStatus(submitted.id)
+        val inProgressList = viewModel.uiState.value.myCivicReports
+        val advanced = inProgressList.first { it.id == submitted.id }
+        assertEquals("IN_PROGRESS", advanced.status)
+
+        // Advance status to RESOLVED
+        viewModel.advanceCivicReportStatus(submitted.id)
+        val resolvedList = viewModel.uiState.value.myCivicReports
+        val resolved = resolvedList.first { it.id == submitted.id }
+        assertEquals("RESOLVED", resolved.status)
+
+        // Delete report
+        viewModel.deleteCivicReport(submitted.id)
+        val afterDelete = viewModel.uiState.value.myCivicReports
+        assertEquals(initialCount, afterDelete.size)
+        assertTrue(afterDelete.none { it.id == submitted.id })
+    }
+
+    @Test
+    fun testMyCivicReportsFilterAndAutoProgress() {
+        val viewModel = BalasoreViewModel()
+        viewModel.setMyReportsFilter("PENDING")
+        assertEquals("PENDING", viewModel.uiState.value.selectedMyReportsFilter)
+
+        viewModel.setMyReportsFilter("IN_PROGRESS")
+        assertEquals("IN_PROGRESS", viewModel.uiState.value.selectedMyReportsFilter)
+
+        viewModel.setMyReportsFilter("RESOLVED")
+        assertEquals("RESOLVED", viewModel.uiState.value.selectedMyReportsFilter)
+
+        viewModel.setMyReportsFilter("ALL")
+        assertEquals("ALL", viewModel.uiState.value.selectedMyReportsFilter)
+
+        // Test autoProgressCivicReports()
+        viewModel.autoProgressCivicReports()
+        assertTrue("Civic reports should remain populated after auto-progression", viewModel.uiState.value.myCivicReports.isNotEmpty())
+    }
 }
