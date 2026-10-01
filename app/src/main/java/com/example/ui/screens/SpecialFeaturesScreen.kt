@@ -1839,9 +1839,12 @@ fun SpecialFeaturesScreen(
         newsArticles.filter { article ->
             val matchesCategory = (selectedCategory == "All" ||
                 article.category.equals(selectedCategory, ignoreCase = true) ||
+                (selectedCategory == "Local Politics" && (article.category.equals("Local Politics", ignoreCase = true) || article.category.equals("Politics", ignoreCase = true) || article.category.contains("Civic", ignoreCase = true))) ||
+                (selectedCategory == "Coastal Alerts" && (article.category.equals("Coastal Alerts", ignoreCase = true) || article.category.equals("Coastal", ignoreCase = true) || article.title.contains("Alert", ignoreCase = true))) ||
+                (selectedCategory == "Tourism Updates" && (article.category.equals("Tourism Updates", ignoreCase = true) || article.category.equals("Tourism", ignoreCase = true) || article.category.equals("Culture", ignoreCase = true))) ||
                 (selectedCategory == "Emergency & Transit" && (article.category.equals("Safety", ignoreCase = true) || article.category.equals("Transit", ignoreCase = true) || article.category.equals("Emergency", ignoreCase = true))) ||
                 (selectedCategory == "Health & Medical" && article.category.equals("Health", ignoreCase = true)) ||
-                (selectedCategory == "Coastal & Estuary" && (article.category.equals("Coastal", ignoreCase = true) || article.category.equals("Maritime", ignoreCase = true))) ||
+                (selectedCategory == "Coastal & Estuary" && (article.category.equals("Coastal", ignoreCase = true) || article.category.equals("Maritime", ignoreCase = true) || article.category.equals("Coastal Alerts", ignoreCase = true))) ||
                 (selectedCategory == "Agro & Marine" && (article.category.equals("Agro", ignoreCase = true) || article.category.equals("Agriculture", ignoreCase = true) || article.category.equals("Fisheries", ignoreCase = true))))
             val matchesSearch = cleanQuery.isBlank() ||
                 article.title.contains(cleanQuery, ignoreCase = true) ||

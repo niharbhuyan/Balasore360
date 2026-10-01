@@ -119,6 +119,12 @@ data class BalasoreUiState(
     val appVersionInstalled: String = com.example.BuildConfig.VERSION_NAME,
     val appVersionLatest: String = com.example.BuildConfig.VERSION_NAME,
     val isUpdateCheckLoading: Boolean = false,
+    // News Dedicated Auto-Update Engine
+    val isNewsAutoUpdateEnabled: Boolean = true,
+    val newsAutoUpdateIntervalSeconds: Int = 45,
+    val newsAutoUpdateSecondsRemaining: Int = 45,
+    val lastNewsAutoUpdateTimestamp: Long = System.currentTimeMillis(),
+    val newsAutoUpdateCycleCount: Int = 0,
     // My Reports - Local Room Database for Offline Civic Issue Tracking & Auto Updates
     val myCivicReports: List<CivicReportEntity> = DefaultData.getDefaultCivicReports(),
     val selectedMyReportsFilter: String = "ALL"
@@ -1347,6 +1353,41 @@ class BalasoreViewModel : ViewModel() {
             }
         } catch (_: Throwable) {
             _uiState.value = _uiState.value.copy(isUpdateCheckLoading = false)
+        }
+    }
+
+    fun setNewsAutoUpdateEnabled(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            isNewsAutoUpdateEnabled = enabled,
+            newsAutoUpdateSecondsRemaining = if (enabled) _uiState.value.newsAutoUpdateIntervalSeconds else 0
+        )
+    }
+
+    fun setNewsAutoUpdateInterval(seconds: Int) {
+        val valid = seconds.coerceIn(15, 300)
+        _uiState.value = _uiState.value.copy(
+            newsAutoUpdateIntervalSeconds = valid,
+            newsAutoUpdateSecondsRemaining = valid
+        )
+    }
+
+    fun triggerNewsAutoUpdate() {
+        val now = System.currentTimeMillis()
+        _uiState.value = _uiState.value.copy(
+            lastNewsAutoUpdateTimestamp = now,
+            newsAutoUpdateSecondsRemaining = _uiState.value.newsAutoUpdateIntervalSeconds,
+            newsAutoUpdateCycleCount = _uiState.value.newsAutoUpdateCycleCount + 1
+        )
+        viewModelScope.launch {
+            try {
+                newsRepo?.refreshNews()
+            } catch (_: Throwable) {}
+            try {
+                refreshDailyPulse()
+            } catch (_: Throwable) {}
+            try {
+                fetchLiveEmergencyAlerts()
+            } catch (_: Throwable) {}
         }
     }
 }

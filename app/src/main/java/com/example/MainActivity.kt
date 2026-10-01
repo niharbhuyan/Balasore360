@@ -761,7 +761,11 @@ fun BalasoreApp(
                             onRefresh = { viewModel.refreshAll() },
                             onOpenFeatureSheet = { viewModel.openFeatureSheet(it) },
                             themeMode = uiState.themeMode,
-                            onToggleNightMode = { viewModel.toggleHighContrastNightMode() }
+                            onToggleNightMode = { viewModel.toggleHighContrastNightMode() },
+                            isAutoUpdateEnabled = uiState.isNewsAutoUpdateEnabled,
+                            autoUpdateIntervalSeconds = uiState.newsAutoUpdateIntervalSeconds,
+                            onToggleAutoUpdate = { viewModel.setNewsAutoUpdateEnabled(it) },
+                            onChangeAutoUpdateInterval = { viewModel.setNewsAutoUpdateInterval(it) }
                         )
                         3 -> WeatherScreen(
                             weather = uiState.weather,

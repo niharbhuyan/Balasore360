@@ -477,6 +477,78 @@ object BalasoreRepository {
             source = "FMU Marine Biology Department",
             content = "A joint research unit from Fakir Mohan University and Odisha Biodiversity Board conducted a field census of living fossil horseshoe crabs (Tachypleus gigas and Carcinoscorpius rotundicauda) exposed on the intertidal flats during Chandipur's vanishing low tide. Over 65 specimens were weighed, tagged with microscopic tracking bands, and safely returned to deep tidal channels. The team urged beachgoers to avoid stepping on sand ripples where crabs burrow to lay eggs.",
             odiaContent = "ଫକୀର ମୋହନ ବିଶ୍ୱବିଦ୍ୟାଳୟ ପ୍ରାଣୀବିଜ୍ଞାନ ବିଭାଗ ଓ ରାଜ୍ୟ ଜୈବବିବିଧତା ବୋର୍ଡ ପକ୍ଷରୁ ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ବିରଳ ଜୀବନ୍ତ ଜୀବାଶ୍ମ ରାଜକଙ୍କଡ଼ାଙ୍କ ଉପରେ ସର୍ଭେ କରାଯାଇଛି। ୬୫ ରୁ ଅଧିକ ରାଜକଙ୍କଡ଼ାଙ୍କୁ ଟ୍ୟାଗିଂ କରି ସୁରକ୍ଷିତ ଭାବେ ସମୁଦ୍ରକୁ ଫେରାଇ ଦିଆଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_17",
+            title = "Balasore Zilla Parishad Approves ₹42-Cr Rural Road Network & Solar Village Scheme",
+            odiaTitle = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ପରିଷଦ ପକ୍ଷରୁ ୪୨ କୋଟି ଟଙ୍କାର ଗ୍ରାମୀଣ ରାସ୍ତା ଓ ସୌର ଗ୍ରାମ ଯୋଜନା ଅନୁମୋଦିତ",
+            snippet = "District council passes comprehensive resolution for concrete village connectivity in Remuna, Nilagiri, and Baliapal blocks.",
+            odiaSnippet = "ରେମୁଣା, ନୀଳଗିରି ଓ ବାଲିଆପାଳ ବ୍ଲକର ଗ୍ରାମାଞ୍ଚଳ ରାସ୍ତା ଉନ୍ନୟନ ପାଇଁ ଜିଲ୍ଲା ପରିଷଦର ବାର୍ଷିକ ବୈଠକରେ ଐତିହାସିକ ନିଷ୍ପତ୍ତି।",
+            category = "Local Politics",
+            timeAgo = "15 mins ago",
+            source = "Utkal Mail Political Desk",
+            content = "In an energetic general council assembly of the Balasore Zilla Parishad presided over by the Council President and attended by district MLAs, a major ₹42.8-crore rural infrastructure blueprint was cleared with cross-party consensus. The funding will build all-weather concrete village link corridors across Remuna, Basta, and Soro constituencies, and install solar-powered streetlights across 64 interior gram panchayats. Members also debated irrigation feeder canal repairs and designated ward inspection officers.",
+            odiaContent = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ପରିଷଦ ସମ୍ମିଳନୀ କକ୍ଷରେ ଅନୁଷ୍ଠିତ ବୈଠକରେ ରେମୁଣା, ନୀଳଗିରି, ବସ୍ତା ଓ ସୋର ବ୍ଲକର ଗ୍ରାମ୍ୟ ରାସ୍ତା ନିର୍ମାଣ ପାଇଁ ୪୨.୮ କୋଟି ଟଙ୍କାର ପ୍ରସ୍ତାବ ସର୍ବସମ୍ମତିକ୍ରମେ ଗୃହୀତ ହୋଇଛି। ଗ୍ରାମାଞ୍ଚଳରେ ସୌର ଆଲୋକ ଓ ପାନୀୟ ଜଳ ଯୋଗାଣ ଉପରେ ଗୁରୁତ୍ୱ ଦିଆଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_18",
+            title = "All-Party Municipal Coordination Committee Reviews Balasore Town Traffic & Drainage",
+            odiaTitle = "ବାଲେଶ୍ୱର ସହରର ଟ୍ରାଫିକ୍ ଓ ଡ୍ରେନେଜ୍ ବ୍ୟବସ୍ଥା ନେଇ ସର୍ବଦଳୀୟ ପୌର ସମନ୍ୱୟ ବୈଠକ",
+            snippet = "Ward councillors and civic leadership fast-track stormwater canal de-siltation at Cinema Chhak and Station Road.",
+            odiaSnippet = "ସହରରେ ବର୍ଷାଜଳ ନିଷ୍କାସନ ଓ ନୂତନ ଟ୍ରାଫିକ୍ ସିଗନାଲ ସ୍ଥାପନ ପାଇଁ ପୌର ପ୍ରଶାସନ ପକ୍ଷରୁ ସମୀକ୍ଷା ବୈଠକ।",
+            category = "Local Politics",
+            timeAgo = "45 mins ago",
+            source = "Baleswar Newsline",
+            content = "The Balasore Municipality convened an all-party ward consultative session focusing on civic enhancements ahead of the upcoming festival season. Municipal leaders and ward councillors reviewed progress on the OT Road bypass and cleared emergency tenders for cleaning arterial stormwater canals passing through Gopalgaon and Motiganj. The council further resolved to set up automated traffic signals at Phandi Chhak and Sahadevkhunta to ease peak-hour commuter congestion.",
+            odiaContent = "ବାଲେଶ୍ୱର ପୌରପାଳିକା ସଭାଗୃହରେ ସହରର ବିକାଶ ଓ ଡ୍ରେନେଜ୍ ସମସ୍ୟାର ସମାଧାନ ନେଇ ସର୍ବଦଳୀୟ ବୈଠକ ଅନୁଷ୍ଠିତ ହୋଇଛି। ଗୋପାଳଗାଁ, ମୋତିଗଞ୍ଜ ଓ ଫାଣ୍ଡି ଛକରେ ସ୍ମାର୍ଟ ଟ୍ରାଫିକ୍ ସିଗନାଲ ଏବଂ ବର୍ଷାଜଳ ନିଷ୍କାସନ କାର୍ଯ୍ୟ ତୁରନ୍ତ ସାରିବାକୁ ନିର୍ଦ୍ଦେଶ ଦିଆଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_19",
+            title = "Coastal Storm Surge & Ebb Tide Advisory Issued for Chandipur and Talasari Harbors",
+            odiaTitle = "ଚାନ୍ଦିପୁର ଓ ତାଳସାରୀ ଉପକୂଳ ବନ୍ଦର ପାଇଁ ଉଚ୍ଚ ଜୁଆର ଓ ପବନ ସତର୍କତା ଜାରି",
+            snippet = "Marine fisheries department and IMD caution mechanized trawlers against venturing past 12 nautical miles during rough swell.",
+            odiaSnippet = "ଉତ୍ତର ବଙ୍ଗୋପସାଗରରେ ସମୁଦ୍ର ଅଶାନ୍ତ ରହିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନଙ୍କୁ ଉପକୂଳ ନିକଟରେ ରହିବାକୁ ସତର୍କ କରାଯାଇଛି।",
+            category = "Coastal Alerts",
+            timeAgo = "25 mins ago",
+            source = "Marine Warning Center Chandipur",
+            content = "The Marine Fisheries Department and Coastal Security Police at Chandipur and Balaramgadi have issued an urgent Coastal Alert in view of a deep depression over the northwest Bay of Bengal. Wind gusts reaching 40-50 km/h and wave heights up to 3.2 meters are expected along the Balasore coastal belt during tonight's high tide cycle. Over 300 deep-sea mechanized trawlers have been guided back to safe anchorages at Kasafal and Talasari estuaries with coastal siren towers tested and operational.",
+            odiaContent = "ବଙ୍ଗୋପସାଗରରେ ସୃଷ୍ଟ ଲଘୁଚାପ ପ୍ରଭାବରେ ଚାନ୍ଦିପୁର, କସାଫଳ ଓ ତାଳସାରୀ ଉପକୂଳରେ ୩.୨ ମିଟର ଉଚ୍ଚର ଜୁଆର ଉଠିବା ସମ୍ଭାବନା ରହିଛି। ସାମୁଦ୍ରିକ ଥାନା ଓ ମତ୍ସ୍ୟ ବିଭାଗ ପକ୍ଷରୁ ମତ୍ସ୍ୟଜୀବୀମାନଙ୍କୁ ଗଭୀର ସମୁଦ୍ରକୁ ନଯିବାକୁ ଲାଉଡସ୍ପିକର ଯୋଗେ ସତର୍କ କରାଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_20",
+            title = "Balaramgadi Estuary Bar Navigation Alert: Life Guards Deployed Along River Confluence",
+            odiaTitle = "ବଳରାମଗଡ଼ି ମୁହାଣ ନୌଚାଳନା ସତର୍କତା: ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ ସଙ୍ଗମରେ ଲାଇଫଗାର୍ଡ ନିୟୋଜିତ",
+            snippet = "Submerged sandbars shifting due to strong tidal currents; navigational buoys illuminated for nighttime maritime safety.",
+            odiaSnippet = "ସମୁଦ୍ର ମୁହାଣରେ ବାଲୁକା ଶଯ୍ୟା ସ୍ଥାନ ପରିବର୍ତ୍ତନ କରୁଥିବାରୁ ବୋଟ୍ ଚାଳକଙ୍କ ପାଇଁ ରାତ୍ରିକାଳୀନ ଆଲୋକିତ ବୟା ସ୍ଥାପନ।",
+            category = "Coastal Alerts",
+            timeAgo = "1 hour ago",
+            source = "Coastal Defense & Estuary Safety",
+            content = "Port authorities and the District Marine Task Force have issued a navigation warning for vessel captains navigating the mouth of the Budhabalanga river at Balaramgadi. Recent lunar spring tides have shifted underwater sand ridges near the outer bar. Navigational signal buoys with high-intensity amber strobe lights have been moored along the dredged passage, and emergency ODRAF inflatable rescue boats remain stationed on 24x7 alert.",
+            odiaContent = "ବୁଢ଼ାବଳଙ୍ଗ ନଦୀ ଓ ବଙ୍ଗୋପସାଗର ସଙ୍ଗମସ୍ଥଳ ବଳରାମଗଡ଼ି ମୁହାଣରେ ବାଲିଚଡ଼ା ସୃଷ୍ଟି ହେତୁ ବୋଟ୍ ଚଳାଚଳରେ ସତର୍କତା ଜାରି ହୋଇଛି। ନୌପରିବହନ ସୁରକ୍ଷା ପାଇଁ ରାଡାର ବୟା ଓ ଆଲୋକ ଖୁଣ୍ଟ ସ୍ଥାପନ କରାଯିବା ସହ ଓଡ୍ରାଫ୍ ଉଦ୍ଧାରକାରୀ ଦଳ ନିୟୋଜିତ ହୋଇଛନ୍ତି।"
+        ),
+        NewsArticle(
+            id = "news_21",
+            title = "Chandipur Vanishing Sea Eco-Promenade & Sunrise Gazebos Opened for Weekend Tourists",
+            odiaTitle = "ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ନୂତନ ଇକୋ-ୱାକୱେ ଓ ସୂର୍ଯ୍ୟୋଦୟ ଭିୟୁଇଂ ପଏଣ୍ଟ ଉଦ୍ଘାଟିତ",
+            snippet = "OTDC unveils beachfront landscaped walking trails, shaded resting pagodas, and zero-emission e-rickshaw connectivity.",
+            odiaSnippet = "ଚାନ୍ଦିପୁର ବେଳାଭୂମିକୁ ଆସୁଥିବା ପର୍ଯ୍ୟଟକମାନଙ୍କ ପାଇଁ ସୂର୍ଯ୍ୟୋଦୟ ଦର୍ଶନ ଓ ଆରାମଦାୟକ ବସିବା ପାଇଁ ଆଧୁନିକ ଗାଜେବୋ ନିର୍ମିତ।",
+            category = "Tourism Updates",
+            timeAgo = "50 mins ago",
+            source = "Odisha Tourism Development Corp (OTDC)",
+            content = "Balasore's premier tourist destination, Chandipur Beach, has received a scenic infrastructure upgrade with the opening of a 1.2-kilometer sea-view eco-promenade. The project includes weather-resistant timber gazebos for viewing sunrise over the Bay of Bengal, solar-lit information kiosks explaining the unique 5-kilometer vanishing tide phenomenon, and green battery e-shuttle routes running from the Panthanivas resort directly to the high-water waterline.",
+            odiaContent = "ଓଡ଼ିଶା ପର୍ଯ୍ୟଟନ ଉନ୍ନୟନ ନିଗମ (OTDC) ପକ୍ଷରୁ ଚାନ୍ଦିପୁର ବେଳାଭୂମିରେ ୧.୨ କିଲୋମିଟର ଦୈର୍ଘ୍ୟର ଇକୋ-ପ୍ରମୋନେଡ୍ ଏବଂ ସୂର୍ଯ୍ୟୋଦୟ ଦର୍ଶନ ପଏଣ୍ଟ ଲୋକାର୍ପିତ ହୋଇଛି। ପର୍ଯ୍ୟଟକମାନେ ଏଠାରେ ସମୁଦ୍ର ଅପସାରଣର ଅଦ୍ଭୁତ ଦୃଶ୍ୟ ସହଜରେ ଉପଭୋଗ କରିପାରିବେ।"
+        ),
+        NewsArticle(
+            id = "news_22",
+            title = "Kuldiha Wildlife Sanctuary Eco-Trek & Tent Camp Booking Opens for Autumn Season",
+            odiaTitle = "କୁଳଡ଼ିହା ବନ୍ୟପ୍ରାଣୀ ଅଭୟାରଣ୍ୟରେ ଶରତକାଳୀନ ଇକୋ-କ୍ୟାମ୍ପ୍ ଓ ଟ୍ରେକିଂ ବୁକିଂ ଆରମ୍ଭ",
+            snippet = "Nature enthusiasts can now book guided forest walks through elephant corridors and Gohirabhola salt lick watchtowers.",
+            odiaSnippet = "ହାତୀ ପଲ ଏବଂ ମୟୂର ଦେଖିବା ପାଇଁ ଗୋହିରାଭୋଲା ଓ ଋଷିଆ ଡ୍ୟାମ୍ ନିକଟରେ ରାତ୍ରିଯାପନ କଟେଜ୍ ବୁକିଂ ଖୋଲିଛି।",
+            category = "Tourism Updates",
+            timeAgo = "2 hours ago",
+            source = "Odisha Forest Eco-Tourism Bureau",
+            content = "The Kuldiha Wildlife Division under Balasore Forest Range has opened online and counter reservations for its popular community-managed eco-cottages at Gohirabhola and Rissia Dam. Visitors accompanied by trained tribal guides can observe herds of wild Asian elephants, giant Malabar squirrels, and hornbills from fortified canopy machans. The department has introduced electric eco-safari gypsies to prevent vehicular noise pollution in sensitive wildlife corridors.",
+            odiaContent = "ବାଲେଶ୍ୱର ବନଖଣ୍ଡ ଅଧୀନରେ ଥିବା କୁଳଡ଼ିହା ବନ୍ୟପ୍ରାଣୀ ଅଭୟାରଣ୍ୟର ଗୋହିରାଭୋଲା ଓ ଋଷିଆ ଡ୍ୟାମ୍ ଇକୋ-କଟେଜ୍ ବୁକିଂ ଆରମ୍ଭ ହୋଇଛି। ପ୍ରକୃତିପ୍ରେମୀମାନେ ଜଙ୍ଗଲ ମଧ୍ୟରେ ଶାନ୍ତିପୂର୍ଣ୍ଣ ଭାବେ ହାତୀ ଓ ଜୀବଜନ୍ତୁଙ୍କ ସ୍ୱଭାବିକ ଚଳପ୍ରଚଳ ଦେଖିପାରିବେ।"
         )
     )
 

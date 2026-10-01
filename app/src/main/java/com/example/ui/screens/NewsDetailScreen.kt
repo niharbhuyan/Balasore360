@@ -748,7 +748,9 @@ private fun getNewsCategoryIcon(category: String): ImageVector {
         "sports" -> Icons.Default.SportsCricket
         "weather" -> Icons.Default.Cloud
         "local", "local news" -> Icons.Default.LocationCity
-        "politics" -> Icons.Default.AccountBalance
+        "politics", "local politics" -> Icons.Default.AccountBalance
+        "coastal alerts", "coastal" -> Icons.Default.Warning
+        "tourism updates", "tourism", "beach" -> Icons.Default.Public
         "events" -> Icons.Default.Public
         else -> Icons.AutoMirrored.Filled.Article
     }

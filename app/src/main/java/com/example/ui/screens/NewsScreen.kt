@@ -64,10 +64,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,18 +120,95 @@ fun NewsScreen(
     onSearchQueryChanged: (String) -> Unit = {},
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     onToggleNightMode: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isAutoUpdateEnabled: Boolean = true,
+    autoUpdateIntervalSeconds: Int = 45,
+    onToggleAutoUpdate: (Boolean) -> Unit = {},
+    onChangeAutoUpdateInterval: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val categories = listOf("All", "Local", "Coastal", "Spiritual", "Emergency", "Weather", "Culture", "Defense", "Sports", "Development", "Politics")
+    var autoUpdateSecondsLeft by remember { mutableStateOf(autoUpdateIntervalSeconds) }
+
+    // Auto-update countdown and automatic background refresh ticker
+    LaunchedEffect(isAutoUpdateEnabled, autoUpdateIntervalSeconds) {
+        autoUpdateSecondsLeft = autoUpdateIntervalSeconds
+        if (isAutoUpdateEnabled) {
+            while (true) {
+                delay(1000L)
+                if (autoUpdateSecondsLeft > 1) {
+                    autoUpdateSecondsLeft -= 1
+                } else {
+                    autoUpdateSecondsLeft = autoUpdateIntervalSeconds
+                    onRefresh()
+                }
+            }
+        }
+    }
+
+    val categories = listOf(
+        "All",
+        "Local Politics",
+        "Coastal Alerts",
+        "Tourism Updates",
+        "Local",
+        "Coastal",
+        "Spiritual",
+        "Emergency",
+        "Weather",
+        "Culture",
+        "Defense",
+        "Sports",
+        "Development"
+    )
 
     val matchesCategoryForArticle: (NewsArticle, String) -> Boolean = { article, cat ->
         when (cat) {
             "All" -> true
+            "Local Politics", "Politics" ->
+                article.category.equals("Local Politics", ignoreCase = true) ||
+                article.category.equals("Politics", ignoreCase = true) ||
+                article.category.contains("Civic", ignoreCase = true) ||
+                article.category.contains("Municipal", ignoreCase = true) ||
+                article.title.contains("politics", ignoreCase = true) ||
+                article.title.contains("parishad", ignoreCase = true) ||
+                article.title.contains("municipality", ignoreCase = true) ||
+                article.title.contains("ward", ignoreCase = true) ||
+                article.title.contains("councillor", ignoreCase = true) ||
+                article.title.contains("panchayat", ignoreCase = true) ||
+                article.title.contains("collector", ignoreCase = true) ||
+                article.title.contains("administration", ignoreCase = true) ||
+                article.content.contains("zilla parishad", ignoreCase = true) ||
+                article.content.contains("political", ignoreCase = true)
+            "Coastal Alerts" ->
+                article.category.equals("Coastal Alerts", ignoreCase = true) ||
+                article.title.contains("Storm Surge", ignoreCase = true) ||
+                article.title.contains("Tide Advisory", ignoreCase = true) ||
+                article.title.contains("Navigation Alert", ignoreCase = true) ||
+                article.title.contains("Coastal Alert", ignoreCase = true) ||
+                article.title.contains("Flood Monitoring", ignoreCase = true) ||
+                article.title.contains("Bay of Bengal Weather Alert", ignoreCase = true) ||
+                (article.category.equals("Coastal", ignoreCase = true) &&
+                        (article.title.contains("Alert", ignoreCase = true) || article.snippet.contains("Alert", ignoreCase = true) || article.content.contains("siren", ignoreCase = true)))
+            "Tourism Updates" ->
+                article.category.equals("Tourism Updates", ignoreCase = true) ||
+                article.category.equals("Tourism", ignoreCase = true) ||
+                article.title.contains("Tourism", ignoreCase = true) ||
+                article.title.contains("Eco-Promenade", ignoreCase = true) ||
+                article.title.contains("Eco-Trek", ignoreCase = true) ||
+                article.title.contains("Gazebos", ignoreCase = true) ||
+                article.title.contains("Vanishing Sea", ignoreCase = true) ||
+                article.title.contains("Mahotsav", ignoreCase = true) ||
+                article.title.contains("Tourists", ignoreCase = true) ||
+                article.title.contains("Eco-Tourism", ignoreCase = true) ||
+                article.title.contains("Wildlife Sanctuary", ignoreCase = true) ||
+                article.title.contains("Darshan Facilitated", ignoreCase = true) ||
+                article.content.contains("tourist", ignoreCase = true) ||
+                article.content.contains("visitors", ignoreCase = true)
             "Local" -> article.category.equals("Local", ignoreCase = true) ||
                        article.category.equals("Infrastructure", ignoreCase = true) ||
                        article.category.contains("Civic", ignoreCase = true)
             "Coastal" -> article.category.equals("Coastal", ignoreCase = true) ||
+                         article.category.equals("Coastal Alerts", ignoreCase = true) ||
                          article.category.contains("Marine", ignoreCase = true) ||
                          article.category.contains("Tide", ignoreCase = true) ||
                          article.title.contains("Chandipur", ignoreCase = true) ||
@@ -225,6 +304,156 @@ fun NewsScreen(
                         contentDescription = "Refresh",
                         tint = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+        }
+
+        // Live Auto-Update Engine Telemetry & Feeds Auto-Refresh Control Bar
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .testTag("news_auto_update_control_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isAutoUpdateEnabled) {
+                        if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF0C243B) else Color(0xFFEFF6FF)
+                    } else {
+                        if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF1E293B) else BentoSlate100
+                    }
+                ),
+                border = BorderStroke(
+                    1.dp,
+                    if (isAutoUpdateEnabled) OceanBlue.copy(alpha = 0.45f) else BentoSlate200
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isAutoUpdateEnabled) EmeraldGreen else BentoSlate400)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isAutoUpdateEnabled) {
+                                    if (language == AppLanguage.ODIA) "ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍: ସକ୍ରିୟ" else "LIVE AUTO-UPDATES: ACTIVE"
+                                } else {
+                                    if (language == AppLanguage.ODIA) "ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍: ସ୍ଥଗିତ" else "AUTO-UPDATES: PAUSED"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 0.8.sp,
+                                    color = if (isAutoUpdateEnabled) OceanBlue else BentoSlate600
+                                )
+                            )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଅଟୋ ସିଙ୍କ୍" else "Auto-Sync",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Switch(
+                                checked = isAutoUpdateEnabled,
+                                onCheckedChange = { onToggleAutoUpdate(it) },
+                                modifier = Modifier.testTag("news_auto_update_switch")
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (isAutoUpdateEnabled) {
+                                if (language == AppLanguage.ODIA) {
+                                    "ପରବର୍ତ୍ତୀ ସ୍ୱୟଂକ୍ରିୟ ଖବର ଅପଡେଟ୍ ~${autoUpdateSecondsLeft} ସେକେଣ୍ଡରେ • ସମସ୍ତ ଫିଡ୍ ଲାଇଭ୍"
+                                } else {
+                                    "Next feed auto-update in ~${autoUpdateSecondsLeft}s • Feeds synchronized live"
+                                }
+                            } else {
+                                if (language == AppLanguage.ODIA) {
+                                    "ସ୍ୱୟଂକ୍ରିୟ ଖବର ଅପଡେଟ୍ ସ୍ଥଗିତ • ହାତରେ ସିଙ୍କ୍ କରିବାକୁ ରିଫ୍ରେସ୍ ଦବାନ୍ତୁ"
+                                } else {
+                                    "Auto-update paused • Tap refresh for manual update"
+                                }
+                            },
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        IconButton(
+                            onClick = onRefresh,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(OceanBlue.copy(alpha = 0.12f))
+                                .testTag("news_quick_auto_sync_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Sync now",
+                                tint = OceanBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସମୟାନ୍ତର:" else "Interval:",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        val intervals = listOf(30 to "30s", 45 to "45s", 60 to "60s", 120 to "2m")
+                        intervals.forEach { (sec, label) ->
+                            val isSel = autoUpdateIntervalSeconds == sec
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSel) OceanBlue else (if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF1E293B) else Color.White),
+                                border = BorderStroke(1.dp, if (isSel) OceanBlue else BentoSlate200),
+                                modifier = Modifier
+                                    .clickable { onChangeAutoUpdateInterval(sec) }
+                                    .testTag("news_auto_interval_$label")
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
+                                        fontSize = 11.sp,
+                                        color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -583,6 +812,9 @@ fun NewsScreen(
                     val count = categoryCounts[cat] ?: 0
                     val emoji = when (cat) {
                         "All" -> "🌐"
+                        "Local Politics", "Politics" -> "🗳️"
+                        "Coastal Alerts" -> "⚠️"
+                        "Tourism Updates" -> "🏖️"
                         "Local" -> "📍"
                         "Coastal" -> "🌊"
                         "Spiritual" -> "🛕"
@@ -592,12 +824,14 @@ fun NewsScreen(
                         "Development" -> "🏗️"
                         "Culture" -> "🏛️"
                         "Defense" -> "🚀"
-                        "Politics" -> "🗳️"
                         else -> "📰"
                     }
                     val displayLabel = if (language == AppLanguage.ODIA) {
                         when (cat) {
                             "All" -> "ସମସ୍ତ"
+                            "Local Politics", "Politics" -> "ସ୍ଥାନୀୟ ରାଜନୀତି"
+                            "Coastal Alerts" -> "ଉପକୂଳ ସତର୍କତା"
+                            "Tourism Updates" -> "ପର୍ଯ୍ୟଟନ ଖବର"
                             "Local" -> "ସ୍ଥାନୀୟ"
                             "Coastal" -> "ଉପକୂଳ"
                             "Spiritual" -> "ଆଧ୍ୟାତ୍ମିକ"
@@ -607,7 +841,6 @@ fun NewsScreen(
                             "Development" -> "ବିକାଶ"
                             "Culture" -> "ସଂସ୍କୃତି"
                             "Defense" -> "ପ୍ରତିରକ୍ଷା"
-                            "Politics" -> "ରାଜନୀତି"
                             else -> cat
                         }
                     } else {

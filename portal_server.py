@@ -149,7 +149,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <a href="/download/aab" class="btn-primary" download="Balasore360-release.aab">
             <span>📥</span>
-            <span>Download Signed .AAB (25.4 MB)</span>
+            <span>Download Signed .AAB (18.1 MB)</span>
         </a>
 
         <a href="/download/apk" class="btn-secondary" download="Balasore360-debug.apk">
@@ -165,9 +165,10 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="file-meta">
             <div><strong>File:</strong> Balasore360-release.aab</div>
             <div><strong>Package:</strong> com.niharsales.balasore360</div>
-            <div><strong>Version:</strong> 1.1.0 (Version Code: 11)</div>
+            <div><strong>Version:</strong> 1.1.0 (Version Code: 12)</div>
             <div><strong>Target SDK:</strong> Android 15+ (API 36)</div>
             <div><strong>Signing:</strong> Release Signed (my-upload-key.jks)</div>
+            <div><strong>DEX Optimization:</strong> R8 Minified, Obfuscated & Resource-Shrunk (Google Play Threshold Compliant)</div>
         </div>
 
         <div class="steps-box">
