@@ -149,7 +149,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <a href="/download/aab" class="btn-primary" download="Balasore360-release.aab">
             <span>📥</span>
-            <span>Download Signed .AAB (23.8 MB)</span>
+            <span>Download Signed .AAB (25.4 MB)</span>
         </a>
 
         <a href="/download/apk" class="btn-secondary" download="Balasore360-debug.apk">
@@ -165,7 +165,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="file-meta">
             <div><strong>File:</strong> Balasore360-release.aab</div>
             <div><strong>Package:</strong> com.niharsales.balasore360</div>
-            <div><strong>Version:</strong> 1.0.9 (Version Code: 10)</div>
+            <div><strong>Version:</strong> 1.1.0 (Version Code: 11)</div>
             <div><strong>Target SDK:</strong> Android 15+ (API 36)</div>
             <div><strong>Signing:</strong> Release Signed (my-upload-key.jks)</div>
         </div>
@@ -197,20 +197,46 @@ class DownloadHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if url_path == "/download/aab" or url_path == "/Balasore360-release.aab":
-            filepath = os.path.join(DIRECTORY, "Balasore360-release.aab")
-            self.serve_file_attachment(filepath, "Balasore360-release.aab")
+            candidate_paths = [
+                os.path.join(DIRECTORY, "Balasore360-release.aab"),
+                "/Balasore360-release.aab",
+                os.path.join(DIRECTORY, "app/build/outputs/bundle/release/app-release.aab"),
+                "app/build/outputs/bundle/release/app-release.aab",
+                "/app/build/outputs/bundle/release/app-release.aab"
+            ]
+            for candidate in candidate_paths:
+                if os.path.exists(candidate):
+                    self.serve_file_attachment(candidate, "Balasore360-release.aab")
+                    return
+            self.send_error(404, "AAB not found")
             return
 
         if url_path == "/download/apk" or url_path == "/Balasore360-debug.apk":
-            filepath = os.path.join(DIRECTORY, "Balasore360-debug.apk")
-            if not os.path.exists(filepath):
-                filepath = "/app/applet/app/build/outputs/apk/debug/app-debug.apk"
-            self.serve_file_attachment(filepath, "Balasore360-debug.apk")
+            candidate_paths = [
+                os.path.join(DIRECTORY, "Balasore360-debug.apk"),
+                "/Balasore360-debug.apk",
+                os.path.join(DIRECTORY, "app/build/outputs/apk/debug/app-debug.apk"),
+                "/app/applet/app/build/outputs/apk/debug/app-debug.apk",
+                "app/build/outputs/apk/debug/app-debug.apk"
+            ]
+            for candidate in candidate_paths:
+                if os.path.exists(candidate):
+                    self.serve_file_attachment(candidate, "Balasore360-debug.apk")
+                    return
+            self.send_error(404, "APK not found")
             return
 
         if url_path == "/download/assets" or url_path == "/Balasore360_PlayStore_Assets.zip":
-            filepath = os.path.join(DIRECTORY, "Balasore360_PlayStore_Assets.zip")
-            self.serve_file_attachment(filepath, "Balasore360_PlayStore_Assets.zip")
+            candidate_paths = [
+                os.path.join(DIRECTORY, "Balasore360_PlayStore_Assets.zip"),
+                "/Balasore360_PlayStore_Assets.zip",
+                os.path.join(DIRECTORY, "public/assets/Balasore360_PlayStore_Assets.zip")
+            ]
+            for candidate in candidate_paths:
+                if os.path.exists(candidate):
+                    self.serve_file_attachment(candidate, "Balasore360_PlayStore_Assets.zip")
+                    return
+            self.send_error(404, "Assets not found")
             return
 
         # Default fallback: serve from directory
@@ -221,17 +247,37 @@ class DownloadHandler(http.server.SimpleHTTPRequestHandler):
         if url_path in ["/", "/index.html"]:
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            content = HTML_CONTENT.encode("utf-8")
+            self.send_header("Content-Length", str(len(content)))
             self.end_headers()
             return
-        if url_path in ["/download/aab", "/Balasore360-release.aab"]:
-            filepath = os.path.join(DIRECTORY, "Balasore360-release.aab")
-            if os.path.exists(filepath):
-                self.send_response(200)
-                self.send_header("Content-Type", "application/octet-stream")
-                self.send_header("Content-Disposition", 'attachment; filename="Balasore360-release.aab"')
-                self.send_header("Content-Length", str(os.path.getsize(filepath)))
-                self.end_headers()
-                return
+
+        file_map = {
+            "/download/aab": ("Balasore360-release.aab", [
+                os.path.join(DIRECTORY, "Balasore360-release.aab"),
+                "/Balasore360-release.aab",
+                "app/build/outputs/bundle/release/app-release.aab"
+            ]),
+            "/download/apk": ("Balasore360-debug.apk", [
+                os.path.join(DIRECTORY, "Balasore360-debug.apk"),
+                "/Balasore360-debug.apk",
+                "app/build/outputs/apk/debug/app-debug.apk"
+            ]),
+            "/download/assets": ("Balasore360_PlayStore_Assets.zip", [
+                os.path.join(DIRECTORY, "Balasore360_PlayStore_Assets.zip"),
+                "/Balasore360_PlayStore_Assets.zip"
+            ])
+        }
+        for endpoint, (filename, candidates) in file_map.items():
+            if url_path == endpoint or url_path == f"/{filename}":
+                for cand in candidates:
+                    if os.path.exists(cand):
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/octet-stream")
+                        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                        self.send_header("Content-Length", str(os.path.getsize(cand)))
+                        self.end_headers()
+                        return
         super().do_HEAD()
 
     def serve_file_attachment(self, filepath, filename):
