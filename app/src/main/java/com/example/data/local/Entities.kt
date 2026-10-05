@@ -214,3 +214,70 @@ data class ChandipurTideEntity(
     val lastFetchedTimestamp: Long = System.currentTimeMillis()
 )
 
+@Entity(
+    tableName = "odia_horoscopes",
+    indices = [
+        Index("signKey"),
+        Index("date")
+    ]
+)
+data class OdiaHoroscopeEntity(
+    @PrimaryKey
+    val signKey: String, // mesha, brusa, mithuna, karkata, singha, kanya, tula, bichha, dhanu, makara, kumbha, mina
+    val signNameEn: String,
+    val signNameOr: String,
+    val symbol: String,
+    val elementOr: String,
+    val rulingPlanetOr: String,
+    val predictionEn: String,
+    val predictionOr: String,
+    val careerFinanceOr: String,
+    val healthOr: String,
+    val familyOr: String,
+    val shubhaBela: String,
+    val rahuKala: String,
+    val amritaBela: String,
+    val luckyNumber: Int,
+    val luckyColor: String,
+    val luckyGemstone: String,
+    val worshipDeity: String,
+    val chantingMantra: String,
+    val date: String,
+    val lastUpdatedTimestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(
+    tableName = "odia_festivals",
+    indices = [
+        Index("category"),
+        Index("daysRemaining"),
+        Index("isStarred")
+    ]
+)
+data class OdiaFestivalEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val festivalId: String,
+    val titleEn: String,
+    val titleOr: String,
+    val monthPeriodEn: String,
+    val monthPeriodOr: String,
+    val odiaTithi: String,
+    val venueEn: String,
+    val venueOr: String,
+    val category: String,
+    val eventDate: String,
+    val daysRemaining: Int,
+    val significanceEn: String,
+    val significanceOr: String,
+    val ritualsEn: String,
+    val ritualsOr: String,
+    val specialTransitEn: String,
+    val specialTransitOr: String,
+    val prasadSpecialty: String,
+    val isStarred: Boolean = false,
+    val lastUpdatedTimestamp: Long = System.currentTimeMillis()
+)
+
+
+

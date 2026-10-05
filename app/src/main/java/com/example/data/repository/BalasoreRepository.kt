@@ -549,6 +549,30 @@ object BalasoreRepository {
             source = "Odisha Forest Eco-Tourism Bureau",
             content = "The Kuldiha Wildlife Division under Balasore Forest Range has opened online and counter reservations for its popular community-managed eco-cottages at Gohirabhola and Rissia Dam. Visitors accompanied by trained tribal guides can observe herds of wild Asian elephants, giant Malabar squirrels, and hornbills from fortified canopy machans. The department has introduced electric eco-safari gypsies to prevent vehicular noise pollution in sensitive wildlife corridors.",
             odiaContent = "ବାଲେଶ୍ୱର ବନଖଣ୍ଡ ଅଧୀନରେ ଥିବା କୁଳଡ଼ିହା ବନ୍ୟପ୍ରାଣୀ ଅଭୟାରଣ୍ୟର ଗୋହିରାଭୋଲା ଓ ଋଷିଆ ଡ୍ୟାମ୍ ଇକୋ-କଟେଜ୍ ବୁକିଂ ଆରମ୍ଭ ହୋଇଛି। ପ୍ରକୃତିପ୍ରେମୀମାନେ ଜଙ୍ଗଲ ମଧ୍ୟରେ ଶାନ୍ତିପୂର୍ଣ୍ଣ ଭାବେ ହାତୀ ଓ ଜୀବଜନ୍ତୁଙ୍କ ସ୍ୱଭାବିକ ଚଳପ୍ରଚଳ ଦେଖିପାରିବେ।"
+        ),
+        NewsArticle(
+            id = "news_23",
+            title = "Balasore Mandis Kick Off Rabi Paddy Procurement with Direct DBT Payouts to 45,000 Krushak Farmers",
+            odiaTitle = "ବାଲେଶ୍ୱର ଜିଲ୍ଲାରେ ଧାନ କ୍ରୟ ମଣ୍ଡି ଶୁଭାରମ୍ଭ; ୪୫,୦୦୦ କୃଷକଙ୍କ ବ୍ୟାଙ୍କ ଖାତାକୁ ସିଧାସଳଖ ଅର୍ଥ ପ୍ରେରଣ",
+            snippet = "PACS grain mandis across Remuna, Soro, and Jaleswar launch computerized biometric weighing and 48-hour MSP settlements.",
+            odiaSnippet = "ରେମୁଣା, ସୋର ଓ ଜଳେଶ୍ୱର ପ୍ୟାକ୍ସ ମଣ୍ଡିରେ ବାୟୋମେଟ୍ରିକ୍ ଓଜନ ସହ ସର୍ବନିମ୍ନ ସହାୟକ ମୂଲ୍ୟ ୪୮ ଘଣ୍ଟା ମଧ୍ୟରେ ପ୍ରଦାନ କରାଯାଉଛି।",
+            category = "Agriculture",
+            timeAgo = "1 hour ago",
+            source = "Krushak Samachar Balasore",
+            content = "The Balasore District Civil Supplies Corporation and Cooperative Societies (PACS) have initiated the Rabi paddy procurement drive across 148 automated grain mandis in the district. Over 45,000 registered farmers will receive the enhanced Minimum Support Price (MSP) of ₹2,183 per quintal directly into their Aadhaar-linked bank accounts within 48 hours of electronic weighing. Special moisture-testing analyzers and shaded waiting yards have been operationalized to protect harvests from unseasonal coastal drizzle.",
+            odiaContent = "ବାଲେଶ୍ୱର ଜିଲ୍ଲା ଯୋଗାଣ ବିଭାଗ ଓ ପ୍ରାଥମିକ କୃଷି ସମବାୟ ସମିତି (ପ୍ୟାକ୍ସ) ପକ୍ଷରୁ ୧୪୮ ଟି ମଣ୍ଡିରେ ରବି ଧାନ କିଣା କାର୍ଯ୍ୟ ଆରମ୍ଭ ହୋଇଛି। କୃଷକମାନେ ଧାନ ବିକ୍ରି କରିବାର ୪୮ ଘଣ୍ଟା ମଧ୍ୟରେ ସେମାନଙ୍କ ବ୍ୟାଙ୍କ ଖାତାରେ ଧାର୍ଯ୍ୟ ମୂଲ୍ୟ ପାଇପାରୁଛନ୍ତି। ମଣ୍ଡିରେ ଆର୍ଦ୍ରତା ମାପିବା ଯନ୍ତ୍ର ଓ ଛାତ ବ୍ୟବସ୍ଥା କରାଯାଇଛି।"
+        ),
+        NewsArticle(
+            id = "news_24",
+            title = "Remuna & Jaleswar Betel Vine (Pan Baraja) Cultivators Receive Organic Spice & Export Subsidies",
+            odiaTitle = "ରେମୁଣା ଓ ଜଳେଶ୍ୱର ପାନ ବରଜ ଚାଷୀଙ୍କୁ ରପ୍ତାନି ଓ ସାର ସବସିଡି ପ୍ରଦାନ",
+            snippet = "Horticulture department rolls out micro-drip irrigation aids and bamboo shade packages to support GI-tagged Baleswari betel leaf heritage.",
+            odiaSnippet = "ବାଲେଶ୍ୱରୀ ମିଠା ପାନ ଚାଷର ଉନ୍ନତି ପାଇଁ ଉଦ୍ୟାନ କୃଷି ବିଭାଗ ପକ୍ଷରୁ ବିନ୍ଦୁ ଜଳସେଚନ ଓ ସବସିଡି ଘୋଷଣା।",
+            category = "Agriculture",
+            timeAgo = "3 hours ago",
+            source = "Odisha Agro Vision",
+            content = "Traditional betel vine farmers cultivating renowned Baleswari sweet and spicy betel leaves in Remuna, Basta, and Jaleswar have been awarded financial subsidies under the State Horticulture Mission. The scheme provides 70% assistance for setting up storm-resilient bamboo barajas, drip-irrigation micro-sprinklers, and organic neem-cake soil conditioning. Over 1,200 farm households are expected to scale export-grade betel leaf consignments to national markets.",
+            odiaContent = "ବାଲେଶ୍ୱରର ପ୍ରସିଦ୍ଧ ପାନ ଚାଷର ସଂରକ୍ଷଣ ଓ ରପ୍ତାନି ବୃଦ୍ଧି ପାଇଁ ରାଜ୍ୟ ଉଦ୍ୟାନ କୃଷି ବିଭାଗ ପକ୍ଷରୁ ଚାଷୀମାନଙ୍କୁ ସହାୟତା ରାଶି ପ୍ରଦାନ କରାଯାଇଛି। ଝଡ଼ ସହନଶୀଳ ବାଉଁଶ ବରଜ ନିର୍ମାଣ ଓ ଜୈବିକ ଖତ ବ୍ୟବହାର ପାଇଁ ୭୦ ପ୍ରତିଶତ ଅନୁଦାନ ମିଳୁଛି।"
         )
     )
 

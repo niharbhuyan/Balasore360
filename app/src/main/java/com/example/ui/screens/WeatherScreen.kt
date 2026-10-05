@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Navigation
@@ -49,6 +50,7 @@ import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -82,6 +84,7 @@ import com.example.data.model.TidalClockData
 import com.example.data.model.WeatherInfo
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.components.BalasoreWeatherDashboardComponent
+import com.example.ui.components.TideAndWeatherAlertsCard
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -137,6 +140,497 @@ fun WeatherScreen(
                     onOpenTideSchedule = { onOpenFeatureSheet(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
                     onOpenMarineAdvisory = { onOpenFeatureSheet(UniqueFeatureSheetType.INCOIS_OCEAN_ADVISORY) }
                 )
+            }
+        }
+
+        // OpenWeatherMap Real-Time API Suite with 3-Day Forecast & Auto-Updates Launch Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.OPEN_WEATHER_MAP) }
+                    .testTag("open_weather_map_suite_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF0C4A6E)
+                ),
+                border = BorderStroke(1.5.dp, Color(0xFF38BDF8).copy(alpha = 0.6f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = OceanBlue,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Cloud,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଓପନ-ୱେଦର-ମ୍ୟାପ ଲାଇଭ ପାଣିପାଗ" else "OpenWeatherMap API Live Radar",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.White
+                                    )
+                                )
+                                Text(
+                                    text = "Humidity • Wind Speed • 3-Day Forecast",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF7DD3FC)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = EmeraldGreen.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, EmeraldGreen)
+                        ) {
+                            Text(
+                                text = "AUTO-SYNC",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = EmeraldGreen,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Access dedicated OpenWeatherMap telemetry for Balasore district with high-precision relative humidity, coastal wind speed meters, and automated 3-day forecast tracking.",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.85f),
+                        lineHeight = 16.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.OPEN_WEATHER_MAP) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.WbSunny,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଓପନ-ୱେଦର ସ୍କ୍ରିନ ଖୋଲନ୍ତୁ" else "Launch OpenWeatherMap Screen",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+
+        // Google Maps Live Coastal Precipitation Radar & Storm Tracking Suite (Doppler Overlay + Bay of Bengal Storm Tracker)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.COASTAL_WEATHER_RADAR_MAP) }
+                    .testTag("coastal_weather_radar_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF0F172A)
+                ),
+                border = BorderStroke(1.5.dp, Color(0xFF06B6D4).copy(alpha = 0.8f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF0891B2),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Explore,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ଲାଇଭ୍ ପାଣିପାଗ ରାଡ଼ାର" else "Google Maps Coastal Weather Radar",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.White
+                                    )
+                                )
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ଉପକୂଳ ବୃଷ୍ଟିପାତ ଓ ବାତ୍ୟା ଟ୍ରାକିଂ" else "Live Precipitation & Storm Tracking • Balasore Coast",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF67E8F9)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFF06B6D4).copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, Color(0xFF22D3EE))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(Color(0xFF22D3EE), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "30s AUTO-SYNC",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF22D3EE)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = if (language == AppLanguage.ODIA)
+                            "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ସହ ବାଲେଶ୍ୱର ଉପକୂଳ, ଚାନ୍ଦିପୁର, କାସାଫାଳ ଓ ବଙ୍ଗୋପସାଗର ବାତ୍ୟା ବାଷ୍ପୀୟ ରାଡ଼ାର ଓ ପ୍ରତି ୩୦ ସେକେଣ୍ଡରେ ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍ ଦେଖନ୍ତୁ।"
+                        else
+                            "Interactive Google Maps Doppler radar overlay displaying live precipitation bands, storm eye trajectory, gale wind radius, and real-time coastal telemetry across Chandipur, Kasafal & Bay of Bengal.",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.85f),
+                        lineHeight = 16.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Key telemetry quick chips
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF1E293B),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text(
+                                    text = "DOPPLER OVERLAY",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF94A3B8)
+                                )
+                                Text(
+                                    text = "TileProvider SDK",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF38BDF8)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF1E293B),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text(
+                                    text = "STORM TRACK",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF94A3B8)
+                                )
+                                Text(
+                                    text = "Eye + Landfall Cone",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFFF43F5E)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF1E293B),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text(
+                                    text = "COASTAL STATIONS",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF94A3B8)
+                                )
+                                Text(
+                                    text = "7 Live Stations",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF10B981)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.COASTAL_WEATHER_RADAR_MAP) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("launch_weather_radar_map_button"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0891B2)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଲାଇଭ୍ ରାଡ଼ାର ଓ ବାତ୍ୟା ମ୍ୟାପ୍ ଖୋଲନ୍ତୁ" else "Launch Live Precipitation & Storm Map",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+
+        // Odia Culture & Daily Horoscope Suite (Astrology API + 12 Rasis + Panjika)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.ODIA_CULTURE_SECTION) }
+                    .testTag("odia_culture_horoscope_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFFBEB)
+                ),
+                border = BorderStroke(1.5.dp, Color(0xFFF59E0B))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFB45309),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(text = "🪔", fontSize = 18.sp)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଓଡ଼ିଆ ସଂସ୍କୃତି ଓ ଦୈନିକ ରାଶିଫଳ" else "Odia Culture & Daily Horoscope",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color(0xFF78350F)
+                                    )
+                                )
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "୧୨ ରାଶି • ଶୁଭ ବେଳା • ରାହୁ କାଳ • ପାଞ୍ଜି" else "Astrology API • 12 Signs • Shubha Bela • Panjika",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF9A3412)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFB45309).copy(alpha = 0.15f),
+                            border = BorderStroke(1.dp, Color(0xFFB45309))
+                        ) {
+                            Text(
+                                text = "AUTO-SYNC",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFFB45309),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = if (language == AppLanguage.ODIA)
+                            "ଆଜିର ୧୨ଟି ରାଶିର ଦୈନିକ ଭାଗ୍ୟଫଳ, କର୍ମ ଓ ସ୍ୱାସ୍ଥ୍ୟ ଭବିଷ୍ୟବାଣୀ, ଅମୃତ ବେଳା, ରାହୁ କାଳ ଓ ଶୁଭ ମନ୍ତ୍ର ଜପ ଦେଖନ୍ତୁ।"
+                        else
+                            "Check today's detailed horoscope for all 12 Odia zodiac signs, planetary transits, auspicious Shubha Bela, Rahu Kala & sacred chanting mantras.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF451A03),
+                        lineHeight = 16.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.ODIA_CULTURE_SECTION) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("launch_culture_horoscope_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB45309)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(text = "🔮", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଦୈନିକ ରାଶିଫଳ ଓ ସଂସ୍କୃତି ଖୋଲନ୍ତୁ" else "Open Daily Horoscope & Culture",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+
+        // Odia Festivals & Important Cultural Dates Suite (Room Database Cached)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.ODIA_FESTIVALS) }
+                    .testTag("odia_festivals_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFF7ED)
+                ),
+                border = BorderStroke(1.5.dp, Color(0xFFF97316))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFEA580C),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(text = "🏮", fontSize = 18.sp)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପର୍ବପର୍ବାଣି ଓ ଉତ୍ସବ" else "Balasore Festivals & Melas",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color(0xFF7C2D12)
+                                    )
+                                )
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଚଡ଼କ • ବୋଇତ ବନ୍ଦାଣ • ମକର ମେଳା • Room DB" else "Chadak • Boita Bandana • Makara Mela • Room DB",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF9A3412)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFF10B981).copy(alpha = 0.15f),
+                            border = BorderStroke(1.dp, Color(0xFF10B981))
+                        ) {
+                            Text(
+                                text = "ROOM OFFLINE",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFF047857),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = if (language == AppLanguage.ODIA)
+                            "ଚନ୍ଦନେଶ୍ୱର ଚଡ଼କ, ବଳରାମଗଡ଼ି ବୋଇତ ବନ୍ଦାଣ, ରେମୁଣା ଚନ୍ଦନ ଯାତ୍ରା ଓ ନୀଳଗିରି ମକର ମେଳାର ଆଗାମୀ ତାରିଖ ଓ ଲାଇଭ୍ କାଉଣ୍ଟଡାଉନ୍।"
+                        else
+                            "Explore upcoming cultural dates, temple melas, maritime boat festivals, and local traditions with offline Room DB caching and live countdown timers.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF451A03),
+                        lineHeight = 16.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.ODIA_FESTIVALS) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("launch_festivals_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEA580C)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(text = "🚩", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ପର୍ବ କ୍ୟାଲେଣ୍ଡର ଖୋଲନ୍ତୁ" else "Open Festival Calendar",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+
+        // Local Notification System: Chandipur High Tide Warnings & Weather Updates (WorkManager)
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                TideAndWeatherAlertsCard(language = language)
             }
         }
 
@@ -514,6 +1008,31 @@ fun WeatherScreen(
                         Text("🦀", fontSize = 14.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Living Fossil Bio-Radar & Seabed Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    OutlinedButton(
+                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_chandipur_walk_timer_btn"),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotificationsActive,
+                            contentDescription = null,
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସମୁଦ୍ର ଚାଲିବା ନୋଟିଫିକେସନ୍ ଓ ଟାଇମର୍" else "Walk Window Push Alerts & Return Timer",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0284C7)
+                        )
                     }
                 }
             }

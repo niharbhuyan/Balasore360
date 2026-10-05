@@ -78,10 +78,17 @@ import com.example.data.model.LiteraryTrailPoint
 import com.example.data.model.TempleRitualInfo
 import com.example.data.model.WeatherInfo
 import com.example.data.remote.EmergencyAlertDto
+import com.example.data.remote.OpenWeatherCurrentResponse
+import com.example.data.remote.OpenWeatherThreeDayForecast
+import com.example.data.remote.OpenWeatherDailyForecast
 import com.example.ui.components.AdMobBannerCard
 import com.example.ui.components.BalasoreItineraryPlanner
+import com.example.ui.components.BalasoreExploreMapSection
+import com.example.ui.components.TourismHotspotsCarousel
 import com.example.ui.components.DashboardWeatherWidget
 import com.example.ui.components.WeatherSummaryCard
+import com.example.ui.components.OpenWeatherMapDashboardWidget
+import com.example.ui.components.OpenWeatherMapDashboardCardComponent
 import com.example.ui.components.HotspotWeatherBadge
 import com.example.ui.components.HotspotWeatherIcon
 import com.example.ui.components.LiveEmergencyAlertBanner
@@ -140,6 +147,11 @@ fun TourismScreen(
     dailyPulse: DailyBalasorePulse = DailyUpdateEngine.getDailyPulse(),
     onRefreshDailyPulse: () -> Unit = {},
     onRefreshWeather: () -> Unit = {},
+    openWeatherCurrent: OpenWeatherCurrentResponse? = null,
+    openWeatherThreeDayForecast: List<OpenWeatherThreeDayForecast> = emptyList(),
+    openWeatherSevenDayForecast: List<OpenWeatherDailyForecast> = emptyList(),
+    isOpenWeatherLoading: Boolean = false,
+    onRefreshOpenWeather: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -212,7 +224,7 @@ fun TourismScreen(
                                 .size(34.dp)
                                 .clip(CircleShape)
                                 .clickable {
-                                    onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER)
+                                    onOpenFeatureSheet(UniqueFeatureSheetType.TOURISM_HOTSPOTS)
                                 }
                                 .testTag("tourism_hero_map_button")
                         ) {
@@ -251,78 +263,27 @@ fun TourismScreen(
             }
         }
 
-        // Google Maps Interactive View Card (Real-Time Markers for Shelters & Tourist Hotspots)
+        // New 'Explore' Section using Google Maps API: Plots Hotspots, Temples & Landmarks with Clickable Markers & Transit Info
         item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER) }
-                    .testTag("open_balasore_google_map_card"),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, BentoSlate200),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = OceanBlue.copy(alpha = 0.12f),
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Map,
-                                    contentDescription = null,
-                                    tint = OceanBlue,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ଗୁଗଲ୍ ମ୍ୟାପ୍ସ ଏକ୍ସପ୍ଲୋରର୍" else "Balasore Google Map Explorer",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = BentoSlate900
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Real-time markers for cyclone shelters & tourist hotspots",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = BentoSlate600,
-                                    fontSize = 11.5.sp
-                                )
-                            )
-                        }
-                    }
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = OceanBlue,
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text(
-                            text = "View Map",
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                        )
-                    }
+            BalasoreExploreMapSection(
+                language = language,
+                onOpenFullScreenMap = { onOpenFeatureSheet(UniqueFeatureSheetType.TOURISM_HOTSPOTS) },
+                onAddToItinerary = { spot ->
+                    val matchingHotspot = hotspots.find { it.id == spot.id } ?: Hotspot(
+                        id = spot.id,
+                        name = spot.nameEn,
+                        odiaName = spot.nameOr,
+                        category = spot.categoryEn,
+                        description = spot.shortDescEn,
+                        location = spot.nearestTransitStop,
+                        rating = spot.rating,
+                        isFeatured = true,
+                        timing = spot.timings,
+                        distanceKm = spot.baseDistanceKm
+                    )
+                    onAddToItinerary(matchingHotspot, 1, spot.timings, "Transit: ${spot.transitRoutes.firstOrNull() ?: "Auto/Bus"}")
                 }
-            }
+            )
         }
 
         // Google Maps Pre-cached Offline Map Tiles & Outage Navigation
@@ -414,6 +375,21 @@ fun TourismScreen(
             }
         }
 
+        // Interactive Weather Widget: OpenWeatherMap API Real-Time Conditions, Humidity & 7-Day Forecast for Balasore
+        item {
+            OpenWeatherMapDashboardCardComponent(
+                currentWeather = openWeatherCurrent,
+                sevenDayForecast = openWeatherSevenDayForecast,
+                isLoading = isOpenWeatherLoading,
+                language = language,
+                isFahrenheit = isFahrenheit,
+                onToggleTempUnit = onToggleTempUnit,
+                onRefresh = onRefreshOpenWeather,
+                onOpenFullScreen = { onOpenFeatureSheet(UniqueFeatureSheetType.OPEN_WEATHER_MAP) },
+                onConfigureApiKey = { onOpenFeatureSheet(UniqueFeatureSheetType.OPEN_WEATHER_MAP) }
+            )
+        }
+
         // Dedicated 'Weather Summary' Card (Open-Meteo Public API • Current Temp, Humidity & 3-Day Forecast)
         item {
             WeatherSummaryCard(
@@ -468,6 +444,24 @@ fun TourismScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                 onOpenFullMap = { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER) }
             )
+        }
+
+        // Google Maps API: Nearby Balasore Tourism Hotspots Card-based Carousel with Distance Markers
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                TourismHotspotsCarousel(
+                    language = language,
+                    userLatitude = 21.4934,
+                    userLongitude = 86.9135,
+                    onOpenHotspotMap = { _ ->
+                        onOpenFeatureSheet(UniqueFeatureSheetType.TOURISM_HOTSPOTS)
+                    }
+                )
+            }
         }
 
         // Live Special Features Quick Hub (31 Live Hubs)

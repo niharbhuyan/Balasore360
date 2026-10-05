@@ -136,7 +136,7 @@ fun AutoUpdateCenterSheet(
                 nameEn = "Chandipur Vanishing Sea & 72h Recharts Tide Telemetry",
                 nameOd = "ଚାନ୍ଦିପୁର ୭୨-ଘଣ୍ଟା Recharts ଗ୍ରାଫ୍ ଓ ଭଟ୍ଟା ଆଲାର୍ମ",
                 iconEmoji = "🏖️",
-                statusText = "${dailyPulse.chandipurLowTideWindow} • 72h Recharts High/Low Cycle Telemetry Active • ${if (dailyPulse.isChandipurWalkSafeNow) "Safe Intertidal Walking 🟢" else "⚠️ Tide Returning (High Tide ${dailyPulse.chandipurNextHighTide})"}",
+                statusText = "${dailyPulse.chandipurLowTideWindow} • Proactive Push Alerts Active • ${if (dailyPulse.isChandipurWalkSafeNow) "Walk Window OPEN 🟢" else "⚠️ Walk Window CLOSING/CLOSED (High Tide ${dailyPulse.chandipurNextHighTide})"}",
                 updateInterval = "Automated Continuous Lunar Recharts Telemetry",
                 targetSheet = UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER
             ),

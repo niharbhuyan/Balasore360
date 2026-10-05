@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -17,8 +20,45 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val geminiKey = System.getenv("GEMINI_API_KEY") ?: "MY_GEMINI_API_KEY"
+        val envFile = rootProject.file(".env")
+        val envProperties = Properties()
+        if (envFile.exists()) {
+            FileInputStream(envFile).use { stream ->
+                envProperties.load(stream)
+            }
+        }
+
+        val rawGeminiKey = System.getenv("GEMINI_API_KEY")
+            ?: envProperties.getProperty("GEMINI_API_KEY")
+            ?: "MY_GEMINI_API_KEY"
+        val geminiKey = rawGeminiKey.trim()
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
+
+        val rawWeatherKey = System.getenv("OPENWEATHERMAP_API_KEY")
+            ?: envProperties.getProperty("OPENWEATHERMAP_API_KEY")
+            ?: ""
+        val openWeatherKey = rawWeatherKey.trim()
+        buildConfigField("String", "OPENWEATHERMAP_API_KEY", "\"$openWeatherKey\"")
+
+        val rawMapsKey = System.getenv("MAPS_API_KEY")
+            ?: System.getenv("GOOGLE_MAPS_KEY")
+            ?: System.getenv("GOOGLE_MAPS_API_KEY")
+            ?: envProperties.getProperty("MAPS_API_KEY")
+            ?: envProperties.getProperty("GOOGLE_MAPS_KEY")
+            ?: envProperties.getProperty("GOOGLE_MAPS_API_KEY")
+            ?: ""
+        val trimmedMapsKey = rawMapsKey.trim()
+        // Sanitize out placeholder or fake keys to prevent Google Maps authorization failure
+        val mapsApiKey = if (trimmedMapsKey.equals("AIzaSyBalasore360MapsKey", ignoreCase = true) ||
+            trimmedMapsKey.equals("AIzaSyBiQAArK-Hc0lYU35S41zBvPQnZT1S0d0k", ignoreCase = true) ||
+            trimmedMapsKey.contains("YOUR_KEY", ignoreCase = true) ||
+            trimmedMapsKey.contains("PLACEHOLDER", ignoreCase = true)) {
+            ""
+        } else {
+            trimmedMapsKey
+        }
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     signingConfigs {
@@ -95,6 +135,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

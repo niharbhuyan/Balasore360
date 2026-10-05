@@ -18,4 +18,12 @@
     <string name="lang_english">English</string>
     <string name="lang_odia">ଓଡ଼ିଆ</string>
     <string name="lang_hindi">हिन्दी</string>
+    <string name="settings_title">Settings &amp; Preferences</string>
+    <string name="settings_language_title">Language / ଭାଷା</string>
+    <string name="settings_language_desc">Switch application display language between English and Odia</string>
+    <string name="current_language_label">Current Language: English</string>
+    <string name="language_toggle_label">Switch to Odia (ଓଡ଼ିଆ)</string>
+    <string name="auto_update_heading">Automatic Live Updates</string>
+    <string name="auto_update_description">Keeps weather, bus routes, tidal charts, and news refreshed automatically in the background</string>
+    <string name="auto_update_status_active">Auto-Updates Active • Real-Time Sync</string>
 </resources>

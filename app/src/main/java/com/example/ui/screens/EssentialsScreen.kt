@@ -23,9 +23,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Emergency
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocalPolice
 import androidx.compose.material.icons.filled.PhonelinkRing
@@ -79,6 +81,8 @@ import com.example.ui.theme.BentoSlate900
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.OceanBlue
 import com.example.ui.theme.OceanBlueDark
+import com.example.ui.components.LanguageSwitcherBanner
+import com.example.ui.components.SettingsLanguageToggleCard
 
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.CheckCircle
@@ -129,6 +133,8 @@ fun EssentialsScreen(
     onCheckForUpdates: () -> Unit = {},
     onTriggerUpdate: () -> Unit = {},
     onCompleteUpdate: () -> Unit = {},
+    onLanguageChange: (AppLanguage) -> Unit = {},
+    onToggleLanguage: () -> Unit = {},
     onOpenFeatureSheet: (UniqueFeatureSheetType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -654,6 +660,170 @@ fun EssentialsScreen(
             }
         }
 
+        // Live Nearest Emergency Services Map Visualizer Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.NEAREST_EMERGENCY_SERVICES_MAP) }
+                    .testTag("card_nearest_emergency_services_map"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                border = BorderStroke(1.5.dp, Color(0xFFFCA5A5)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFEF4444),
+                            modifier = Modifier.size(46.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Emergency,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ନିକଟତମ ଜରୁରୀକାଳୀନ ମ୍ୟାପ୍" else "Nearest Emergency Services Map",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF991B1B)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFFDC2626)
+                                ) {
+                                    Text(
+                                        text = "LIVE",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଆପଣଙ୍କ ସ୍ଥିତି ଅନୁସାରେ ଥାନା, ହସ୍ପିଟାଲ ଓ ଆଶ୍ରୟସ୍ଥଳୀର ଦୂରତା ଓ ନେଭିଗେସନ୍" else "Hospitals, police & shelters relative to your coordinate with driving ETA",
+                                fontSize = 11.5.sp,
+                                color = Color(0xFF7F1D1D),
+                                lineHeight = 15.sp
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Open",
+                        tint = Color(0xFFDC2626),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // Offline Vector Tile Provider & Map Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_OFFLINE_MAP_TILES) }
+                    .testTag("card_offline_vector_tile_map"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                border = BorderStroke(1.5.dp, Color(0xFF86EFAC)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = EmeraldGreen,
+                            modifier = Modifier.size(46.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Layers,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଅଫଲାଇନ୍ ଭେକ୍ଟର ଟାଇଲ୍ ପ୍ରୋଭାଇଡର୍" else "Offline Vector Tile Provider",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF065F46)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = EmeraldGreen
+                                ) {
+                                    Text(
+                                        text = "OFFLINE",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଇଣ୍ଟରନେଟ୍ ବିନା NH-16, ସହର ରାସ୍ତା ଓ ଲ୍ୟାଣ୍ଡମାର୍କ ସମ୍ପୂର୍ଣ୍ଣ ଭେକ୍ଟର ମ୍ୟାପ୍" else "View essential Balasore landmarks, NH-16, SH-19 & roads 100% offline",
+                                fontSize = 11.5.sp,
+                                color = Color(0xFF047857),
+                                lineHeight = 15.sp
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Open",
+                        tint = EmeraldGreen,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
         // Emergency Contacts List
         items(emergencyContacts, key = { it.id }) { contact ->
             EmergencyContactCard(
@@ -815,13 +985,26 @@ fun EssentialsScreen(
                         )
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CYCLONE_RESILIENCE) },
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
-                        shape = RoundedCornerShape(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Open Offline Shelter Compass & Checklist", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.CYCLONE_RESILIENCE) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Shelter Compass", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Button(
+                            onClick = { onOpenFeatureSheet(UniqueFeatureSheetType.BALASORE_MAP_EXPLORER) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = OceanBlue),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Offline Shelters Map", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -853,6 +1036,76 @@ fun EssentialsScreen(
             }
         }
 
+        // FEATURE: Live Balasore City Bus & Public Transit API Suite
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.LOCAL_TRANSPORT) }
+                    .testTag("launch_local_transport_btn"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFBAE6FD)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = "🚌", fontSize = 22.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଲାଇଭ୍ ସିଟି ବସ୍ ଓ ରୁଟ୍ ସୂଚୀ" else "Live City Bus & Local Transport",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF0F172A)
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFDCFCE7),
+                                border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                            ) {
+                                Text(
+                                    text = "LIVE GPS",
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF15803D),
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସହଦେବଖୁଣ୍ଟା, ଚାନ୍ଦିପୁର, ରେମୁଣା, ଏଫ୍.ଏମ୍.ୟୁ. ଓ ନୀଳଗିରି ଲାଇଭ୍ ବସ୍ GPS ଟ୍ରାକିଂ" else "Real-time bus GPS, next stop ETA & CRUT Mo Bus route timetable",
+                            fontSize = 11.5.sp,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Open",
+                        tint = OceanBlue,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+
         // Transit List
         items(transitList, key = { it.id }) { item ->
             val isSubscribed = subscribedRouteIds.contains(item.id)
@@ -881,6 +1134,22 @@ fun EssentialsScreen(
             AdMobBannerCard(
                 modifier = Modifier.padding(top = 12.dp)
             )
+        }
+
+        // Language & Locale Settings Card (ViewModel & Local String Resources)
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            ) {
+                SettingsLanguageToggleCard(
+                    currentLanguage = language,
+                    onLanguageChange = onLanguageChange,
+                    onToggleLanguage = onToggleLanguage,
+                    isAutoUpdateActive = isHourlyAutoRefreshEnabled
+                )
+            }
         }
 
         // App Theme & Appearance Setting Card

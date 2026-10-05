@@ -2,7 +2,14 @@ package com.example.ui.components
 
 import android.os.Bundle
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +63,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -148,30 +160,41 @@ fun ChandipurTidalGoogleMapView(
     // Markers reference
     val markers = remember { mutableListOf<Marker>() }
 
-    // Initialize MapView
-    val mapView = remember {
-        MapView(context).apply {
-            onCreate(Bundle())
+    val isMapsKeyConfigured = remember {
+        com.example.BuildConfig.MAPS_API_KEY.isNotBlank()
+    }
+    var useVectorRadar by remember { mutableStateOf(true) }
+
+    // Lazy MapView instance: Only created if user explicitly selects Satellite mode AND key is configured
+    val mapView = remember(useVectorRadar) {
+        if (!useVectorRadar && isMapsKeyConfigured) {
+            MapView(context).apply {
+                onCreate(Bundle())
+            }
+        } else {
+            null
         }
     }
 
     // Bind Android Lifecycle
     DisposableEffect(lifecycleOwner, mapView) {
         val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> mapView.onStart()
-                Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                Lifecycle.Event.ON_STOP -> mapView.onStop()
-                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
-                else -> {}
+            mapView?.let { mv ->
+                when (event) {
+                    Lifecycle.Event.ON_START -> mv.onStart()
+                    Lifecycle.Event.ON_RESUME -> mv.onResume()
+                    Lifecycle.Event.ON_PAUSE -> mv.onPause()
+                    Lifecycle.Event.ON_STOP -> mv.onStop()
+                    Lifecycle.Event.ON_DESTROY -> mv.onDestroy()
+                    else -> {}
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
             try {
-                mapView.onDestroy()
+                mapView?.onDestroy()
             } catch (_: Exception) {}
         }
     }
@@ -312,12 +335,12 @@ fun ChandipurTidalGoogleMapView(
                             Spacer(modifier = Modifier.width(6.dp))
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFF0284C7).copy(alpha = 0.3f),
-                                border = BorderStroke(0.5.dp, Color(0xFF38BDF8))
+                                color = if (useVectorRadar) Color(0xFF0284C7).copy(alpha = 0.3f) else Color(0xFFD97706).copy(alpha = 0.3f),
+                                border = BorderStroke(0.5.dp, if (useVectorRadar) Color(0xFF38BDF8) else Color(0xFFF59E0B))
                             ) {
                                 Text(
-                                    text = "MAPS SDK",
-                                    color = Color(0xFF7DD3FC),
+                                    text = if (useVectorRadar) "RADAR CANVAS" else "MAPS SDK",
+                                    color = if (useVectorRadar) Color(0xFF7DD3FC) else Color(0xFFFDE68A),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -337,19 +360,22 @@ fun ChandipurTidalGoogleMapView(
                 // Map Layer Switcher Icon
                 IconButton(
                     onClick = {
-                        currentMapType = when (currentMapType) {
-                            GoogleMap.MAP_TYPE_NORMAL -> GoogleMap.MAP_TYPE_SATELLITE
-                            GoogleMap.MAP_TYPE_SATELLITE -> GoogleMap.MAP_TYPE_HYBRID
-                            else -> GoogleMap.MAP_TYPE_NORMAL
+                        if (isMapsKeyConfigured) {
+                            useVectorRadar = !useVectorRadar
+                        } else {
+                            android.widget.Toast.makeText(
+                                context,
+                                if (language == AppLanguage.ODIA) "ଅଫଲାଇନ୍ ଭେକ୍ଟର ରାଡାର୍ ସକ୍ରିୟ ଅଛି" else "Offline Vector Radar Active (No Maps Key required)",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        googleMapInstance?.mapType = currentMapType
                     },
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Layers,
                         contentDescription = "Switch Map Type",
-                        tint = Color(0xFF7DD3FC),
+                        tint = if (useVectorRadar) Color(0xFF7DD3FC) else Color(0xFFF59E0B),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -365,9 +391,10 @@ fun ChandipurTidalGoogleMapView(
                     .clip(RoundedCornerShape(16.dp))
                     .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(16.dp))
             ) {
-                AndroidView(
-                    factory = {
-                        mapView.apply {
+                if (!useVectorRadar && mapView != null) {
+                    AndroidView(
+                        factory = {
+                            mapView.apply {
                             getMapAsync { map ->
                                 googleMapInstance = map
                                 map.mapType = currentMapType
@@ -463,6 +490,13 @@ fun ChandipurTidalGoogleMapView(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+            } else {
+                ChandipurTidalRadarCanvas(
+                    recessionKm = recessionKm,
+                    language = language,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
 
                 // Overlaid Top Bar Inside Map: Quick Zoom / Center Buttons
                 Row(
@@ -718,5 +752,165 @@ fun ChandipurTidalGoogleMapView(
                 }
             }
         }
+    }
+}
+
+/**
+ * 100% Offline Canvas Tidal Radar for Chandipur Vanishing Sea.
+ * Renders the shoreline (0km), intertidal seabed ripples, dynamic receding seawater with animated
+ * wave crests, safe turnaround zone (2.5km), maximum vanishing margin (5.0km), and DRDO sector boundary.
+ * Completely immune to Google Maps SDK authorization errors.
+ */
+@Composable
+fun ChandipurTidalRadarCanvas(
+    recessionKm: Float,
+    language: AppLanguage,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "wave_pulse")
+    val waveAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2800, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave_phase"
+    )
+
+    Canvas(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("chandipur_tidal_radar_canvas")
+    ) {
+        val w = size.width
+        val h = size.height
+
+        // 1. Base Coastline Land & Promenade (Left 18% width)
+        val coastWidth = w * 0.18f
+        drawRect(
+            color = Color(0xFFD4A373),
+            topLeft = Offset(0f, 0f),
+            size = Size(coastWidth, h)
+        )
+
+        // 2. Intertidal Seabed Zone (from coastWidth to vanishing margin at 85% width)
+        val maxVanishingWidth = w * 0.85f
+        val intertidalSpan = maxVanishingWidth - coastWidth
+        val currentWaterEdgeX = coastWidth + (intertidalSpan * (recessionKm / 5.0f).coerceIn(0.04f, 1.0f))
+
+        // Draw exposed intertidal wet seabed with subtle coastal gradient
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFFE9D5A1),
+                    Color(0xFFD3B683),
+                    Color(0xFF94D2BD)
+                ),
+                startX = coastWidth,
+                endX = currentWaterEdgeX
+            ),
+            topLeft = Offset(coastWidth, 0f),
+            size = Size(currentWaterEdgeX - coastWidth, h)
+        )
+
+        // 3. Vanishing Sea Water (from currentWaterEdgeX to right edge)
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF0077B6),
+                    Color(0xFF023E8A),
+                    Color(0xFF03045E)
+                ),
+                startX = currentWaterEdgeX,
+                endX = w
+            ),
+            topLeft = Offset(currentWaterEdgeX, 0f),
+            size = Size(w - currentWaterEdgeX, h)
+        )
+
+        // 4. Animated Tide Wave Crest Lines at currentWaterEdgeX
+        val waveOffset = (waveAnim * 14f)
+        for (i in 0..4) {
+            val waveY = (h * i / 4f) + (waveOffset * 3f) % (h / 4f)
+            drawLine(
+                color = Color.White.copy(alpha = 0.7f),
+                start = Offset(currentWaterEdgeX, waveY),
+                end = Offset(currentWaterEdgeX + 22f, waveY + 14f),
+                strokeWidth = 3f,
+                cap = StrokeCap.Round
+            )
+        }
+
+        // 5. Shoreline boundary line (0 km)
+        drawLine(
+            color = Color(0xFF1E3A8A),
+            start = Offset(coastWidth, 0f),
+            end = Offset(coastWidth, h),
+            strokeWidth = 4f
+        )
+
+        // 6. Turnaround 2.5 km Sandbar marker line (Dashed Yellow)
+        val turnAroundX = coastWidth + (intertidalSpan * 0.5f)
+        drawLine(
+            color = Color(0xFFF59E0B),
+            start = Offset(turnAroundX, 0f),
+            end = Offset(turnAroundX, h),
+            strokeWidth = 2.5f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
+        )
+
+        // 7. Maximum 5.0 km Vanishing Sea Edge line (Dashed Red)
+        drawLine(
+            color = Color(0xFFEF4444),
+            start = Offset(maxVanishingWidth, 0f),
+            end = Offset(maxVanishingWidth, h),
+            strokeWidth = 3f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 15f), 0f)
+        )
+
+        // 8. Visual Pins on the Radar Canvas
+        // Pin 1: Main Promenade (0 km)
+        drawCircle(
+            color = Color(0xFF10B981),
+            radius = 7.dp.toPx(),
+            center = Offset(coastWidth, h * 0.45f)
+        )
+        drawCircle(
+            color = Color.White,
+            radius = 3.dp.toPx(),
+            center = Offset(coastWidth, h * 0.45f)
+        )
+
+        // Pin 2: Walk Turnaround Point (2.5 km)
+        drawCircle(
+            color = Color(0xFFF59E0B),
+            radius = 6.dp.toPx(),
+            center = Offset(turnAroundX, h * 0.45f)
+        )
+        drawCircle(
+            color = Color.White,
+            radius = 2.5.dp.toPx(),
+            center = Offset(turnAroundX, h * 0.45f)
+        )
+
+        // Pin 3: Current Receded Water Line
+        drawCircle(
+            color = Color(0xFF38BDF8),
+            radius = 8.dp.toPx(),
+            center = Offset(currentWaterEdgeX, h * 0.45f)
+        )
+        drawCircle(
+            color = Color.White,
+            radius = 4.dp.toPx(),
+            center = Offset(currentWaterEdgeX, h * 0.45f)
+        )
+
+        // DRDO Restricted Safety Sector Overlay (Top Area)
+        drawRect(
+            color = Color(0x33DC2626),
+            topLeft = Offset(coastWidth, 0f),
+            size = Size(w - coastWidth, h * 0.22f)
+        )
     }
 }

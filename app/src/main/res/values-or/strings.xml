@@ -17,4 +17,12 @@
     <string name="lang_english">English</string>
     <string name="lang_odia">ଓଡ଼ିଆ</string>
     <string name="lang_hindi">हिन्दी</string>
+    <string name="settings_title">ସେଟିଙ୍ଗ୍ସ ଓ ପସନ୍ଦ</string>
+    <string name="settings_language_title">ଭାଷା / Language</string>
+    <string name="settings_language_desc">ଇଂରାଜୀ ଓ ଓଡ଼ିଆ ମଧ୍ୟରେ ଆପ୍ ପ୍ରଦର୍ଶନ ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ</string>
+    <string name="current_language_label">ବର୍ତ୍ତମାନର ଭାଷା: ଓଡ଼ିଆ</string>
+    <string name="language_toggle_label">ଇଂରାଜୀ କୁ ବଦଳାନ୍ତୁ (Switch to English)</string>
+    <string name="auto_update_heading">ସ୍ୱୟଂକ୍ରିୟ ଲାଇଭ୍ ଅପଡେଟ୍</string>
+    <string name="auto_update_description">ପାଣିପାଗ, ବସ୍ ସମୟ, ଜୁଆର-ଭଟ୍ଟା ଏବଂ ଖବର ସ୍ୱୟଂକ୍ରିୟ ଭାବେ ଅପଡେଟ୍ ରହେ</string>
+    <string name="auto_update_status_active">ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍ ସକ୍ରିୟ • ରିଅଲ-ଟାଇମ୍ ସିଙ୍କ୍</string>
 </resources>

@@ -18,13 +18,25 @@ import androidx.room.TypeConverters
         ItineraryItemEntity::class,
         TravelJournalEntity::class,
         ChandipurTideEntity::class,
-        CivicReportEntity::class
+        CivicReportEntity::class,
+        OdiaHoroscopeEntity::class,
+        OdiaFestivalEntity::class
     ],
-    version = 9,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
+
+    /**
+     * Abstract getter method for Odia Festivals & Cultural Dates DAO.
+     */
+    abstract fun odiaFestivalDao(): OdiaFestivalDao
+
+    /**
+     * Abstract getter method for Odia Daily Horoscope DAO.
+     */
+    abstract fun odiaHoroscopeDao(): OdiaHoroscopeDao
 
     /**
      * Abstract getter method for Citizen Civic Reports DAO (offline issue tracking & progression).

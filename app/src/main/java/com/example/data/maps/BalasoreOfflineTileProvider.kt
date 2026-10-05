@@ -61,14 +61,30 @@ class BalasoreOfflineTileProvider(
 
     private fun findCachedTileFile(x: Int, y: Int, zoom: Int): File? {
         val fileName = "${zoom}_${x}_${y}.png"
-        // Search in root tilesDir or subdirectories (by areaId)
+        // 1. Direct root search
         val directFile = File(tilesDir, fileName)
-        if (directFile.exists()) return directFile
+        if (directFile.exists() && directFile.length() > 0) return directFile
 
+        // 2. Query MapCacheManager
+        try {
+            val cacheManagerTile = MapCacheManager.getInstance(context).getCachedTile(x, y, zoom)
+            if (cacheManagerTile != null && cacheManagerTile.exists() && cacheManagerTile.length() > 0) {
+                return cacheManagerTile
+            }
+        } catch (_: Exception) {}
+
+        // 3. Search in all subdirectories (including landmarks and area packs)
         val subdirs = tilesDir.listFiles { file -> file.isDirectory } ?: return null
         for (dir in subdirs) {
             val fileInSub = File(dir, fileName)
-            if (fileInSub.exists()) return fileInSub
+            if (fileInSub.exists() && fileInSub.length() > 0) return fileInSub
+
+            // Sub-subdirectories (e.g. landmarks/cs_1)
+            val nestedDirs = dir.listFiles { file -> file.isDirectory } ?: continue
+            for (nested in nestedDirs) {
+                val nestedFile = File(nested, fileName)
+                if (nestedFile.exists() && nestedFile.length() > 0) return nestedFile
+            }
         }
         return null
     }
@@ -188,7 +204,54 @@ class BalasoreOfflineTileProvider(
             canvas.drawLine(10f, 135f, 245f, 125f, shPaint)
         }
 
-        // 7. Tile Metadata Badge in corner (Watermark & Offline indicator)
+        // 7. Essential Balasore Landmarks Vector Layer
+        val essentialLandmarks = listOf(
+            Triple(21.4934, 86.9135, "Balasore Rly Stn"),
+            Triple(21.4880, 86.9320, "Bus Terminal"),
+            Triple(21.5120, 86.8870, "FM MCH Hospital"),
+            Triple(21.4910, 86.9280, "DHH Hospital"),
+            Triple(21.4930, 86.9240, "Town Police"),
+            Triple(21.4674, 87.0177, "Chandipur Beach"),
+            Triple(21.5283, 86.8725, "Remuna Temple"),
+            Triple(21.4795, 87.0392, "Balaramgadi Port"),
+            Triple(21.4286, 86.7119, "Panchalingeswar"),
+            Triple(21.4019, 86.6347, "Kuldiha Forest")
+        )
+
+        val pinPaint = Paint().apply {
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        val pinTextPaint = Paint().apply {
+            color = if (isEmergencyHighContrast) Color.WHITE else Color.rgb(30, 41, 59)
+            textSize = 9f
+            isAntiAlias = true
+            isFakeBoldText = true
+        }
+
+        for (lm in essentialLandmarks) {
+            val lat = lm.first
+            val lng = lm.second
+            val label = lm.third
+            if (lat in southLat..northLat && lng in westLng..eastLng) {
+                val px = ((lng - westLng) / (eastLng - westLng) * 256.0).toFloat()
+                val py = ((northLat - lat) / (northLat - southLat) * 256.0).toFloat()
+
+                // Pin circle
+                pinPaint.color = if (label.contains("Hospital")) Color.rgb(16, 185, 129)
+                                 else if (label.contains("Police")) Color.rgb(56, 189, 248)
+                                 else if (label.contains("Beach") || label.contains("Port")) Color.rgb(14, 165, 233)
+                                 else Color.rgb(245, 158, 11)
+                canvas.drawCircle(px, py, 4.5f, pinPaint)
+                pinPaint.color = Color.WHITE
+                canvas.drawCircle(px, py, 2f, pinPaint)
+
+                // Landmark label with shadow
+                canvas.drawText(label, px + 6f, py + 3f, pinTextPaint)
+            }
+        }
+
+        // 8. Tile Metadata Badge in corner (Watermark & Offline indicator)
         val badgeBgPaint = Paint().apply {
             color = if (isEmergencyHighContrast) Color.argb(190, 30, 41, 59) else Color.argb(160, 241, 245, 249)
             style = Paint.Style.FILL

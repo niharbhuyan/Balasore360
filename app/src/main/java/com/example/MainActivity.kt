@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import com.example.ui.features.emergency.NearestEmergencyServicesMapSheet
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.DarkMode
@@ -75,6 +76,12 @@ import com.example.ui.screens.NewsScreen
 import com.example.ui.screens.SpecialFeaturesScreen
 import com.example.ui.screens.TourismScreen
 import com.example.ui.screens.WeatherScreen
+import com.example.ui.screens.OpenWeatherMapScreen
+import com.example.ui.screens.CoastalWeatherRadarMapView
+import com.example.ui.screens.OdiaCultureScreen
+import com.example.ui.screens.OdiaFestivalsScreen
+import com.example.ui.screens.TourismHotspotsSheet
+import com.example.ui.screens.LocalTransportScreen
 import com.example.ui.theme.Balasore360Theme
 import com.example.ui.theme.BentoSlate100
 import com.example.ui.theme.BentoSlate200
@@ -173,6 +180,8 @@ import com.example.ui.features.heritage.FakirMohanBhashaLiteratureSheet
 import com.example.ui.features.heritage.BaleswariCuisineSweetHeritageSheet
 import com.example.ui.features.civic.TpnodlWatcoUtilityHotlineSheet
 import com.example.ui.components.LanguageToggleSwitch
+import com.example.ui.components.LanguageSwitcher
+import com.example.ui.components.ProvideAppLanguage
 import com.example.ui.features.agro.DhanMandiMspProcurementSheet
 import com.example.ui.features.artisans.NilagiriGraniteStonewareGuildSheet
 import com.example.ui.features.emergency.BahanagaNhaiRapidTraumaNetworkSheet
@@ -282,6 +291,14 @@ class MainActivity : ComponentActivity() {
             Log.w("MainActivity", "SyncManager schedulePeriodicSync fallback: ${t.message}")
         }
 
+        // Initialize Chandipur High Tide & Weather Local Notification WorkManager
+        try {
+            com.example.data.notification.TideAndWeatherNotificationManager.createNotificationChannels(applicationContext)
+            com.example.data.notification.TideAndWeatherNotificationManager.schedulePeriodicTideAndWeatherChecks(applicationContext, intervalMinutes = 15)
+        } catch (t: Throwable) {
+            Log.w("MainActivity", "TideAndWeatherNotificationManager init notice: ${t.message}")
+        }
+
         // Initialize Firebase Cloud Messaging & Local Notification Channels
         try {
             FcmManager.initialize(applicationContext)
@@ -302,10 +319,15 @@ class MainActivity : ComponentActivity() {
             }
             val isHighContrast = uiState.themeMode == ThemeMode.HIGH_CONTRAST_DARK
             Balasore360Theme(darkTheme = isDarkTheme, isHighContrast = isHighContrast) {
-                BalasoreApp(
-                    viewModel = viewModel,
-                    updateManager = updateManager
-                )
+                ProvideAppLanguage(
+                    currentLanguage = uiState.language,
+                    onLanguageChange = { viewModel.setLanguage(it) }
+                ) {
+                    BalasoreApp(
+                        viewModel = viewModel,
+                        updateManager = updateManager
+                    )
+                }
             }
         }
     }
@@ -324,14 +346,24 @@ class MainActivity : ComponentActivity() {
         if (intent == null) return
         val targetTab = intent.getStringExtra(BalasoreNotificationHelper.EXTRA_TARGET_TAB)
             ?: intent.getStringExtra("target_tab")
+        val featureSheet = intent.getStringExtra("open_feature_sheet")
+
+        if (featureSheet == "CHANDIPUR_TIDE" || intent.hasExtra("walk_window_alert") || intent.hasExtra("tide_alert")) {
+            viewModel.selectTab(3)
+            viewModel.openFeatureSheet(UniqueFeatureSheetType.CHANDIPUR_TIDE_TIMER)
+            return
+        }
 
         when (targetTab) {
             "WEATHER" -> {
-                viewModel.selectTab(2)
+                viewModel.selectTab(3)
                 viewModel.openFeatureSheet(UniqueFeatureSheetType.FCM_SEVERE_WEATHER_ALERT)
             }
             "NEWS" -> {
-                viewModel.selectTab(1)
+                viewModel.selectTab(2)
+            }
+            "ESSENTIALS" -> {
+                viewModel.selectTab(4)
             }
         }
     }
@@ -460,16 +492,41 @@ fun BalasoreApp(
                                 }
                             }
 
+                            // Odia Culture & Daily Horoscope (ଦୈନିକ ରାଶିଫଳ) Action Pill
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color(0xFFFEF3C7),
+                                border = BorderStroke(1.dp, Color(0xFFF59E0B)),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .clickable { viewModel.openFeatureSheet(UniqueFeatureSheetType.ODIA_CULTURE_SECTION) }
+                                    .testTag("top_bar_culture_btn")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = "🪔", fontSize = 11.sp)
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = if (uiState.language == AppLanguage.ODIA) "ସଂସ୍କୃତି" else "Culture",
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF92400E)
+                                    )
+                                }
+                            }
+
                             // Theme Mode Toggle Button
                             ThemeTogglePill(
                                 currentMode = uiState.themeMode,
                                 onCycleTheme = { viewModel.cycleThemeMode() }
                             )
 
-                            // Dynamic Language Toggle Switch (English ⇄ Odia)
-                            LanguageToggleSwitch(
+                            // Dynamic Language Switcher (English ⇄ Odia)
+                            LanguageSwitcher(
                                 currentLanguage = uiState.language,
-                                onLanguageSelected = { viewModel.setLanguage(it) },
+                                onLanguageChanged = { viewModel.setLanguage(it) },
                                 compact = true
                             )
                         }
@@ -736,7 +793,12 @@ fun BalasoreApp(
                             onClearItinerary = { viewModel.clearItinerary() },
                             dailyPulse = uiState.dailyPulse,
                             onRefreshDailyPulse = { viewModel.refreshDailyPulse() },
-                            onRefreshWeather = { viewModel.fetchRealTimeWeather() }
+                            onRefreshWeather = { viewModel.fetchRealTimeWeather() },
+                            openWeatherCurrent = uiState.openWeatherCurrent,
+                            openWeatherThreeDayForecast = uiState.openWeatherThreeDayForecast,
+                            openWeatherSevenDayForecast = uiState.openWeatherSevenDayForecast,
+                            isOpenWeatherLoading = uiState.isOpenWeatherLoading,
+                            onRefreshOpenWeather = { viewModel.fetchOpenWeatherData(true) }
                         )
                         1 -> SpecialFeaturesScreen(
                             dailyPulse = uiState.dailyPulse,
@@ -748,6 +810,9 @@ fun BalasoreApp(
                         )
                         2 -> NewsScreen(
                             articles = uiState.newsArticles,
+                            filteredArticles = uiState.filteredNewsArticles,
+                            selectedTab = uiState.selectedNewsTab,
+                            onTabSelected = { viewModel.selectNewsTab(it) },
                             riverGauges = uiState.riverGauges,
                             cycloneShelters = uiState.cycloneShelters,
                             selectedCategory = uiState.selectedNewsCategory,
@@ -808,6 +873,8 @@ fun BalasoreApp(
                             onCheckForUpdates = { updateManager?.checkForUpdates(updateLauncher, autoStartFlexible = false) },
                             onTriggerUpdate = { updateManager?.startUpdate(updateLauncher) },
                             onCompleteUpdate = { updateManager?.completeUpdate() },
+                            onLanguageChange = { viewModel.setLanguage(it) },
+                            onToggleLanguage = { viewModel.toggleLanguage() },
                             onOpenFeatureSheet = { viewModel.openFeatureSheet(it) }
                         )
                     }
@@ -1372,6 +1439,77 @@ fun BalasoreApp(
                             onDeleteReport = { id -> viewModel.deleteCivicReport(id) },
                             onAutoProgress = { viewModel.autoProgressCivicReports() },
                             autoUpdateMinutes = uiState.autoUpdateFrequencyMinutes,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.OPEN_WEATHER_MAP -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        OpenWeatherMapScreen(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.COASTAL_WEATHER_RADAR_MAP -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        CoastalWeatherRadarMapView(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ODIA_CULTURE_SECTION -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        OdiaCultureScreen(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.ODIA_FESTIVALS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        OdiaFestivalsScreen(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.TOURISM_HOTSPOTS -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        TourismHotspotsSheet(
+                            language = uiState.language,
+                            onClose = { viewModel.closeFeatureSheet() }
+                        )
+                    }
+                }
+                UniqueFeatureSheetType.LOCAL_TRANSPORT -> {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.closeFeatureSheet() },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LocalTransportScreen(
+                            language = uiState.language,
                             onClose = { viewModel.closeFeatureSheet() }
                         )
                     }
@@ -2072,6 +2210,12 @@ fun BalasoreApp(
                             onClose = { viewModel.closeFeatureSheet() }
                         )
                     }
+                }
+                UniqueFeatureSheetType.NEAREST_EMERGENCY_SERVICES_MAP -> {
+                    NearestEmergencyServicesMapSheet(
+                        onDismiss = { viewModel.closeFeatureSheet() },
+                        language = uiState.language
+                    )
                 }
                 null -> {}
                 else -> {}

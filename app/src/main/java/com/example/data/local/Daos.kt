@@ -351,3 +351,65 @@ interface ChandipurTideDao {
     suspend fun clearTides(): Int
 }
 
+@Dao
+interface OdiaHoroscopeDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHoroscopes(horoscopes: List<OdiaHoroscopeEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHoroscope(horoscope: OdiaHoroscopeEntity)
+
+    @Query("SELECT * FROM odia_horoscopes ORDER BY signKey ASC")
+    fun getAllHoroscopesFlow(): Flow<List<OdiaHoroscopeEntity>>
+
+    @Query("SELECT * FROM odia_horoscopes ORDER BY signKey ASC")
+    suspend fun getAllHoroscopesSync(): List<OdiaHoroscopeEntity>
+
+    @Query("SELECT * FROM odia_horoscopes WHERE signKey = :signKey LIMIT 1")
+    fun getHoroscopeBySign(signKey: String): Flow<OdiaHoroscopeEntity?>
+
+    @Query("SELECT * FROM odia_horoscopes WHERE signKey = :signKey LIMIT 1")
+    suspend fun getHoroscopeBySignSync(signKey: String): OdiaHoroscopeEntity?
+
+    @Query("DELETE FROM odia_horoscopes")
+    suspend fun clearAll()
+}
+
+@Dao
+interface OdiaFestivalDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFestivals(festivals: List<OdiaFestivalEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFestival(festival: OdiaFestivalEntity): Long
+
+    @Query("SELECT * FROM odia_festivals ORDER BY daysRemaining ASC, id ASC")
+    fun getAllFestivalsFlow(): Flow<List<OdiaFestivalEntity>>
+
+    @Query("SELECT * FROM odia_festivals WHERE category = :category ORDER BY daysRemaining ASC")
+    fun getFestivalsByCategoryFlow(category: String): Flow<List<OdiaFestivalEntity>>
+
+    @Query("SELECT * FROM odia_festivals WHERE isStarred = 1 ORDER BY daysRemaining ASC")
+    fun getStarredFestivalsFlow(): Flow<List<OdiaFestivalEntity>>
+
+    @Query("SELECT * FROM odia_festivals WHERE titleEn LIKE '%' || :query || '%' OR titleOr LIKE '%' || :query || '%' OR venueEn LIKE '%' || :query || '%' OR venueOr LIKE '%' || :query || '%' ORDER BY daysRemaining ASC")
+    fun searchFestivalsFlow(query: String): Flow<List<OdiaFestivalEntity>>
+
+    @Query("SELECT * FROM odia_festivals ORDER BY daysRemaining ASC")
+    suspend fun getAllFestivalsSync(): List<OdiaFestivalEntity>
+
+    @Query("UPDATE odia_festivals SET isStarred = :isStarred WHERE id = :id")
+    suspend fun toggleStar(id: Long, isStarred: Boolean): Int
+
+    @Query("UPDATE odia_festivals SET daysRemaining = :days, lastUpdatedTimestamp = :timestamp WHERE festivalId = :festivalId")
+    suspend fun updateDaysRemaining(festivalId: String, days: Int, timestamp: Long): Int
+
+    @Update
+    suspend fun updateFestival(festival: OdiaFestivalEntity): Int
+
+    @Query("DELETE FROM odia_festivals")
+    suspend fun clearAll(): Int
+}
+
+
+

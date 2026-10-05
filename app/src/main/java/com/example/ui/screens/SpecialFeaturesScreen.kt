@@ -126,6 +126,71 @@ fun SpecialFeaturesScreen(
         listOf(
             // Auto-Updated Innovations
             SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.LOCAL_TRANSPORT,
+                titleEn = "Local Transport & Live City Bus Radar",
+                titleOd = "ସ୍ଥାନୀୟ ପରିବହନ ଓ ସିଟି ବସ୍ ଲାଇଭ୍ ଟ୍ରାକର୍",
+                category = "Coastal & Estuary",
+                iconEmoji = "🚌",
+                descriptionEn = "Live Balasore city bus locations, CRUT Mo Bus route schedules, next stop ETAs & public transit API telemetry in scrollable list view.",
+                descriptionOd = "ପବ୍ଲିକ୍ ଟ୍ରାନ୍ସିଟ୍ API ଦ୍ୱାରା ବାଲେଶ୍ୱର ସିଟି ବସ୍ ଲାଇଭ୍ GPS, ରୁଟ୍ ସୂଚୀ, ନେକ୍ସଟ୍ ଷ୍ଟପ୍ ETA ଓ ସ୍କ୍ରୋଲେବଲ୍ ତାଲିକା।",
+                tagText = "TRANSIT API LIVE",
+                primaryColor = Color(0xFFF0FDF4),
+                borderColor = Color(0xFFBBF7D0),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.TOURISM_HOTSPOTS,
+                titleEn = "Tourism Hotspots & Maps Distance Markers",
+                titleOd = "ପର୍ଯ୍ୟଟନ ସ୍ଥଳୀ ଓ ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ଦୂରତା ମାର୍କର୍",
+                category = "Coastal & Estuary",
+                iconEmoji = "🗺️",
+                descriptionEn = "Nearby Balasore tourist locations fetched with Google Maps API, card-based carousel with distance markers & turn-by-turn navigation.",
+                descriptionOd = "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ API ଦ୍ୱାରା ବାଲେଶ୍ୱରର ସମସ୍ତ ପର୍ଯ୍ୟଟନ କେନ୍ଦ୍ର, କାର୍ଡ କ୍ୟାରୋସେଲ୍, ଲାଇଭ୍ ଦୂରତା ମାର୍କର୍ ଓ ନାଭିଗେସନ୍।",
+                tagText = "GOOGLE MAPS CAROUSEL",
+                primaryColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFFBAE6FD),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ODIA_FESTIVALS,
+                titleEn = "Odia Festivals & Cultural Dates (ପର୍ବପର୍ବାଣି)",
+                titleOd = "ଓଡ଼ିଆ ପର୍ବପର୍ବାଣି ଓ ଉତ୍ସବ କ୍ୟାଲେଣ୍ଡର",
+                category = "Artisans & Heritage",
+                iconEmoji = "🏮",
+                descriptionEn = "Upcoming local festivals, Chadak Mela, Boita Bandana, Remuna Chandan Yatra, offline Room DB cached with live countdowns.",
+                descriptionOd = "ଚନ୍ଦନେଶ୍ୱର ଚଡ଼କ, ବଳରାମଗଡ଼ି ବୋଇତ ବନ୍ଦାଣ, ନୀଳଗିରି ମକର ମେଳାର ଲାଇଭ୍ କାଉଣ୍ଟଡାଉନ୍ ଓ ଅଫଲାଇନ୍ Room ଡାଟାବେସ୍।",
+                tagText = "ROOM OFFLINE CACHED",
+                primaryColor = Color(0xFFFFF7ED),
+                borderColor = Color(0xFFFED7AA),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.ODIA_CULTURE_SECTION,
+                titleEn = "Odia Culture & Daily Horoscope (ଦୈନିକ ରାଶିଫଳ)",
+                titleOd = "ଓଡ଼ିଆ ସଂସ୍କୃତି ଓ ଦୈନିକ ରାଶିଫଳ (ଜ୍ୟୋତିଷ)",
+                category = "Artisans & Heritage",
+                iconEmoji = "🪔",
+                descriptionEn = "Live Daily Horoscope from Astrology API, 12 Rasis, Auspicious Shubha Bela, Rahu Kala, Panjika & Balasore Temples.",
+                descriptionOd = "ଜ୍ୟୋତିଷ API ରୁ ୧୨ଟି ରାଶିର ଦୈନିକ ରାଶିଫଳ, ଶୁଭ ବେଳା, ରାହୁ କାଳ, ମନ୍ତ୍ର, ପାଞ୍ଜି ଓ ବାଲେଶ୍ୱର ମନ୍ଦିର ଦର୍ଶନ।",
+                tagText = "ASTROLOGY API & PANJIKA",
+                primaryColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
+                sheetType = UniqueFeatureSheetType.COASTAL_WEATHER_RADAR_MAP,
+                titleEn = "Google Maps Coastal Weather Radar & Storm Tracker",
+                titleOd = "ଗୁଗୁଲ୍ ମ୍ୟାପ୍ସ ଉପକୂଳ ବୃଷ୍ଟିପାତ ଓ ବାତ୍ୟା ରାଡ଼ାର",
+                category = "Coastal & Estuary",
+                iconEmoji = "🛰️",
+                descriptionEn = "Live Google Maps Doppler precipitation overlay, Bay of Bengal cyclone storm tracking, 7 coastal observatories & 30s auto-updates.",
+                descriptionOd = "ଚାନ୍ଦିପୁର, କାସାଫାଳ ଓ ବଙ୍ଗୋପସାଗର ବାତ୍ୟା କେନ୍ଦ୍ର, ବର୍ଷା ବାଷ୍ପୀୟ ରାଡ଼ାର ଓ ୩୦ ସେକେଣ୍ଡ ସ୍ୱୟଂକ୍ରିୟ ଅପଡେଟ୍।",
+                tagText = "GOOGLE MAPS LIVE OVERLAY",
+                primaryColor = Color(0xFFECFEFF),
+                borderColor = Color(0xFFA5F3FC),
+                isAutoUpdated = true
+            ),
+            SpecialFeatureItem(
                 sheetType = UniqueFeatureSheetType.OLIVE_RIDLEY_MARINE_WILDLIFE,
                 titleEn = "Olive Ridley & Marine Life Sighting Tracker",
                 titleOd = "ଅଲିଭ୍ ରିଡଲେ ଓ ସାମୁଦ୍ରିକ ଜୀବ ସଂରକ୍ଷଣ",

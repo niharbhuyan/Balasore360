@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -46,7 +48,18 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.NightlightRound
+import androidx.compose.material.icons.filled.ViewAgenda
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Switch
 import com.example.util.ShareHelper
 import androidx.compose.material3.Surface
@@ -124,7 +137,10 @@ fun NewsScreen(
     isAutoUpdateEnabled: Boolean = true,
     autoUpdateIntervalSeconds: Int = 45,
     onToggleAutoUpdate: (Boolean) -> Unit = {},
-    onChangeAutoUpdateInterval: (Int) -> Unit = {}
+    onChangeAutoUpdateInterval: (Int) -> Unit = {},
+    selectedTab: Int = 0,
+    onTabSelected: (Int) -> Unit = {},
+    filteredArticles: List<NewsArticle>? = null
 ) {
     val context = LocalContext.current
     var autoUpdateSecondsLeft by remember { mutableStateOf(autoUpdateIntervalSeconds) }
@@ -147,9 +163,12 @@ fun NewsScreen(
 
     val categories = listOf(
         "All",
+        "Local News",
+        "Defense Alerts",
+        "Tourism Updates",
+        "Saved Bookmarks",
         "Local Politics",
         "Coastal Alerts",
-        "Tourism Updates",
         "Local",
         "Coastal",
         "Spiritual",
@@ -164,6 +183,39 @@ fun NewsScreen(
     val matchesCategoryForArticle: (NewsArticle, String) -> Boolean = { article, cat ->
         when (cat) {
             "All" -> true
+            "Saved Bookmarks", "Bookmarks", "Saved" ->
+                article.isBookmarked || bookmarkedIds.contains(article.id)
+            "Local News" ->
+                article.category.equals("Local News", ignoreCase = true) ||
+                article.category.equals("Local", ignoreCase = true) ||
+                article.category.equals("Infrastructure", ignoreCase = true) ||
+                article.category.equals("Politics", ignoreCase = true) ||
+                article.category.equals("Local Politics", ignoreCase = true) ||
+                article.category.equals("Development", ignoreCase = true) ||
+                article.category.equals("Sports", ignoreCase = true) ||
+                article.category.contains("Civic", ignoreCase = true) ||
+                article.category.contains("Municipal", ignoreCase = true) ||
+                article.title.contains("municipality", ignoreCase = true) ||
+                article.title.contains("station", ignoreCase = true) ||
+                article.title.contains("parishad", ignoreCase = true) ||
+                article.title.contains("drainage", ignoreCase = true) ||
+                article.title.contains("smart city", ignoreCase = true)
+            "Defense Alerts" ->
+                article.category.equals("Defense Alerts", ignoreCase = true) ||
+                article.category.equals("Defense", ignoreCase = true) ||
+                article.category.equals("Coastal Alerts", ignoreCase = true) ||
+                article.category.equals("Emergency", ignoreCase = true) ||
+                article.title.contains("DRDO", ignoreCase = true) ||
+                article.title.contains("Missile", ignoreCase = true) ||
+                article.title.contains("ITR", ignoreCase = true) ||
+                article.title.contains("Defense", ignoreCase = true) ||
+                article.title.contains("Alert", ignoreCase = true) ||
+                article.title.contains("Storm", ignoreCase = true) ||
+                article.title.contains("Flood", ignoreCase = true) ||
+                article.title.contains("Siren", ignoreCase = true) ||
+                article.title.contains("Warning", ignoreCase = true) ||
+                article.content.contains("DRDO", ignoreCase = true) ||
+                article.content.contains("missile", ignoreCase = true)
             "Local Politics", "Politics" ->
                 article.category.equals("Local Politics", ignoreCase = true) ||
                 article.category.equals("Politics", ignoreCase = true) ||
@@ -192,6 +244,8 @@ fun NewsScreen(
             "Tourism Updates" ->
                 article.category.equals("Tourism Updates", ignoreCase = true) ||
                 article.category.equals("Tourism", ignoreCase = true) ||
+                article.category.equals("Culture", ignoreCase = true) ||
+                article.category.equals("Spiritual", ignoreCase = true) ||
                 article.title.contains("Tourism", ignoreCase = true) ||
                 article.title.contains("Eco-Promenade", ignoreCase = true) ||
                 article.title.contains("Eco-Trek", ignoreCase = true) ||
@@ -246,20 +300,38 @@ fun NewsScreen(
         }
     }
 
+    val currentNewsTab = when {
+        selectedCategory.equals("Defense Alerts", ignoreCase = true) || selectedCategory.equals("Defense", ignoreCase = true) || selectedCategory.equals("Coastal Alerts", ignoreCase = true) || selectedCategory.equals("Emergency", ignoreCase = true) -> 1
+        selectedCategory.equals("Tourism Updates", ignoreCase = true) || selectedCategory.equals("Tourism", ignoreCase = true) || selectedCategory.equals("Culture", ignoreCase = true) || selectedCategory.equals("Spiritual", ignoreCase = true) -> 2
+        selectedCategory.equals("Local News", ignoreCase = true) || selectedCategory.equals("Local", ignoreCase = true) || selectedCategory.equals("Infrastructure", ignoreCase = true) || selectedCategory.equals("Politics", ignoreCase = true) || selectedCategory.equals("Local Politics", ignoreCase = true) -> 0
+        else -> selectedTab.coerceIn(0, 2)
+    }
+
     // Filter articles by category and local search keywords across titles, body snippets, and full narrative content
-    val filteredArticles = articles.filter { article ->
-        val matchesCategory = matchesCategoryForArticle(article, selectedCategory)
-        val query = searchQuery.trim()
-        val matchesSearch = query.isEmpty() ||
-            article.title.contains(query, ignoreCase = true) ||
-            article.odiaTitle.contains(query, ignoreCase = true) ||
-            article.snippet.contains(query, ignoreCase = true) ||
-            article.odiaSnippet.contains(query, ignoreCase = true) ||
-            article.content.contains(query, ignoreCase = true) ||
-            article.odiaContent.contains(query, ignoreCase = true) ||
-            article.category.contains(query, ignoreCase = true) ||
-            article.source.contains(query, ignoreCase = true)
-        matchesCategory && matchesSearch
+    val filteredArticles = remember(articles, filteredArticles, selectedCategory, currentNewsTab, searchQuery) {
+        if (filteredArticles != null && searchQuery.isEmpty()) {
+            filteredArticles
+        } else {
+            articles.filter { article ->
+                val matchesCategory = when (currentNewsTab) {
+                    0 -> matchesCategoryForArticle(article, "Local News")
+                    1 -> matchesCategoryForArticle(article, "Defense Alerts")
+                    2 -> matchesCategoryForArticle(article, "Tourism Updates")
+                    else -> matchesCategoryForArticle(article, selectedCategory)
+                }
+                val query = searchQuery.trim()
+                val matchesSearch = query.isEmpty() ||
+                    article.title.contains(query, ignoreCase = true) ||
+                    article.odiaTitle.contains(query, ignoreCase = true) ||
+                    article.snippet.contains(query, ignoreCase = true) ||
+                    article.odiaSnippet.contains(query, ignoreCase = true) ||
+                    article.content.contains(query, ignoreCase = true) ||
+                    article.odiaContent.contains(query, ignoreCase = true) ||
+                    article.category.contains(query, ignoreCase = true) ||
+                    article.source.contains(query, ignoreCase = true)
+                matchesCategory && matchesSearch
+            }
+        }
     }
 
     LazyColumn(
@@ -304,6 +376,138 @@ fun NewsScreen(
                         contentDescription = "Refresh",
                         tint = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+        }
+
+        // Material-3 TabRow Component: 'Local News', 'Defense Alerts', and 'Tourism Updates'
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .testTag("news_top_level_tabs_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF0F172A) else Color.White
+                ),
+                border = BorderStroke(1.dp, if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF334155) else BentoSlate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ସମ୍ବାଦ ବର୍ଗ (CATEGORY)" else "NEWS CATEGORIES",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 0.8.sp,
+                                fontSize = 10.sp,
+                                color = OceanBlue
+                            )
+                        )
+                        Text(
+                            text = when (currentNewsTab) {
+                                0 -> if (language == AppLanguage.ODIA) "ସ୍ଥାନୀୟ ପ୍ରଗତି ଓ ଶାସନ" else "Civic & Development"
+                                1 -> if (language == AppLanguage.ODIA) "DRDO ଓ ଉପକୂଳ ସତର୍କତା" else "Defense & Alerts"
+                                2 -> if (language == AppLanguage.ODIA) "ସଂସ୍କୃତି ଓ ପର୍ଯ୍ୟଟନ" else "Tourism & Heritage"
+                                else -> if (language == AppLanguage.ODIA) "ସମସ୍ତ ଖବର" else "All Stories"
+                            },
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 10.5.sp,
+                                color = BentoSlate500
+                            )
+                        )
+                    }
+
+                    TabRow(
+                        selectedTabIndex = currentNewsTab,
+                        containerColor = Color.Transparent,
+                        contentColor = OceanBlue,
+                        indicator = { tabPositions ->
+                            if (currentNewsTab in tabPositions.indices) {
+                                TabRowDefaults.SecondaryIndicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[currentNewsTab]),
+                                    color = OceanBlue,
+                                    height = 3.dp
+                                )
+                            }
+                        },
+                        divider = {
+                            HorizontalDivider(
+                                color = if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF334155) else BentoSlate200,
+                                thickness = 1.dp
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("news_material3_tab_row")
+                    ) {
+                        val m3Tabs = listOf(
+                            Triple("Local News", if (language == AppLanguage.ODIA) "ସ୍ଥାନୀୟ ଖବର" else "Local News", Icons.Default.LocationCity),
+                            Triple("Defense Alerts", if (language == AppLanguage.ODIA) "ପ୍ରତିରକ୍ଷା ସତର୍କତା" else "Defense Alerts", Icons.Default.Shield),
+                            Triple("Tourism Updates", if (language == AppLanguage.ODIA) "ପର୍ଯ୍ୟଟନ ଖବର" else "Tourism Updates", Icons.Default.Explore)
+                        )
+
+                        m3Tabs.forEachIndexed { index, (catId, label, icon) ->
+                            val isSelected = currentNewsTab == index
+                            val count = articles.count { matchesCategoryForArticle(it, catId) }
+                            val testTagKey = when (index) {
+                                0 -> "news_tab_local"
+                                1 -> "news_tab_defense"
+                                else -> "news_tab_tourism"
+                            }
+
+                            Tab(
+                                selected = isSelected,
+                                onClick = {
+                                    onTabSelected(index)
+                                    onCategorySelected(catId)
+                                },
+                                text = {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            fontSize = 11.5.sp,
+                                            color = if (isSelected) OceanBlue else (if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF94A3B8) else BentoSlate600)
+                                        ),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                icon = {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge(
+                                                containerColor = if (isSelected) OceanBlue else (if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF334155) else BentoSlate200),
+                                                contentColor = if (isSelected) Color.White else BentoSlate700
+                                            ) {
+                                                Text(
+                                                    text = "$count",
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = label,
+                                            tint = if (isSelected) OceanBlue else (if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF94A3B8) else BentoSlate600),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.testTag(testTagKey)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -812,6 +1016,7 @@ fun NewsScreen(
                     val count = categoryCounts[cat] ?: 0
                     val emoji = when (cat) {
                         "All" -> "🌐"
+                        "Saved Bookmarks", "Bookmarks" -> "🔖"
                         "Local Politics", "Politics" -> "🗳️"
                         "Coastal Alerts" -> "⚠️"
                         "Tourism Updates" -> "🏖️"
@@ -829,6 +1034,7 @@ fun NewsScreen(
                     val displayLabel = if (language == AppLanguage.ODIA) {
                         when (cat) {
                             "All" -> "ସମସ୍ତ"
+                            "Saved Bookmarks", "Bookmarks" -> "ସାଇତା ଖବର"
                             "Local Politics", "Politics" -> "ସ୍ଥାନୀୟ ରାଜନୀତି"
                             "Coastal Alerts" -> "ଉପକୂଳ ସତର୍କତା"
                             "Tourism Updates" -> "ପର୍ଯ୍ୟଟନ ଖବର"
@@ -956,58 +1162,202 @@ fun NewsScreen(
             item {
                 NewsListSkeleton(count = 4, showBreakingBanner = true)
             }
-        } else if (filteredArticles.isEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .testTag("news_empty_search_card"),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                ) {
-                    Column(
+        } else {
+            // Dedicated Offline Reading Mode Banner when viewing Saved Bookmarks
+            if (selectedCategory == "Saved Bookmarks" || selectedCategory == "Bookmarks") {
+                item {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(28.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .testTag("news_offline_bookmarks_banner"),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF0C243B) else Color(0xFFEFF6FF)
+                        ),
+                        border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.4f))
                     ) {
-                        Text("📰", fontSize = 36.sp)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = if (language == AppLanguage.ODIA) "କୌଣସି ଖବର ମିଳିଲା ନାହିଁ" else "No News Articles Found",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = if (language == AppLanguage.ODIA)
-                                "'$searchQuery' ପାଇଁ କୌଣସି ଆର୍ଟିକିଲ୍ ମିଳିଲା ନାହିଁ।"
-                            else
-                                "No articles match the keyword '$searchQuery' in category '$selectedCategory'.",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = BentoSlate600,
-                                fontSize = 12.sp
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Button(
-                            onClick = {
-                                onSearchQueryChanged("")
-                                onCategorySelected("All")
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = OceanBlue),
-                            shape = RoundedCornerShape(10.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Reset Search Filters", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(OceanBlue),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bookmark,
+                                    contentDescription = "Saved Bookmarks",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (language == AppLanguage.ODIA) "ଅଫଲାଇନ୍ ପଠନ ପାଇଁ ସାଇତା ଖବର" else "Saved Stories for Offline Reading",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color.White else BentoSlate900
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = EmeraldGreen.copy(alpha = 0.15f),
+                                        border = BorderStroke(1.dp, EmeraldGreen.copy(alpha = 0.4f))
+                                    ) {
+                                        Text(
+                                            text = "Room DB",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = EmeraldGreen,
+                                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA)
+                                        "ଏହି ସମସ୍ତ ${filteredArticles.size} ଟି ଖବର ସ୍ଥାନୀୟ Room ଡାଟାବେସରେ ସାଇତା ଅଛି ଏବଂ ଇଣ୍ଟରନେଟ୍ ବିନା ମଧ୍ୟ ସମ୍ପୂର୍ଣ୍ଣ ପଢ଼ାଯାଇପାରିବ।"
+                                    else
+                                        "${filteredArticles.size} stories stored locally in Room database. Fully accessible without active internet connection.",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = if (themeMode == ThemeMode.HIGH_CONTRAST_DARK) Color(0xFF94A3B8) else BentoSlate600,
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                            }
                         }
                     }
                 }
             }
-        } else {
+
+            if (filteredArticles.isEmpty()) {
+                item {
+                    if (selectedCategory == "Saved Bookmarks" || selectedCategory == "Bookmarks") {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .testTag("news_empty_bookmarks_card"),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(28.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .background(OceanBlue.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.BookmarkBorder,
+                                        contentDescription = null,
+                                        tint = OceanBlue,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "କୌଣସି ଖବର ସାଇତା ହୋଇନାହିଁ" else "No Saved Stories Yet",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA)
+                                        "ଅଫଲାଇନ୍ରେ ପଢ଼ିବା ପାଇଁ ଯେକୌଣସି ଖବରର ବୁକ୍‌ମାର୍କ ଆଇକନ୍ (🔖) ଉପରେ କ୍ଲିକ୍ କରି Room ଡାଟାବେସରେ ସାଇତି ରଖନ୍ତୁ।"
+                                    else
+                                        "Tap the bookmark icon (🔖) on any news story to save it to your local Room database for offline reading even without internet.",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = BentoSlate500,
+                                        fontSize = 12.5.sp,
+                                        lineHeight = 18.sp
+                                    ),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(18.dp))
+                                Button(
+                                    onClick = { onCategorySelected("All") },
+                                    colors = ButtonDefaults.buttonColors(containerColor = OceanBlue),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Text(
+                                        text = if (language == AppLanguage.ODIA) "ସମସ୍ତ ଖବର ଦେଖନ୍ତୁ" else "Browse All News Stories",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .testTag("news_empty_search_card"),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(28.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("📰", fontSize = 36.sp)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "କୌଣସି ଖବର ମିଳିଲା ନାହିଁ" else "No News Articles Found",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA)
+                                        "'$searchQuery' ପାଇଁ କୌଣସି ଆର୍ଟିକିଲ୍ ମିଳିଲା ନାହିଁ।"
+                                    else
+                                        "No articles match the keyword '$searchQuery' in category '$selectedCategory'.",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = BentoSlate600,
+                                        fontSize = 12.sp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Button(
+                                    onClick = {
+                                        onSearchQueryChanged("")
+                                        onCategorySelected("All")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = OceanBlue),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Text("Reset Search Filters", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
             // Articles List
             items(filteredArticles, key = { it.id }) { article ->
                 NewsCard(
@@ -1026,14 +1376,15 @@ fun NewsScreen(
                 )
             }
         }
-
-        // AdMob Banner Placement in News feed
-        item {
-            AdMobBannerCard(
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
     }
+
+    // AdMob Banner Placement in News feed
+    item {
+        AdMobBannerCard(
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+}
 }
 
 @Composable
@@ -1119,20 +1470,50 @@ fun NewsCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Category badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(OceanBlue.copy(alpha = 0.12f))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = article.category,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = OceanBlueDark
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Category badge
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(OceanBlue.copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = article.category,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OceanBlueDark
+                            )
                         )
-                    )
+                    }
+
+                    if (isBookmarked) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFDCFCE7),
+                            border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bookmark,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(10.dp),
+                                    tint = Color(0xFF166534)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଅଫଲାଇନ୍ ସାଇତା" else "Offline Ready (Room)",
+                                    fontSize = 9.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Text(
@@ -1367,18 +1748,40 @@ fun NewsCard(
                         }
                     }
 
-                    IconButton(
+                    // Dedicated Bookmark Button with Room database persistence
+                    Surface(
                         onClick = onToggleBookmark,
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isBookmarked) OceanBlue.copy(alpha = 0.14f) else BentoSlate100,
+                        border = BorderStroke(1.dp, if (isBookmarked) OceanBlue.copy(alpha = 0.4f) else BentoSlate200),
                         modifier = Modifier
-                            .size(36.dp)
+                            .defaultMinSize(minWidth = 48.dp, minHeight = 44.dp)
                             .testTag("bookmark_news_button_${article.id}")
                     ) {
-                        Icon(
-                            imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                            contentDescription = "Bookmark",
-                            tint = if (isBookmarked) OceanBlue else BentoSlate400,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                contentDescription = if (isBookmarked) "Remove from offline bookmarks" else "Save to offline bookmarks",
+                                tint = if (isBookmarked) OceanBlue else BentoSlate600,
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (isBookmarked) {
+                                    if (language == AppLanguage.ODIA) "ସାଇତା" else "Saved"
+                                } else {
+                                    if (language == AppLanguage.ODIA) "ବୁକ୍‌ମାର୍କ" else "Save"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isBookmarked) OceanBlue else BentoSlate600,
+                                    fontSize = 11.5.sp
+                                )
+                            )
+                        }
                     }
                 }
             }

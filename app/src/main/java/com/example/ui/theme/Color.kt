@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 val OceanBlue = Color(0xFF0284C7)
 val OceanBlueDark = Color(0xFF0369A1)
+val CoastalSkyBlue = Color(0xFF0EA5E9)
 val CoralOrange = Color(0xFFF97316)
 val AmberGold = Color(0xFFF59E0B)
 val EmeraldGreen = Color(0xFF10B981)

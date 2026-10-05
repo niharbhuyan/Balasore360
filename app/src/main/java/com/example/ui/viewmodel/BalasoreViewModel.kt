@@ -10,8 +10,12 @@ import com.example.data.local.CivicReportEntity
 import com.example.data.local.CivicReportDao
 import com.example.data.local.ItineraryItemEntity
 import com.example.data.model.*
+import com.example.data.notification.TideAndWeatherNotificationManager
 import com.example.data.remote.BalasoreApiService
 import com.example.data.remote.WeatherApiService
+import com.example.data.remote.OpenWeatherCurrentResponse
+import com.example.data.remote.OpenWeatherThreeDayForecast
+import com.example.data.remote.OpenWeatherDailyForecast
 import com.example.data.remote.EmergencyAlertDto
 import com.example.data.remote.GeminiGroundingService
 import com.example.data.remote.GroundingResponse
@@ -27,6 +31,7 @@ import com.example.data.repository.CivicReportRepository
 import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
 import com.example.data.repository.NewsRepository
+import com.example.data.repository.OpenWeatherRepository
 import com.example.data.repository.Resource
 import com.example.data.repository.TravelJournalRepository
 import com.example.data.repository.UniqueFeaturesRepository
@@ -42,6 +47,110 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Material-3 TabRow categorization for Balasore News Feed:
+ * 0 -> Local News
+ * 1 -> Defense Alerts
+ * 2 -> Tourism Updates
+ */
+enum class NewsFeedTab(val index: Int, val title: String, val odiaTitle: String, val categoryName: String) {
+    LOCAL_NEWS(0, "Local News", "ସ୍ଥାନୀୟ ଖବର", "Local News"),
+    DEFENSE_ALERTS(1, "Defense Alerts", "ପ୍ରତିରକ୍ଷା ସତର୍କତା", "Defense Alerts"),
+    TOURISM_UPDATES(2, "Tourism Updates", "ପର୍ଯ୍ୟଟନ ଖବର", "Tourism Updates");
+
+    companion object {
+        fun fromIndex(index: Int): NewsFeedTab = entries.find { it.index == index } ?: LOCAL_NEWS
+        fun fromCategory(cat: String): NewsFeedTab = when {
+            cat.equals("Defense Alerts", ignoreCase = true) ||
+            cat.equals("Defense", ignoreCase = true) ||
+            cat.equals("Coastal Alerts", ignoreCase = true) ||
+            cat.equals("Emergency", ignoreCase = true) -> DEFENSE_ALERTS
+
+            cat.equals("Tourism Updates", ignoreCase = true) ||
+            cat.equals("Tourism", ignoreCase = true) ||
+            cat.equals("Culture", ignoreCase = true) ||
+            cat.equals("Spiritual", ignoreCase = true) -> TOURISM_UPDATES
+
+            else -> LOCAL_NEWS
+        }
+    }
+}
+
+object NewsFeedFilter {
+    fun matchesTab(article: NewsArticle, tabIndex: Int): Boolean {
+        val tab = NewsFeedTab.fromIndex(tabIndex)
+        return when (tab) {
+            NewsFeedTab.LOCAL_NEWS ->
+                article.category.equals("Local News", ignoreCase = true) ||
+                article.category.equals("Local", ignoreCase = true) ||
+                article.category.equals("Infrastructure", ignoreCase = true) ||
+                article.category.equals("Politics", ignoreCase = true) ||
+                article.category.equals("Local Politics", ignoreCase = true) ||
+                article.category.equals("Development", ignoreCase = true) ||
+                article.category.equals("Sports", ignoreCase = true) ||
+                article.category.contains("Civic", ignoreCase = true) ||
+                article.category.contains("Municipal", ignoreCase = true) ||
+                article.title.contains("municipality", ignoreCase = true) ||
+                article.title.contains("station", ignoreCase = true) ||
+                article.title.contains("parishad", ignoreCase = true) ||
+                article.title.contains("drainage", ignoreCase = true) ||
+                article.title.contains("smart city", ignoreCase = true)
+
+            NewsFeedTab.DEFENSE_ALERTS ->
+                article.category.equals("Defense Alerts", ignoreCase = true) ||
+                article.category.equals("Defense", ignoreCase = true) ||
+                article.category.equals("Coastal Alerts", ignoreCase = true) ||
+                article.category.equals("Emergency", ignoreCase = true) ||
+                article.title.contains("DRDO", ignoreCase = true) ||
+                article.title.contains("Missile", ignoreCase = true) ||
+                article.title.contains("ITR", ignoreCase = true) ||
+                article.title.contains("Defense", ignoreCase = true) ||
+                article.title.contains("Alert", ignoreCase = true) ||
+                article.title.contains("Storm", ignoreCase = true) ||
+                article.title.contains("Flood", ignoreCase = true) ||
+                article.title.contains("Siren", ignoreCase = true) ||
+                article.title.contains("Warning", ignoreCase = true) ||
+                article.content.contains("DRDO", ignoreCase = true) ||
+                article.content.contains("missile", ignoreCase = true)
+
+            NewsFeedTab.TOURISM_UPDATES ->
+                article.category.equals("Tourism Updates", ignoreCase = true) ||
+                article.category.equals("Tourism", ignoreCase = true) ||
+                article.category.equals("Culture", ignoreCase = true) ||
+                article.category.equals("Spiritual", ignoreCase = true) ||
+                article.title.contains("Tourism", ignoreCase = true) ||
+                article.title.contains("Eco-Promenade", ignoreCase = true) ||
+                article.title.contains("Eco-Trek", ignoreCase = true) ||
+                article.title.contains("Gazebos", ignoreCase = true) ||
+                article.title.contains("Vanishing Sea", ignoreCase = true) ||
+                article.title.contains("Mahotsav", ignoreCase = true) ||
+                article.title.contains("Tourists", ignoreCase = true) ||
+                article.title.contains("Eco-Tourism", ignoreCase = true) ||
+                article.title.contains("Wildlife Sanctuary", ignoreCase = true) ||
+                article.title.contains("Darshan Facilitated", ignoreCase = true) ||
+                article.content.contains("tourist", ignoreCase = true) ||
+                article.content.contains("visitors", ignoreCase = true)
+        }
+    }
+
+    fun filterArticles(articles: List<NewsArticle>, tabIndex: Int, query: String = ""): List<NewsArticle> {
+        val trimmed = query.trim()
+        return articles.filter { article ->
+            val matchesTab = matchesTab(article, tabIndex)
+            val matchesQuery = trimmed.isEmpty() ||
+                article.title.contains(trimmed, ignoreCase = true) ||
+                article.odiaTitle.contains(trimmed, ignoreCase = true) ||
+                article.snippet.contains(trimmed, ignoreCase = true) ||
+                article.odiaSnippet.contains(trimmed, ignoreCase = true) ||
+                article.content.contains(trimmed, ignoreCase = true) ||
+                article.odiaContent.contains(trimmed, ignoreCase = true) ||
+                article.category.contains(trimmed, ignoreCase = true) ||
+                article.source.contains(trimmed, ignoreCase = true)
+            matchesTab && matchesQuery
+        }
+    }
+}
+
 data class BalasoreUiState(
     val selectedTab: Int = 0,
     val language: AppLanguage = AppLanguage.ENGLISH,
@@ -50,8 +159,10 @@ data class BalasoreUiState(
     val selectedHotspotCategory: String = "All",
     val hotspotSearchQuery: String = "",
     val newsArticles: List<NewsArticle> = BalasoreRepository.newsArticles,
-    val selectedNewsCategory: String = "All",
+    val selectedNewsTab: Int = 0,
+    val selectedNewsCategory: String = "Local News",
     val newsSearchQuery: String = "",
+    val filteredNewsArticles: List<NewsArticle> = NewsFeedFilter.filterArticles(BalasoreRepository.newsArticles, 0, ""),
     val weather: WeatherInfo = BalasoreRepository.weather,
     val isWeatherLoading: Boolean = false,
     val emergencyContacts: List<EmergencyContact> = BalasoreRepository.emergencyContacts,
@@ -127,7 +238,16 @@ data class BalasoreUiState(
     val newsAutoUpdateCycleCount: Int = 0,
     // My Reports - Local Room Database for Offline Civic Issue Tracking & Auto Updates
     val myCivicReports: List<CivicReportEntity> = DefaultData.getDefaultCivicReports(),
-    val selectedMyReportsFilter: String = "ALL"
+    val selectedMyReportsFilter: String = "ALL",
+    // OpenWeatherMap Real-Time Telemetry & 3-Day / 7-Day Forecast Suite
+    val openWeatherCurrent: OpenWeatherCurrentResponse? = null,
+    val openWeatherThreeDayForecast: List<OpenWeatherThreeDayForecast> = emptyList(),
+    val openWeatherSevenDayForecast: List<OpenWeatherDailyForecast> = emptyList(),
+    val isOpenWeatherLoading: Boolean = false,
+    val openWeatherCycleCount: Int = 1,
+    // Chandipur Vanishing Sea Walk Window Proactive Notification Settings
+    val isWalkWindowAlertsEnabled: Boolean = true,
+    val walkWindowAdvanceMinutes: Int = 30
 )
 
 enum class UniqueFeatureSheetType {
@@ -295,7 +415,21 @@ enum class UniqueFeatureSheetType {
     AIIMS_DHH_OPD_BED_TRACKER,
     OFFLINE_CYCLONE_SAFETY_TOOLKIT,
     // Offline Room Database Civic Reports Suite
-    MY_CIVIC_REPORTS
+    MY_CIVIC_REPORTS,
+    // OpenWeatherMap Real-Time Telemetry & 3-Day Forecast Suite
+    OPEN_WEATHER_MAP,
+    // Google Maps Coastal Precipitation Radar & Storm Tracking Suite
+    COASTAL_WEATHER_RADAR_MAP,
+    // Odia Culture & Daily Horoscope Astrology Suite
+    ODIA_CULTURE_SECTION,
+    // Odia Festivals & Important Cultural Dates Room Suite
+    ODIA_FESTIVALS,
+    // Google Maps Tourism Hotspots & Distance Markers Carousel
+    TOURISM_HOTSPOTS,
+    // Live Balasore City Bus & Public Transit API Suite
+    LOCAL_TRANSPORT,
+    // Nearest Emergency Services Map relative to user position
+    NEAREST_EMERGENCY_SERVICES_MAP
 }
 
 data class GroundingState(
@@ -335,6 +469,7 @@ class BalasoreViewModel : ViewModel() {
     private var appContext: Context? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
     private val weatherApiService: WeatherApiService by lazy { WeatherApiService.create() }
+    private val openWeatherRepo: OpenWeatherRepository by lazy { OpenWeatherRepository() }
     private val geminiChatService: GeminiChatService by lazy { GeminiChatService() }
 
     private val _uiState = MutableStateFlow(BalasoreUiState())
@@ -345,6 +480,7 @@ class BalasoreViewModel : ViewModel() {
             if (android.os.Looper.getMainLooper() != null) {
                 fetchLiveEmergencyAlerts()
                 fetchRealTimeWeather()
+                fetchOpenWeatherData()
                 // Periodic auto-update ticker:
                 // 1) Refreshes daily pulse every 60s
                 // 2) Ticks countdown for the auto refresh loop
@@ -471,11 +607,22 @@ class BalasoreViewModel : ViewModel() {
             // Room Database + Network unified News Repository with auto cache updates
             val nRepo = NewsRepository(db.newsDao(), db.cacheMetadataDao())
             newsRepo = nRepo
+
+            // Initial fetch or cache load from repository
             viewModelScope.launch {
                 try {
-                    nRepo.getUnifiedNewsFlow(forceRefresh = false).collect { res ->
-                        if (res is Resource.Success && !res.data.isNullOrEmpty()) {
-                            val mapped = res.data.map { entity ->
+                    nRepo.getUnifiedNewsFlow(forceRefresh = false).collect { _ -> }
+                } catch (t: Throwable) {
+                    android.util.Log.w("BalasoreViewModel", "News stream initial fetch notice: ${t.message}")
+                }
+            }
+
+            // Continuous reactive observation of all Room news articles
+            viewModelScope.launch {
+                try {
+                    nRepo.allNews.collect { entities ->
+                        if (entities.isNotEmpty()) {
+                            val mapped = entities.map { entity ->
                                 NewsArticle(
                                     id = entity.id.toString(),
                                     title = entity.title,
@@ -490,11 +637,31 @@ class BalasoreViewModel : ViewModel() {
                                     odiaContent = entity.content
                                 )
                             }
-                            _uiState.value = _uiState.value.copy(newsArticles = mapped)
+                            val bIds = entities.filter { it.isBookmarked }.map { it.id.toString() }.toSet()
+                            val recomputed = NewsFeedFilter.filterArticles(mapped, _uiState.value.selectedNewsTab, _uiState.value.newsSearchQuery)
+                            _uiState.value = _uiState.value.copy(
+                                newsArticles = mapped,
+                                filteredNewsArticles = recomputed,
+                                bookmarkedIds = if (bIds.isNotEmpty()) bIds else _uiState.value.bookmarkedIds
+                            )
                         }
                     }
                 } catch (t: Throwable) {
-                    android.util.Log.w("BalasoreViewModel", "News stream fallback: ${t.message}")
+                    android.util.Log.w("BalasoreViewModel", "Room allNews observer notice: ${t.message}")
+                }
+            }
+
+            // Continuous reactive observation of Room bookmarks
+            viewModelScope.launch {
+                try {
+                    nRepo.getBookmarkedNews().collect { bookmarkedEntities ->
+                        val bIds = bookmarkedEntities.map { it.id.toString() }.toSet()
+                        _uiState.value = _uiState.value.copy(
+                            bookmarkedIds = bIds
+                        )
+                    }
+                } catch (t: Throwable) {
+                    android.util.Log.w("BalasoreViewModel", "Room bookmarks observer notice: ${t.message}")
                 }
             }
 
@@ -569,16 +736,15 @@ class BalasoreViewModel : ViewModel() {
             resolutionNotes = "Report registered offline in Room DB. Auto-synced with Ward Grievance Desk."
         )
 
+        // Immediately reflect in UI state so tests and UI have zero latency
+        _uiState.value = _uiState.value.copy(
+            myCivicReports = listOf(newEntity) + _uiState.value.myCivicReports
+        )
+
         try {
             viewModelScope.launch {
                 try {
-                    if (civicReportRepo != null) {
-                        civicReportRepo?.submitReport(title, category, wardLocation, description, urgency, hasPhotoAttached)
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            myCivicReports = listOf(newEntity) + _uiState.value.myCivicReports
-                        )
-                    }
+                    civicReportRepo?.submitReport(title, category, wardLocation, description, urgency, hasPhotoAttached)
                 } catch (t: Throwable) {
                     android.util.Log.e("BalasoreViewModel", "Error submitting report: ${t.message}")
                 }
@@ -592,20 +758,17 @@ class BalasoreViewModel : ViewModel() {
     }
 
     fun deleteCivicReport(reportId: String) {
+        _uiState.value = _uiState.value.copy(
+            myCivicReports = _uiState.value.myCivicReports.filterNot { it.id == reportId }
+        )
+
         try {
             viewModelScope.launch {
                 try {
                     civicReportRepo?.deleteReport(reportId)
-                    _uiState.value = _uiState.value.copy(
-                        myCivicReports = _uiState.value.myCivicReports.filterNot { it.id == reportId }
-                    )
                 } catch (_: Throwable) {}
             }
-        } catch (_: Throwable) {
-            _uiState.value = _uiState.value.copy(
-                myCivicReports = _uiState.value.myCivicReports.filterNot { it.id == reportId }
-            )
-        }
+        } catch (_: Throwable) {}
     }
 
     fun advanceCivicReportStatus(reportId: String) {
@@ -630,19 +793,15 @@ class BalasoreViewModel : ViewModel() {
             }
         }
 
+        _uiState.value = _uiState.value.copy(myCivicReports = advanceBlock(_uiState.value.myCivicReports))
+
         try {
             viewModelScope.launch {
                 try {
-                    if (civicReportRepo != null) {
-                        civicReportRepo?.progressReportStatus(reportId)
-                    } else {
-                        _uiState.value = _uiState.value.copy(myCivicReports = advanceBlock(_uiState.value.myCivicReports))
-                    }
+                    civicReportRepo?.progressReportStatus(reportId)
                 } catch (_: Throwable) {}
             }
-        } catch (_: Throwable) {
-            _uiState.value = _uiState.value.copy(myCivicReports = advanceBlock(_uiState.value.myCivicReports))
-        }
+        } catch (_: Throwable) {}
     }
 
     fun setMyReportsFilter(filter: String) {
@@ -751,6 +910,11 @@ class BalasoreViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(language = lang)
     }
 
+    fun toggleLanguage() {
+        val next = if (_uiState.value.language == AppLanguage.ODIA) AppLanguage.ENGLISH else AppLanguage.ODIA
+        setLanguage(next)
+    }
+
     fun setHotspotSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(hotspotSearchQuery = query)
     }
@@ -759,24 +923,60 @@ class BalasoreViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(selectedHotspotCategory = category)
     }
 
+    fun selectNewsTab(tabIndex: Int) {
+        val tab = NewsFeedTab.fromIndex(tabIndex)
+        val filtered = NewsFeedFilter.filterArticles(_uiState.value.newsArticles, tab.index, _uiState.value.newsSearchQuery)
+        _uiState.value = _uiState.value.copy(
+            selectedNewsTab = tab.index,
+            selectedNewsCategory = tab.categoryName,
+            filteredNewsArticles = filtered
+        )
+    }
+
     fun setNewsCategory(category: String) {
-        _uiState.value = _uiState.value.copy(selectedNewsCategory = category)
+        val tab = NewsFeedTab.fromCategory(category)
+        val filtered = NewsFeedFilter.filterArticles(_uiState.value.newsArticles, tab.index, _uiState.value.newsSearchQuery)
+        _uiState.value = _uiState.value.copy(
+            selectedNewsCategory = category,
+            selectedNewsTab = tab.index,
+            filteredNewsArticles = filtered
+        )
     }
 
     fun setNewsSearchQuery(query: String) {
-        _uiState.value = _uiState.value.copy(newsSearchQuery = query)
+        val filtered = NewsFeedFilter.filterArticles(_uiState.value.newsArticles, _uiState.value.selectedNewsTab, query)
+        _uiState.value = _uiState.value.copy(
+            newsSearchQuery = query,
+            filteredNewsArticles = filtered
+        )
     }
 
     fun toggleBookmark(articleId: String) {
         val current = _uiState.value.bookmarkedIds
-        val updated = if (current.contains(articleId)) current - articleId else current + articleId
-        _uiState.value = _uiState.value.copy(bookmarkedIds = updated)
+        val isCurrentlyBookmarked = current.contains(articleId)
+        val newBookmarkedState = !isCurrentlyBookmarked
+        val updated = if (isCurrentlyBookmarked) current - articleId else current + articleId
+
+        val updatedArticles = _uiState.value.newsArticles.map { article ->
+            if (article.id == articleId) article.copy(isBookmarked = newBookmarkedState) else article
+        }
+        val recomputedFiltered = NewsFeedFilter.filterArticles(updatedArticles, _uiState.value.selectedNewsTab, _uiState.value.newsSearchQuery)
+
+        // Optimistic UI update
+        _uiState.value = _uiState.value.copy(
+            bookmarkedIds = updated,
+            newsArticles = updatedArticles,
+            filteredNewsArticles = recomputedFiltered
+        )
+
         val idLong = articleId.toLongOrNull()
         if (idLong != null) {
             viewModelScope.launch {
                 try {
-                    newsRepo?.toggleBookmark(idLong, !current.contains(articleId))
-                } catch (_: Throwable) {}
+                    newsRepo?.toggleBookmark(idLong, isCurrentlyBookmarked)
+                } catch (e: Throwable) {
+                    android.util.Log.e("BalasoreViewModel", "Error saving bookmark to Room: ${e.message}")
+                }
             }
         }
     }
@@ -971,6 +1171,63 @@ class BalasoreViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(isWeatherLoading = false)
             }
         }
+    }
+
+    /**
+     * Fetches real-time conditions and 7-day forecast for Balasore via OpenWeatherMap API.
+     */
+    fun fetchOpenWeatherData(isUserTriggered: Boolean = false) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isOpenWeatherLoading = true)
+            val apiKey = com.example.BuildConfig.OPENWEATHERMAP_API_KEY
+            val weatherResult = openWeatherRepo.fetchCurrentWeather(apiKey)
+            val forecastResult = openWeatherRepo.fetchThreeDayForecast(apiKey)
+            val forecast7Result = openWeatherRepo.fetchSevenDayForecast(apiKey)
+
+            val current = if (weatherResult.isSuccess) {
+                weatherResult.getOrNull()
+            } else {
+                openWeatherRepo.createBaselineBalasoreWeather(_uiState.value.openWeatherCycleCount)
+            }
+
+            val forecast = if (forecastResult.isSuccess) {
+                forecastResult.getOrNull() ?: emptyList()
+            } else {
+                openWeatherRepo.createBaselineThreeDayForecast(_uiState.value.openWeatherCycleCount)
+            }
+
+            val forecast7 = if (forecast7Result.isSuccess) {
+                forecast7Result.getOrNull() ?: emptyList()
+            } else {
+                openWeatherRepo.createBaselineSevenDayForecast(_uiState.value.openWeatherCycleCount)
+            }
+
+            _uiState.value = _uiState.value.copy(
+                openWeatherCurrent = current,
+                openWeatherThreeDayForecast = forecast,
+                openWeatherSevenDayForecast = forecast7,
+                isOpenWeatherLoading = false,
+                openWeatherCycleCount = _uiState.value.openWeatherCycleCount + 1
+            )
+        }
+    }
+
+    fun setWalkWindowAlertsEnabled(context: Context, enabled: Boolean) {
+        TideAndWeatherNotificationManager.setWalkWindowAlertsEnabled(context, enabled)
+        _uiState.value = _uiState.value.copy(isWalkWindowAlertsEnabled = enabled)
+    }
+
+    fun setWalkWindowAdvanceMinutes(context: Context, minutes: Int) {
+        TideAndWeatherNotificationManager.setWalkWindowAdvanceMinutes(context, minutes)
+        _uiState.value = _uiState.value.copy(walkWindowAdvanceMinutes = minutes)
+    }
+
+    fun testTriggerWalkWindowOpeningAlert(context: Context) {
+        TideAndWeatherNotificationManager.testTriggerWalkWindowOpening(context)
+    }
+
+    fun testTriggerWalkWindowClosingAlert(context: Context) {
+        TideAndWeatherNotificationManager.testTriggerWalkWindowClosing(context)
     }
 
     private fun weatherCodeToEmoji(code: Int): String = when (code) {
@@ -1389,5 +1646,13 @@ class BalasoreViewModel : ViewModel() {
                 fetchLiveEmergencyAlerts()
             } catch (_: Throwable) {}
         }
+    }
+
+    companion object {
+        fun matchesNewsTab(article: NewsArticle, tabIndex: Int): Boolean =
+            NewsFeedFilter.matchesTab(article, tabIndex)
+
+        fun filterNewsArticles(articles: List<NewsArticle>, tabIndex: Int, query: String = ""): List<NewsArticle> =
+            NewsFeedFilter.filterArticles(articles, tabIndex, query)
     }
 }

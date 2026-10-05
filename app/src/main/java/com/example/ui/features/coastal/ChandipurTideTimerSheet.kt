@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.AppLanguage
 import com.example.data.local.ChandipurTideEntity
+import com.example.data.notification.TideAndWeatherNotificationManager
 import kotlinx.coroutines.delay
 
 /**
@@ -82,8 +83,12 @@ fun ChandipurTideTimerSheet(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var isAlarmEnabled by remember { mutableStateOf(true) }
-    var alertThresholdMinutes by remember { mutableFloatStateOf(45f) }
+    var isAlarmEnabled by remember {
+        mutableStateOf(TideAndWeatherNotificationManager.isWalkWindowAlertsEnabled(context))
+    }
+    var alertThresholdMinutes by remember {
+        mutableFloatStateOf(TideAndWeatherNotificationManager.getWalkWindowAdvanceMinutes(context).toFloat().coerceIn(15f, 60f))
+    }
 
     // Live countdown calculation (Simulated tidal cycle window)
     // Low tide peak: 2:30 PM, High tide onset: 5:45 PM
@@ -433,14 +438,57 @@ fun ChandipurTideTimerSheet(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Safe Return Alarm Controls
+        // Proactive Vanishing Sea Walk Window Push Notifications & Alarm Controls
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chandipur_proactive_walk_notifications_card"),
+            shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            border = BorderStroke(1.2.dp, Color(0xFF0284C7).copy(alpha = 0.4f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                // Channel Status Badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (isAlarmEnabled) Color(0xFFDCFCE7) else Color(0xFFF1F5F9),
+                        border = BorderStroke(1.dp, if (isAlarmEnabled) Color(0xFF86EFAC) else Color(0xFFCBD5E1))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .background(if (isAlarmEnabled) Color(0xFF16A34A) else Color(0xFF94A3B8), CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = if (isAlarmEnabled) "PROACTIVE LOCAL PUSH: ACTIVE" else "NOTIFICATIONS MUTED",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (isAlarmEnabled) Color(0xFF15803D) else Color(0xFF64748B)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "High Priority Channel",
+                        fontSize = 10.sp,
+                        color = Color(0xFF0284C7),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -450,22 +498,30 @@ fun ChandipurTideTimerSheet(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.NotificationsActive,
-                            contentDescription = null,
-                            tint = Color(0xFF0284C7),
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                            modifier = Modifier.size(38.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.NotificationsActive,
+                                    contentDescription = null,
+                                    tint = Color(0xFF0284C7),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "45-Min Advance Return Alarm",
+                                text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ଚାଲିବା ନୋଟିଫିକେସନ୍" else "Vanishing Sea Walk Alerts",
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold
                                 )
                             )
                             Text(
-                                text = "Beeps & vibrates before incoming water starts filling seabed pools",
+                                text = if (language == AppLanguage.ODIA) "ସମୁଦ୍ର ଅପସାରଣ ଓ ଜୁଆର ଫେରିବା ସମୟରେ ସ୍ୱୟଂଚାଳିତ ପୁସ୍ ଆଲର୍ଟ" else "Notifies automatically when seabed walk window opens & sirens before it closes",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp
@@ -478,47 +534,126 @@ fun ChandipurTideTimerSheet(
                         checked = isAlarmEnabled,
                         onCheckedChange = {
                             isAlarmEnabled = it
+                            TideAndWeatherNotificationManager.setWalkWindowAlertsEnabled(context, it)
                             Toast.makeText(
                                 context,
-                                if (it) "Tide Return Alarm Activated" else "Tide Alarm Muted",
+                                if (it) "✅ Vanishing Sea Walk Alerts Activated!" else "Muted Walk Notifications",
                                 Toast.LENGTH_SHORT
                             ).show()
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
                             checkedTrackColor = Color(0xFF0284C7)
-                        )
+                        ),
+                        modifier = Modifier.testTag("toggle_walk_window_notifications")
                     )
                 }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                 )
 
+                // Advance Warning Timing Configuration
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Alert Threshold: ${alertThresholdMinutes.toInt()} mins prior",
+                        text = if (language == AppLanguage.ODIA) "ପୂର୍ବ ସୂଚନା ସମୟ: ${alertThresholdMinutes.toInt()} ମିନିଟ୍ ପୂର୍ବରୁ" else "Advance Siren Threshold: ${alertThresholdMinutes.toInt()} mins prior",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF0F172A)
                         )
                     )
 
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = "${alertThresholdMinutes.toInt()}m Buffer",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0284C7),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                Slider(
+                    value = alertThresholdMinutes,
+                    onValueChange = {
+                        alertThresholdMinutes = it
+                        TideAndWeatherNotificationManager.setWalkWindowAdvanceMinutes(context, it.toInt())
+                    },
+                    valueRange = 15f..60f,
+                    steps = 2,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color(0xFF0284C7),
+                        activeTrackColor = Color(0xFF0284C7)
+                    ),
+                    modifier = Modifier.testTag("walk_window_advance_slider")
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Interactive Test Notification Triggers for QA & Instant Verification
+                Text(
+                    text = "Instant Telemetry Push Verifiers:",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF64748B)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedButton(
                         onClick = {
+                            TideAndWeatherNotificationManager.testTriggerWalkWindowOpening(context)
                             Toast.makeText(
                                 context,
-                                "🔔 Test Alarm Triggered: Safe Return Siren simulated successfully!",
-                                Toast.LENGTH_LONG
+                                "🌊 Sent Walk Window OPENING push notification!",
+                                Toast.LENGTH_SHORT
                             ).show()
                         },
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFF10B981)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF047857)),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("test_walk_window_opening_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DirectionsWalk,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Test Opening Alert", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            TideAndWeatherNotificationManager.testTriggerWalkWindowClosing(context)
+                            Toast.makeText(
+                                context,
+                                "🚨 Dispatched Walk Window CLOSING siren push notification!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFB91C1C)),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("test_walk_window_closing_btn")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Alarm,
@@ -526,20 +661,9 @@ fun ChandipurTideTimerSheet(
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Test Siren", fontSize = 11.sp)
+                        Text("Test Closing Siren", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-
-                Slider(
-                    value = alertThresholdMinutes,
-                    onValueChange = { alertThresholdMinutes = it },
-                    valueRange = 30f..60f,
-                    steps = 5,
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFF0284C7),
-                        activeTrackColor = Color(0xFF0284C7)
-                    )
-                )
             }
         }
 

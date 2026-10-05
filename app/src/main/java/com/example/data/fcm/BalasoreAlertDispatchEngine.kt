@@ -8,6 +8,7 @@ import com.example.data.daily.DailyUpdateEngine
 import com.example.data.local.AppDatabase
 import com.example.data.local.WeatherCacheEntity
 import com.example.data.model.WeatherInfo
+import com.example.data.notification.TideAndWeatherNotificationManager
 import com.example.data.remote.EmergencyAlertDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +62,11 @@ object BalasoreAlertDispatchEngine {
         // 3. Evaluate Coastal Defense & Missile Test Advisories (if defense advisories enabled)
         if (FcmManager.isDefenseAdvisoriesEnabled(context)) {
             evaluateDefenseAdvisoryConditions(context, pulse, emergencyAlerts, force)
+        }
+
+        // 4. Evaluate Chandipur 'Vanishing Sea' Walk Window (Opening & Closing alerts)
+        if (TideAndWeatherNotificationManager.isWalkWindowAlertsEnabled(context)) {
+            evaluateWalkWindowConditions(context, pulse, force)
         }
     }
 
@@ -330,6 +336,42 @@ object BalasoreAlertDispatchEngine {
                     .putInt(KEY_LAST_DEFENSE_ALERT_HASH, alertHash)
                     .putLong(KEY_LAST_DEFENSE_ALERT_TIME, now)
                     .apply()
+            }
+        }
+    }
+
+    private fun evaluateWalkWindowConditions(
+        context: Context,
+        pulse: DailyBalasorePulse?,
+        force: Boolean
+    ) {
+        if (pulse == null) return
+
+        val now = System.currentTimeMillis()
+        val lastNotifyTime = TideAndWeatherNotificationManager.getLastWalkNotifyTime(context)
+        val lastState = TideAndWeatherNotificationManager.getLastWalkStateNotified(context)
+        val cooldownMs = 20 * 60 * 1000L
+
+        // Check if walk window is currently open or closing
+        if (pulse.isChandipurWalkSafeNow) {
+            val stateKey = "WALK_OPEN_${pulse.chandipurLowTideWindow}"
+            if (force || ((now - lastNotifyTime) > cooldownMs && lastState != stateKey)) {
+                TideAndWeatherNotificationManager.showWalkWindowOpened(
+                    context = context,
+                    recededDistanceKm = 4.6,
+                    safeMinutesRemaining = 145
+                )
+                TideAndWeatherNotificationManager.setLastWalkStateNotified(context, stateKey)
+            }
+        } else if (pulse.isTideReversalAlarmImminent) {
+            val stateKey = "WALK_CLOSING_URGENT_${pulse.chandipurNextHighTide}"
+            if (force || ((now - lastNotifyTime) > (10 * 60 * 1000L) && lastState != stateKey)) {
+                TideAndWeatherNotificationManager.showWalkWindowAboutToClose(
+                    context = context,
+                    minutesRemaining = 15,
+                    isUrgent = true
+                )
+                TideAndWeatherNotificationManager.setLastWalkStateNotified(context, stateKey)
             }
         }
     }
