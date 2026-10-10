@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.android.application)
@@ -15,8 +16,8 @@ android {
         applicationId = "com.niharsales.balasore360"
         minSdk = 24
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.1.0"
+        versionCode = 13
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -61,9 +62,18 @@ android {
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
+    val uploadKeystoreFile = file("${rootDir}/my-upload-key.jks")
+    val uploadKeystoreBase64File = file("${rootDir}/my-upload-key.jks.base64")
+    if (!uploadKeystoreFile.exists() && uploadKeystoreBase64File.exists()) {
+        try {
+            val decoded = Base64.getDecoder().decode(uploadKeystoreBase64File.readText().trim())
+            uploadKeystoreFile.writeBytes(decoded)
+        } catch (_: Exception) {}
+    }
+
     signingConfigs {
         create("release") {
-            storeFile = file("${rootDir}/my-upload-key.jks")
+            storeFile = uploadKeystoreFile
             storePassword = "android"
             keyAlias = "upload"
             keyPassword = "android"

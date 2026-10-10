@@ -30,6 +30,7 @@ import com.example.data.repository.BalasoreRepository
 import com.example.data.repository.CivicReportRepository
 import com.example.data.repository.DefaultData
 import com.example.data.repository.ItineraryRepository
+import com.example.data.repository.INewsRepository
 import com.example.data.repository.NewsRepository
 import com.example.data.repository.OpenWeatherRepository
 import com.example.data.repository.Resource
@@ -456,15 +457,20 @@ enum class AuthMode {
     EDIT_PROFILE
 }
 
-class BalasoreViewModel : ViewModel() {
+class BalasoreViewModel(
+    private val injectedNewsRepo: INewsRepository? = null,
+    private val injectedCivicRepo: CivicReportRepository? = null,
+    private val injectedItineraryRepo: ItineraryRepository? = null,
+    private val injectedTideDao: ChandipurTideDao? = null
+) : ViewModel() {
 
-    private var itineraryRepo: ItineraryRepository? = null
+    private var itineraryRepo: ItineraryRepository? = injectedItineraryRepo
     var travelJournalRepo: TravelJournalRepository? = null
         private set
-    private var tideDao: ChandipurTideDao? = null
-    private var newsRepo: NewsRepository? = null
+    private var tideDao: ChandipurTideDao? = injectedTideDao
+    private var newsRepo: INewsRepository? = injectedNewsRepo
     private var civicReportDao: CivicReportDao? = null
-    var civicReportRepo: CivicReportRepository? = null
+    var civicReportRepo: CivicReportRepository? = injectedCivicRepo
         private set
     private var appContext: Context? = null
     private val apiService: BalasoreApiService by lazy { BalasoreApiService.create() }
@@ -476,6 +482,9 @@ class BalasoreViewModel : ViewModel() {
     val uiState: StateFlow<BalasoreUiState> = _uiState.asStateFlow()
 
     init {
+        injectedNewsRepo?.let { repo ->
+            observeNewsRepository(repo)
+        }
         try {
             if (android.os.Looper.getMainLooper() != null) {
                 fetchLiveEmergencyAlerts()
@@ -511,6 +520,62 @@ class BalasoreViewModel : ViewModel() {
             }
         } catch (_: Throwable) {
             // JVM unit test environment without Android Looper
+        }
+    }
+
+    /**
+     * Connects an external or mocked [INewsRepository] and observes its offline Room cache flows.
+     */
+    fun setNewsRepositoryForTesting(repo: INewsRepository) {
+        newsRepo = repo
+        observeNewsRepository(repo)
+    }
+
+    fun getNewsRepository(): INewsRepository? = newsRepo
+
+    /**
+     * Observes offline cached articles and bookmark streams from the given [INewsRepository].
+     */
+    fun observeNewsRepository(nRepo: INewsRepository) {
+        viewModelScope.launch {
+            try {
+                nRepo.allNews.collect { entities ->
+                    if (entities.isNotEmpty()) {
+                        val mapped = entities.map { entity ->
+                            NewsArticle(
+                                id = entity.id.toString(),
+                                title = entity.title,
+                                odiaTitle = entity.title,
+                                snippet = entity.summary,
+                                odiaSnippet = entity.summary,
+                                category = entity.category,
+                                timeAgo = entity.publishedAt,
+                                source = entity.source,
+                                isBookmarked = entity.isBookmarked,
+                                content = entity.content,
+                                odiaContent = entity.content
+                            )
+                        }
+                        val bIds = entities.filter { it.isBookmarked }.map { it.id.toString() }.toSet()
+                        val recomputed = NewsFeedFilter.filterArticles(mapped, _uiState.value.selectedNewsTab, _uiState.value.newsSearchQuery)
+                        _uiState.value = _uiState.value.copy(
+                            newsArticles = mapped,
+                            filteredNewsArticles = recomputed,
+                            bookmarkedIds = if (bIds.isNotEmpty()) bIds else _uiState.value.bookmarkedIds
+                        )
+                    }
+                }
+            } catch (_: Throwable) {}
+        }
+        viewModelScope.launch {
+            try {
+                nRepo.getBookmarkedNews().collect { bookmarkedEntities ->
+                    val bIds = bookmarkedEntities.map { it.id.toString() }.toSet()
+                    _uiState.value = _uiState.value.copy(
+                        bookmarkedIds = bIds
+                    )
+                }
+            } catch (_: Throwable) {}
         }
     }
 
@@ -617,53 +682,8 @@ class BalasoreViewModel : ViewModel() {
                 }
             }
 
-            // Continuous reactive observation of all Room news articles
-            viewModelScope.launch {
-                try {
-                    nRepo.allNews.collect { entities ->
-                        if (entities.isNotEmpty()) {
-                            val mapped = entities.map { entity ->
-                                NewsArticle(
-                                    id = entity.id.toString(),
-                                    title = entity.title,
-                                    odiaTitle = entity.title,
-                                    snippet = entity.summary,
-                                    odiaSnippet = entity.summary,
-                                    category = entity.category,
-                                    timeAgo = entity.publishedAt,
-                                    source = entity.source,
-                                    isBookmarked = entity.isBookmarked,
-                                    content = entity.content,
-                                    odiaContent = entity.content
-                                )
-                            }
-                            val bIds = entities.filter { it.isBookmarked }.map { it.id.toString() }.toSet()
-                            val recomputed = NewsFeedFilter.filterArticles(mapped, _uiState.value.selectedNewsTab, _uiState.value.newsSearchQuery)
-                            _uiState.value = _uiState.value.copy(
-                                newsArticles = mapped,
-                                filteredNewsArticles = recomputed,
-                                bookmarkedIds = if (bIds.isNotEmpty()) bIds else _uiState.value.bookmarkedIds
-                            )
-                        }
-                    }
-                } catch (t: Throwable) {
-                    android.util.Log.w("BalasoreViewModel", "Room allNews observer notice: ${t.message}")
-                }
-            }
-
-            // Continuous reactive observation of Room bookmarks
-            viewModelScope.launch {
-                try {
-                    nRepo.getBookmarkedNews().collect { bookmarkedEntities ->
-                        val bIds = bookmarkedEntities.map { it.id.toString() }.toSet()
-                        _uiState.value = _uiState.value.copy(
-                            bookmarkedIds = bIds
-                        )
-                    }
-                } catch (t: Throwable) {
-                    android.util.Log.w("BalasoreViewModel", "Room bookmarks observer notice: ${t.message}")
-                }
-            }
+            // Continuous reactive observation of all Room news articles & bookmarks
+            observeNewsRepository(nRepo)
 
             // Room Database Citizen Civic Reports Repository
             val cDao = db.civicReportDao()
@@ -709,7 +729,11 @@ class BalasoreViewModel : ViewModel() {
         wardLocation: String,
         description: String,
         urgency: String = "NORMAL",
-        hasPhotoAttached: Boolean = false
+        hasPhotoAttached: Boolean = false,
+        photoUri: String? = null,
+        latitude: Double? = 21.4934,
+        longitude: Double? = 86.9135,
+        geoAddress: String? = null
     ) {
         val trackingNumber = 1000 + kotlin.random.Random.nextInt(9000)
         val reportId = "BLS-CIVIC-2026-$trackingNumber"
@@ -733,7 +757,11 @@ class BalasoreViewModel : ViewModel() {
             reportedTimestamp = System.currentTimeMillis(),
             lastUpdatedTimestamp = System.currentTimeMillis(),
             hasPhotoAttached = hasPhotoAttached,
-            resolutionNotes = "Report registered offline in Room DB. Auto-synced with Ward Grievance Desk."
+            resolutionNotes = "Report registered offline in Room DB. Auto-synced with Ward Grievance Desk.",
+            photoUri = photoUri,
+            latitude = latitude,
+            longitude = longitude,
+            geoAddress = geoAddress ?: "$wardLocation, Balasore"
         )
 
         // Immediately reflect in UI state so tests and UI have zero latency
@@ -744,7 +772,18 @@ class BalasoreViewModel : ViewModel() {
         try {
             viewModelScope.launch {
                 try {
-                    civicReportRepo?.submitReport(title, category, wardLocation, description, urgency, hasPhotoAttached)
+                    civicReportRepo?.submitReport(
+                        title = title,
+                        category = category,
+                        wardLocation = wardLocation,
+                        description = description,
+                        urgency = urgency,
+                        hasPhotoAttached = hasPhotoAttached,
+                        photoUri = photoUri,
+                        latitude = latitude,
+                        longitude = longitude,
+                        geoAddress = geoAddress ?: "$wardLocation, Balasore"
+                    )
                 } catch (t: Throwable) {
                     android.util.Log.e("BalasoreViewModel", "Error submitting report: ${t.message}")
                 }

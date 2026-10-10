@@ -21,5 +21,9 @@ data class CivicReportEntity(
     val reportedTimestamp: Long = System.currentTimeMillis(),
     val lastUpdatedTimestamp: Long = System.currentTimeMillis(),
     val hasPhotoAttached: Boolean = false,
-    val resolutionNotes: String = "Report logged in local municipal queue. Awaiting field inspection."
+    val resolutionNotes: String = "Report logged in local municipal queue. Awaiting field inspection.",
+    val photoUri: String? = null,
+    val latitude: Double? = 21.4934,
+    val longitude: Double? = 86.9135,
+    val geoAddress: String? = "Balasore, Odisha"
 )

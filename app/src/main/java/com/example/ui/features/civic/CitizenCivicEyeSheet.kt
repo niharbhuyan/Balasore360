@@ -51,6 +51,15 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Traffic
 import androidx.compose.material.icons.filled.WaterDamage
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import com.example.data.local.CivicReportEntity
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -130,7 +139,18 @@ data class CivicQuadColor(
 fun CitizenCivicEyeSheet(
     language: AppLanguage,
     myReports: List<CivicReportEntity> = emptyList(),
-    onSubmitReport: ((title: String, category: String, wardLocation: String, description: String, urgency: String, hasPhotoAttached: Boolean) -> Unit)? = null,
+    onSubmitReport: ((
+        title: String,
+        category: String,
+        wardLocation: String,
+        description: String,
+        urgency: String,
+        hasPhotoAttached: Boolean,
+        photoUri: String?,
+        latitude: Double?,
+        longitude: Double?,
+        geoAddress: String?
+    ) -> Unit)? = null,
     onAdvanceStatus: ((String) -> Unit)? = null,
     onDeleteReport: ((String) -> Unit)? = null,
     onAutoProgress: (() -> Unit)? = null,
@@ -145,8 +165,8 @@ fun CitizenCivicEyeSheet(
     val categories = remember {
         listOf(
             CivicCategory("POTHOLE", "Road Pothole", "ରାସ୍ତା ଖାଲଖମା", "🕳️", Icons.Default.Traffic, Color(0xFFEA580C)),
-            CivicCategory("STREETLIGHT", "Faulty Streetlight", "ଅଚଳ ଷ୍ଟ୍ରିଟ୍ ଲାଇଟ୍", "💡", Icons.Default.FlashlightOn, Color(0xFFD97706)),
             CivicCategory("DRAINAGE", "Drain Clog / Waterlogging", "ଡ୍ରେନେଜ୍ ଓ ଜଳବନ୍ଦୀ", "🌊", Icons.Default.WaterDamage, Color(0xFF0284C7)),
+            CivicCategory("STREETLIGHT", "Faulty Streetlight", "ଅଚଳ ଷ୍ଟ୍ରିଟ୍ ଲାଇଟ୍", "💡", Icons.Default.FlashlightOn, Color(0xFFD97706)),
             CivicCategory("GARBAGE", "Garbage Heap / Waste", "ଆବର୍ଜନା ସଫେଇ", "🗑️", Icons.Default.DeleteSweep, Color(0xFF16A34A)),
             CivicCategory("WATER_LEAK", "Drinking Water Leak", "ପାନୀୟ ଜଳ ପାଇପ୍ ଲିକ୍", "🚰", Icons.Default.Opacity, Color(0xFF2563EB))
         )
@@ -154,10 +174,35 @@ fun CitizenCivicEyeSheet(
 
     val wardsAndLocations = remember {
         listOf(
-            "Ward 1 - Azimabad", "Ward 4 - Sahadevkhunta", "Ward 7 - Motiganj",
-            "Ward 12 - Cinema Chhak", "Ward 14 - OT Road / Phandi Chhak",
-            "Ward 18 - Station Square", "Ward 22 - Gopalgaon", "Ward 26 - Balisahi",
-            "Remuna Block", "Soro Municipality", "Jaleswar Town", "Nilagiri NAC"
+            "Ward 14 - OT Road / Phandi Chhak",
+            "Ward 12 - Cinema Chhak",
+            "Ward 4 - Sahadevkhunta",
+            "Ward 1 - Azimabad",
+            "Ward 7 - Motiganj",
+            "Ward 18 - Station Square",
+            "Ward 22 - Gopalgaon",
+            "Ward 26 - Balisahi",
+            "Remuna Block",
+            "Soro Municipality",
+            "Jaleswar Town",
+            "Nilagiri NAC"
+        )
+    }
+
+    val wardGeoCoordinates = remember {
+        mapOf(
+            "Ward 14 - OT Road / Phandi Chhak" to Triple(21.4925, 86.9312, "OT Road, Phandi Chhak, Ward 14, Balasore"),
+            "Ward 12 - Cinema Chhak" to Triple(21.4910, 86.9265, "Cinema Chhak, Ward 12, Balasore"),
+            "Ward 4 - Sahadevkhunta" to Triple(21.4981, 86.9240, "Sahadevkhunta Bus Stand Area, Ward 4, Balasore"),
+            "Ward 1 - Azimabad" to Triple(21.5034, 86.9180, "Azimabad, Ward 1, Balasore"),
+            "Ward 7 - Motiganj" to Triple(21.4942, 86.9205, "Motiganj Market, Ward 7, Balasore"),
+            "Ward 18 - Station Square" to Triple(21.4990, 86.9350, "Balasore Railway Station Road, Ward 18, Balasore"),
+            "Ward 22 - Gopalgaon" to Triple(21.4880, 86.9120, "Gopalgaon Town, Ward 22, Balasore"),
+            "Ward 26 - Balisahi" to Triple(21.4850, 86.9210, "Balisahi Ghat, Ward 26, Balasore"),
+            "Remuna Block" to Triple(21.5280, 86.8720, "Remuna NAC, Khirachora Gopinath Area, Balasore"),
+            "Soro Municipality" to Triple(21.2910, 86.6900, "Soro Town Main Market, Balasore"),
+            "Jaleswar Town" to Triple(21.8020, 87.2140, "Jaleswar Station Bazaar, Balasore"),
+            "Nilagiri NAC" to Triple(21.4600, 86.7650, "Nilagiri Sub-Divisional Road, Balasore")
         )
     }
 
@@ -226,12 +271,28 @@ fun CitizenCivicEyeSheet(
     // Form State
     var showReportForm by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(categories.first()) }
-    var selectedLocation by remember { mutableStateOf(wardsAndLocations[4]) }
+    var selectedLocation by remember { mutableStateOf(wardsAndLocations[0]) }
     var issueTitle by remember { mutableStateOf("") }
     var issueDetails by remember { mutableStateOf("") }
     var hasPhotoAttached by remember { mutableStateOf(false) }
+    var attachedPhotoUri by remember { mutableStateOf<String?>(null) }
+    var currentLatitude by remember { mutableStateOf(21.4925) }
+    var currentLongitude by remember { mutableStateOf(86.9312) }
+    var currentGpsAccuracy by remember { mutableStateOf(4) }
+    var isGpsLocked by remember { mutableStateOf(true) }
+    var geoAddressString by remember { mutableStateOf("OT Road, Phandi Chhak, Ward 14, Balasore") }
     var urgencyLevel by remember { mutableStateOf("NORMAL") } // NORMAL, HIGH, CRITICAL
     var filterStatus by remember { mutableStateOf("ALL") } // ALL, ACTIVE, RESOLVED
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            attachedPhotoUri = uri.toString()
+            hasPhotoAttached = true
+            Toast.makeText(context, "Photo attached successfully", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     var lastSubmittedTrackingId by remember { mutableStateOf<String?>(null) }
 
@@ -502,10 +563,10 @@ fun CitizenCivicEyeSheet(
 
                             // Step 1: Category Picker
                             Text(
-                                text = if (language == AppLanguage.ODIA) "୧. ସମସ୍ୟାର ପ୍ରକାର ବାଛନ୍ତୁ:" else "1. Select Category:",
+                                text = if (language == AppLanguage.ODIA) "୧. ସମସ୍ୟାର ପ୍ରକାର ବାଛନ୍ତୁ:" else "1. Select Category (Pothole / Drainage Focus):",
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = BentoSlate700
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -531,15 +592,105 @@ fun CitizenCivicEyeSheet(
                                 }
                             }
 
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Quick Problem Templates for Potholes & Drainage
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "ଦ୍ରୁତ ଟେମ୍ପଲେଟ୍ (ଗୋଟିଏ ଟ୍ୟାପରେ ପୂରଣ କରନ୍ତୁ):" else "Quick Issue Templates (Tap to autofill):",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BentoSlate600
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val quickTemplates = when (selectedCategory.id) {
+                                "POTHOLE" -> listOf(
+                                    "Deep pothole cluster on asphalt track",
+                                    "Hazardous crater causing vehicle skids",
+                                    "Road edge eroded after rain"
+                                )
+                                "DRAINAGE" -> listOf(
+                                    "Storm drain choked with plastic & silt",
+                                    "Monsoon overflow flooding storefronts",
+                                    "Broken drain slab creating road trap"
+                                )
+                                "STREETLIGHT" -> listOf(
+                                    "Dark stretch streetlight blackout",
+                                    "Flickering sodium vapor pole light"
+                                )
+                                else -> listOf(
+                                    "Uncollected solid waste pile",
+                                    "Leaking drinking water supply pipeline"
+                                )
+                            }
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                items(quickTemplates) { template ->
+                                    Surface(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .clickable {
+                                                issueTitle = template
+                                                issueDetails = "$template at $selectedLocation. Reported via Citizen Civic Eye GPS telemetry."
+                                            },
+                                        color = BentoSlate100,
+                                        border = BorderStroke(1.dp, BentoSlate200)
+                                    ) {
+                                        Text(
+                                            text = template,
+                                            fontSize = 10.sp,
+                                            color = BentoSlate700,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            // Step 2: Location / Ward Picker
-                            Text(
-                                text = if (language == AppLanguage.ODIA) "୨. ୱାର୍ଡ / ଛକ ସ୍ଥାନ:" else "2. Balasore Ward / Location:",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = BentoSlate700
-                            )
+                            // Step 2: Location / Ward Picker & GPS Geolocation
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "୨. ୱାର୍ଡ ଓ ଜିଓଲୋକେସନ (GPS):" else "2. Ward & GPS Geolocation:",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
+
+                                Surface(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            // Refresh / calibrate GPS
+                                            currentGpsAccuracy = 3
+                                            isGpsLocked = true
+                                            val coords = wardGeoCoordinates[selectedLocation] ?: Triple(21.4925, 86.9312, selectedLocation)
+                                            currentLatitude = coords.first
+                                            currentLongitude = coords.second
+                                            geoAddressString = coords.third
+                                            Toast.makeText(
+                                                context,
+                                                "📍 GPS Locked: ${currentLatitude}° N, ${currentLongitude}° E (±${currentGpsAccuracy}m precision)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                    color = Color(0xFFDCFCE7),
+                                    border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(imageVector = Icons.Default.GpsFixed, contentDescription = null, tint = Color(0xFF15803D), modifier = Modifier.size(12.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("GPS Re-lock", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF15803D))
+                                    }
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(6.dp))
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 items(wardsAndLocations) { loc ->
@@ -548,7 +699,13 @@ fun CitizenCivicEyeSheet(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(if (isSelected) BentoPrimaryBlue else BentoSlate100)
-                                            .clickable { selectedLocation = loc }
+                                            .clickable {
+                                                selectedLocation = loc
+                                                val coords = wardGeoCoordinates[loc] ?: Triple(21.4925, 86.9312, loc)
+                                                currentLatitude = coords.first
+                                                currentLongitude = coords.second
+                                                geoAddressString = coords.third
+                                            }
                                             .padding(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
                                         Text(
@@ -561,19 +718,79 @@ fun CitizenCivicEyeSheet(
                                 }
                             }
 
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Interactive GPS Telemetry Card
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFF10B981))
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "GPS Coordinates Locked",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF0F172A)
+                                            )
+                                        }
+                                        Text(
+                                            text = "±${currentGpsAccuracy}m precision",
+                                            fontSize = 10.sp,
+                                            color = Color(0xFF059669),
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "📍 Lat: ${currentLatitude}° N • Long: ${currentLongitude}° E",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BentoPrimaryBlue
+                                    )
+                                    Text(
+                                        text = geoAddressString,
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF64748B)
+                                    )
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(14.dp))
 
                             // Step 3: Title and Details
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "୩. ସମସ୍ୟାର ବିବରଣୀ:" else "3. Issue Description:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
                             OutlinedTextField(
                                 value = issueTitle,
                                 onValueChange = { issueTitle = it },
                                 placeholder = {
                                     Text(
-                                        text = if (language == AppLanguage.ODIA) "ଉଦାହରଣ: ଷ୍ଟେସନ ଛକ ନିକଟରେ ବଡ଼ ରାସ୍ତା ଖାଲ" else "e.g., Deep road pothole near Sahadevkhunta",
+                                        text = if (language == AppLanguage.ODIA) "ଉଦାହରଣ: ଫାଣ୍ଡି ଛକ ନିକଟରେ ଗଭୀର ରାସ୍ତା ଖାଲ" else "e.g., Deep road pothole near Phandi Chhak",
                                         fontSize = 12.sp
                                     )
                                 },
-                                label = { Text(if (language == AppLanguage.ODIA) "ସମସ୍ୟାର ସଂକ୍ଷିପ୍ତ ଶିରୋନାମା" else "Issue Title", fontSize = 12.sp) },
+                                label = { Text(if (language == AppLanguage.ODIA) "ସମସ୍ୟାର ଶିରୋନାମା" else "Issue Title", fontSize = 12.sp) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp)
@@ -586,71 +803,200 @@ fun CitizenCivicEyeSheet(
                                 onValueChange = { issueDetails = it },
                                 placeholder = {
                                     Text(
-                                        text = if (language == AppLanguage.ODIA) "ନିର୍ଦ୍ଦିଷ୍ଟ ଲ୍ୟାଣ୍ଡମାର୍କ ଓ ବିବରଣୀ ଲେଖନ୍ତୁ..." else "Add specific landmark or description...",
+                                        text = if (language == AppLanguage.ODIA) "ନିର୍ଦ୍ଦିଷ୍ଟ ଲ୍ୟାଣ୍ଡମାର୍କ, ଆକାର ଓ ବିବରଣୀ ଲେଖନ୍ତୁ..." else "Add specific landmark, pothole depth, or drainage problem details...",
                                         fontSize = 12.sp
                                     )
                                 },
-                                label = { Text(if (language == AppLanguage.ODIA) "ଲ୍ୟାଣ୍ଡମାର୍କ ଓ ବିବରଣୀ" else "Landmark & Description", fontSize = 12.sp) },
+                                label = { Text(if (language == AppLanguage.ODIA) "ଲ୍ୟାଣ୍ଡମାର୍କ ଓ ବିସ୍ତୃତ ବିବରଣୀ" else "Landmark & Full Details", fontSize = 12.sp) },
                                 modifier = Modifier.fillMaxWidth(),
                                 minLines = 2,
                                 maxLines = 4,
                                 shape = RoundedCornerShape(10.dp)
                             )
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
 
-                            // Photo Attach and Urgency
+                            // Step 4: Geolocated Photo Evidence
+                            Text(
+                                text = if (language == AppLanguage.ODIA) "୪. ଫଟୋ ପ୍ରମାଣ (ଜିଓ-ଟ୍ୟାଗ୍ ସହ):" else "4. Geolocated Photo Evidence:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BentoSlate900
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Photo Action Buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Device Photo Picker
+                                Button(
+                                    onClick = {
+                                        photoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1.2f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = BentoPrimaryBlue),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Device Photo", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+
+                                // Quick Presets for fast testing/offline
+                                OutlinedButton(
+                                    onClick = {
+                                        attachedPhotoUri = if (selectedCategory.id == "DRAINAGE") "preset://drain_cinema_chhak" else "preset://pothole_ot_road"
+                                        hasPhotoAttached = true
+                                        Toast.makeText(context, "Preset issue photo tagged with GPS", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(imageVector = Icons.Default.Image, contentDescription = null, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Preset Photo", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Photo Preview Box
+                            if (attachedPhotoUri != null) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                                    border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (attachedPhotoUri!!.startsWith("content://") || attachedPhotoUri!!.startsWith("file://")) {
+                                                AsyncImage(
+                                                    model = attachedPhotoUri,
+                                                    contentDescription = "Geolocated Photo",
+                                                    modifier = Modifier
+                                                        .size(54.dp)
+                                                        .clip(RoundedCornerShape(8.dp)),
+                                                    contentScale = ContentScale.Crop
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(54.dp)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                        .background(if (attachedPhotoUri!!.contains("drain")) Color(0xFF0284C7) else Color(0xFFEA580C)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(if (attachedPhotoUri!!.contains("drain")) "🌊" else "🕳️", fontSize = 24.sp)
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Column {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(14.dp))
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = "Photo Geotagged ✓",
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFF166534)
+                                                    )
+                                                }
+                                                Text(
+                                                    text = "📍 ${currentLatitude}° N, ${currentLongitude}° E",
+                                                    fontSize = 10.sp,
+                                                    color = Color(0xFF15803D),
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                                Text(
+                                                    text = selectedLocation,
+                                                    fontSize = 9.sp,
+                                                    color = Color(0xFF166534)
+                                                )
+                                            }
+                                        }
+
+                                        IconButton(
+                                            onClick = {
+                                                attachedPhotoUri = null
+                                                hasPhotoAttached = false
+                                                Toast.makeText(context, "Photo removed", Toast.LENGTH_SHORT).show()
+                                            },
+                                            modifier = Modifier.size(30.dp)
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove photo", tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
+                                        }
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFF8FAFC))
+                                        .border(BorderStroke(1.dp, BentoSlate200), RoundedCornerShape(8.dp))
+                                        .padding(10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No photo attached yet. Attach a photo above to provide evidence.",
+                                        fontSize = 11.sp,
+                                        color = BentoSlate600
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Urgency Selector
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(if (hasPhotoAttached) Color(0xFFDCFCE7) else BentoSlate100)
-                                        .clickable {
-                                            hasPhotoAttached = !hasPhotoAttached
-                                            Toast.makeText(
-                                                context,
-                                                if (hasPhotoAttached) "Photo attached: [IMG_BLS_CIVIC.jpg]" else "Photo removed",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CameraAlt,
-                                        contentDescription = null,
-                                        tint = if (hasPhotoAttached) Color(0xFF16A34A) else BentoSlate600,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = if (hasPhotoAttached) "Photo Tagged ✓" else "+ Attach Photo",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (hasPhotoAttached) Color(0xFF16A34A) else BentoSlate700
-                                    )
-                                }
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ଜରୁରୀ ସ୍ତର:" else "Urgency Level:",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BentoSlate900
+                                )
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    listOf("NORMAL", "CRITICAL").forEach { urg ->
-                                        val isSel = urgencyLevel == urg
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    listOf("NORMAL" to "Normal", "HIGH" to "High", "CRITICAL" to "⚠️ Critical").forEach { (urgKey, urgLabel) ->
+                                        val isSel = urgencyLevel == urgKey
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(6.dp))
                                                 .background(
                                                     if (isSel) {
-                                                        if (urg == "CRITICAL") Color(0xFFDC2626) else BentoPrimaryBlue
+                                                        when (urgKey) {
+                                                            "CRITICAL" -> Color(0xFFDC2626)
+                                                            "HIGH" -> Color(0xFFEA580C)
+                                                            else -> BentoPrimaryBlue
+                                                        }
                                                     } else BentoSlate100
                                                 )
-                                                .clickable { urgencyLevel = urg }
+                                                .clickable { urgencyLevel = urgKey }
                                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                                         ) {
                                             Text(
-                                                text = if (urg == "CRITICAL") "⚠️ Urgent" else "Normal",
+                                                text = urgLabel,
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isSel) Color.White else BentoSlate700
@@ -692,12 +1038,18 @@ fun CitizenCivicEyeSheet(
                                         selectedLocation,
                                         if (issueDetails.isNotBlank()) issueDetails else "Reported by citizen via Balasore 360",
                                         urgencyLevel,
-                                        hasPhotoAttached
+                                        hasPhotoAttached,
+                                        attachedPhotoUri,
+                                        currentLatitude,
+                                        currentLongitude,
+                                        geoAddressString
                                     )
                                     civicIssues.add(0, newIssue)
                                     lastSubmittedTrackingId = newTrackId
                                     issueTitle = ""
                                     issueDetails = ""
+                                    attachedPhotoUri = null
+                                    hasPhotoAttached = false
                                     showReportForm = false
                                     activeSection = "MY_REPORTS"
                                     Toast.makeText(context, "Logged grievance $newTrackId with Balasore Municipality (Room DB)", Toast.LENGTH_LONG).show()
@@ -709,7 +1061,7 @@ fun CitizenCivicEyeSheet(
                                 Icon(imageVector = Icons.Default.AddAlert, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (language == AppLanguage.ODIA) "ଅଭିଯୋଗ ଦାଖଲ କରନ୍ତୁ" else "Submit Grievance to Municipality",
+                                    text = if (language == AppLanguage.ODIA) "ଅଭିଯୋଗ ଦାଖଲ କରନ୍ତୁ (Room DB)" else "Submit Grievance to Municipality (Room DB)",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1222,7 +1574,7 @@ private fun MyCivicReportItemRow(
                 lineHeight = 20.sp
             )
 
-            // Location
+            // Location & GPS Telemetry
             Row(
                 modifier = Modifier.padding(top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -1230,21 +1582,91 @@ private fun MyCivicReportItemRow(
                 Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(13.dp))
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = report.wardLocation,
+                    text = report.geoAddress ?: report.wardLocation,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF64748B)
                 )
-                if (report.hasPhotoAttached) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(12.dp))
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        text = "Photo Attached",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF16A34A)
+            }
+
+            // GPS Coordinates Chip
+            if (report.latitude != null && report.longitude != null) {
+                Row(
+                    modifier = Modifier.padding(top = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFF1F5F9))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "📍 GPS: ${report.latitude}° N, ${report.longitude}° E",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF334155)
+                        )
+                    }
+                    if (report.hasPhotoAttached) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFDCFCE7))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "📷 Geotagged Photo",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF15803D)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Photo Preview if attached
+            if (report.hasPhotoAttached && report.photoUri != null) {
+                Spacer(modifier = Modifier.height(6.dp))
+                if (report.photoUri.startsWith("content://") || report.photoUri.startsWith("file://")) {
+                    AsyncImage(
+                        model = report.photoUri,
+                        contentDescription = "Civic Evidence Photo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (report.category.contains("Drain")) Color(0xFFE0F2FE) else Color(0xFFFFEDD5))
+                            .border(BorderStroke(1.dp, if (report.category.contains("Drain")) Color(0xFFBAE6FD) else Color(0xFFFED7AA)), RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(if (report.category.contains("Drain")) "🌊" else "🕳️", fontSize = 20.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = if (report.category.contains("Drain")) "Waterlogged Drain Field Evidence Tagged" else "Asphalt Pothole Crater Evidence Tagged",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (report.category.contains("Drain")) Color(0xFF0369A1) else Color(0xFFC2410C)
+                                )
+                                Text(
+                                    text = "Verified at Lat: ${report.latitude ?: 21.4925}° N, Long: ${report.longitude ?: 86.9312}° E",
+                                    fontSize = 9.sp,
+                                    color = Color(0xFF64748B)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

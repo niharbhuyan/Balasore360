@@ -29,19 +29,30 @@ private val DarkColorScheme = darkColorScheme(
     onPrimaryContainer = Color(0xFFE0F2FE),
     secondary = CoralOrange,
     onSecondary = Color.White,
+    secondaryContainer = Color(0xFF7C2D12),
+    onSecondaryContainer = Color(0xFFFFEDD5),
+    tertiary = EmeraldGreen,
+    onTertiary = Color.White,
+    error = Color(0xFFF87171),
+    onError = Color(0xFF450A0A),
+    errorContainer = Color(0xFF7F1D1D),
+    onErrorContainer = Color(0xFFFEE2E2),
     background = BentoSlate900,
     onBackground = BentoSlate50,
     surface = BentoSlate800,
     onSurface = BentoSlate50,
     surfaceVariant = BentoSlate700,
-    onSurfaceVariant = BentoSlate200
+    onSurfaceVariant = BentoSlate200,
+    outline = Color(0xFF475569),
+    outlineVariant = Color(0xFF334155)
 )
 
 /**
- * High-Contrast OLED Dark Color Scheme for night-time reading.
+ * High-Contrast OLED Dark Color Scheme for night-time reading and emergency alert visibility.
  * Uses pure pitch black (#000000) for zero screen glow and maximum OLED power efficiency,
- * crisp #FFFFFF typography for maximum readability, and warm amber/soothing cyan accents
- * to significantly reduce eye strain during prolonged night reading.
+ * ultra-vibrant emergency alert indicators (#EF4444 red, #F59E0B amber, #38BDF8 cyan)
+ * ensuring life-saving alerts, cyclone sirens, and evacuation warnings remain prominently readable
+ * in complete darkness without waking other family members.
  */
 private val HighContrastDarkColorScheme = darkColorScheme(
     primary = Color(0xFF38BDF8),
@@ -52,6 +63,12 @@ private val HighContrastDarkColorScheme = darkColorScheme(
     onSecondary = Color.Black,
     secondaryContainer = Color(0xFF78350F),
     onSecondaryContainer = Color(0xFFFEF3C7),
+    tertiary = Color(0xFF34D399),
+    onTertiary = Color.Black,
+    error = Color(0xFFEF4444), // Vivid emergency alarm red
+    onError = Color.Black,
+    errorContainer = Color(0xFF991B1B),
+    onErrorContainer = Color(0xFFFEF2F2),
     background = Color(0xFF000000), // AMOLED Pitch Black
     onBackground = Color(0xFFFFFFFF), // 21:1 Contrast
     surface = Color(0xFF0B1120), // Deep contrasting surface

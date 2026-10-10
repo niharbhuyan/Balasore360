@@ -295,6 +295,8 @@ class MainActivity : ComponentActivity() {
         try {
             com.example.data.notification.TideAndWeatherNotificationManager.createNotificationChannels(applicationContext)
             com.example.data.notification.TideAndWeatherNotificationManager.schedulePeriodicTideAndWeatherChecks(applicationContext, intervalMinutes = 15)
+            // Initialize Chandipur Safe Walk 30-min Advance Push Notification Background Service
+            com.example.data.service.ChandipurSafeWalkService.startService(applicationContext)
         } catch (t: Throwable) {
             Log.w("MainActivity", "TideAndWeatherNotificationManager init notice: ${t.message}")
         }
@@ -1411,8 +1413,8 @@ fun BalasoreApp(
                         CitizenCivicEyeSheet(
                             language = uiState.language,
                             myReports = uiState.myCivicReports,
-                            onSubmitReport = { title, cat, ward, desc, urgency, photo ->
-                                viewModel.submitCivicReport(title, cat, ward, desc, urgency, photo)
+                            onSubmitReport = { title, cat, ward, desc, urgency, photo, photoUri, lat, lng, addr ->
+                                viewModel.submitCivicReport(title, cat, ward, desc, urgency, photo, photoUri, lat, lng, addr)
                             },
                             onAdvanceStatus = { id -> viewModel.advanceCivicReportStatus(id) },
                             onDeleteReport = { id -> viewModel.deleteCivicReport(id) },
@@ -2218,7 +2220,6 @@ fun BalasoreApp(
                     )
                 }
                 null -> {}
-                else -> {}
             }
         }
     }

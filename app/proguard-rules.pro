@@ -38,6 +38,8 @@
 -keep class com.example.data.model.** { *; }
 -keep class com.example.data.local.** { *; }
 -keep class com.example.data.repository.** { *; }
+-keep class com.example.data.service.** { *; }
+-keep class com.example.data.notification.** { *; }
 -keep class com.example.ui.model.** { *; }
 -keep class com.example.ui.viewmodel.** { *; }
 

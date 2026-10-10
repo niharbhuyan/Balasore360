@@ -524,6 +524,121 @@ fun EssentialsScreen(
             }
         }
 
+        // Citizen Civic Eye Hero Card (Potholes, Drainage & Municipal Issues)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .clickable { onOpenFeatureSheet(UniqueFeatureSheetType.CITIZEN_CIVIC_EYE) }
+                    .testTag("essentials_citizen_civic_eye_hero_card"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF0284C7)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("📸", fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (language == AppLanguage.ODIA) "ସିଟିଜେନ୍ ସିଭିକ୍ ଆଇ" else "Citizen Civic Eye",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = Color.White
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFF10B981).copy(alpha = 0.25f))
+                                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                                    ) {
+                                        Text("ROOM DB", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF34D399))
+                                    }
+                                }
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ରାସ୍ତା ଖାଲ, ଡ୍ରେନେଜ୍ ଓ ଆବର୍ଜନା ଜିଓ-ଫଟୋ ସହ ଦାଖଲ କରନ୍ତୁ" else "Report Potholes & Drainage with Geolocated Photos",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                        }
+
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Open Citizen Civic Eye",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1E293B))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🕳️", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Road Potholes", fontSize = 10.sp, color = Color(0xFFE2E8F0), fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1E293B))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🌊", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Drain Clogs", fontSize = 10.sp, color = Color(0xFFE2E8F0), fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1E293B))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📍", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("GPS Tagged", fontSize = 10.sp, color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // FEATURE 5: Bahabalpur & Kasafal Fresh Seafood Catch Index & Harbor Rates
         item {
             Card(

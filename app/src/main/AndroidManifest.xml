@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
 
     <!-- Telephony hardware is optional so tablets/large screen devices can install the app -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
@@ -72,6 +74,20 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Chandipur Safe Walk 30-min Advance Push Notification Alert Receiver -->
+        <receiver
+            android:name="com.example.data.service.ChandipurTideAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.action.CHANDIPUR_SAFE_WALK_ALARM" />
+                <action android:name="com.example.action.TRIGGER_SAFE_WALK_30M" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

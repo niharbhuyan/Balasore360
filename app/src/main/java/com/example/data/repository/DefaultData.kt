@@ -577,7 +577,11 @@ object DefaultData {
                 reportedTimestamp = now - (3 * 3600 * 1000L),
                 lastUpdatedTimestamp = now - (30 * 60 * 1000L),
                 hasPhotoAttached = true,
-                resolutionNotes = "Road contractor assigned. Bitumen hot-mix batch dispatched to Phandi Chhak."
+                resolutionNotes = "Road contractor assigned. Bitumen hot-mix batch dispatched to Phandi Chhak.",
+                photoUri = "preset://pothole_ot_road",
+                latitude = 21.4925,
+                longitude = 86.9312,
+                geoAddress = "Phandi Chhak, OT Road, Ward 14, Balasore"
             ),
             CivicReportEntity(
                 id = "BLS-CIVIC-2026-3914",
@@ -591,7 +595,11 @@ object DefaultData {
                 reportedTimestamp = now - (1 * 3600 * 1000L),
                 lastUpdatedTimestamp = now - (1 * 3600 * 1000L),
                 hasPhotoAttached = true,
-                resolutionNotes = "Report logged in municipal grievance queue. Scheduled for evening sanitation beat."
+                resolutionNotes = "Report logged in municipal grievance queue. Scheduled for evening sanitation beat.",
+                photoUri = "preset://garbage_nuabazar",
+                latitude = 21.4981,
+                longitude = 86.9240,
+                geoAddress = "Nuabazar Sabzi Mandi, Sahadevkhunta, Balasore"
             ),
             CivicReportEntity(
                 id = "BLS-CIVIC-2026-2105",
@@ -605,7 +613,11 @@ object DefaultData {
                 reportedTimestamp = now - (24 * 3600 * 1000L),
                 lastUpdatedTimestamp = now - (2 * 3600 * 1000L),
                 hasPhotoAttached = false,
-                resolutionNotes = "Faulty solar charge controller replaced by TPNODL lineman. Streetlights tested and fully operational."
+                resolutionNotes = "Faulty solar charge controller replaced by TPNODL lineman. Streetlights tested and fully operational.",
+                photoUri = null,
+                latitude = 21.4720,
+                longitude = 86.9015,
+                geoAddress = "FM University Approach Road, Azimabad, Balasore"
             ),
             CivicReportEntity(
                 id = "BLS-CIVIC-2026-5129",
@@ -619,7 +631,11 @@ object DefaultData {
                 reportedTimestamp = now - (5 * 3600 * 1000L),
                 lastUpdatedTimestamp = now - (45 * 60 * 1000L),
                 hasPhotoAttached = true,
-                resolutionNotes = "Desiltation crew on site with vacuum suction gear. Primary culvert cleared."
+                resolutionNotes = "Desiltation crew on site with vacuum suction gear. Primary culvert cleared.",
+                photoUri = "preset://drain_cinema_chhak",
+                latitude = 21.4910,
+                longitude = 86.9265,
+                geoAddress = "Cinema Chhak, Ward 12, Balasore"
             )
         )
     }

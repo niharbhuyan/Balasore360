@@ -85,7 +85,11 @@ class CivicReportRepository(
         wardLocation: String,
         description: String,
         urgency: String = "NORMAL",
-        hasPhotoAttached: Boolean = false
+        hasPhotoAttached: Boolean = false,
+        photoUri: String? = null,
+        latitude: Double? = 21.4934,
+        longitude: Double? = 86.9135,
+        geoAddress: String? = null
     ): CivicReportEntity {
         val trackingNumber = 1000 + Random.nextInt(9000)
         val reportId = "BLS-CIVIC-2026-$trackingNumber"
@@ -109,7 +113,11 @@ class CivicReportRepository(
             reportedTimestamp = System.currentTimeMillis(),
             lastUpdatedTimestamp = System.currentTimeMillis(),
             hasPhotoAttached = hasPhotoAttached,
-            resolutionNotes = "Report registered offline in Room DB. Auto-synced with Ward Grievance Desk."
+            resolutionNotes = "Report registered offline in Room DB. Auto-synced with Ward Grievance Desk.",
+            photoUri = photoUri,
+            latitude = latitude,
+            longitude = longitude,
+            geoAddress = geoAddress ?: "$wardLocation, Balasore"
         )
         civicReportDao.insertOrUpdateReport(entity)
         return entity

@@ -81,7 +81,18 @@ import com.example.R
 import com.example.data.local.NewsArticleEntity
 import com.example.data.local.ReviewEntity
 import com.example.data.local.UserEntity
+import com.example.data.model.AppLanguage
+import com.example.data.model.NewsArticle
+import kotlinx.coroutines.flow.flowOf
+import com.example.data.repository.BalasoreRepository
+import com.example.ui.components.NewsAudioPlayerComponent
 import com.example.ui.components.ReviewsSection
+import com.example.util.NewsTextToSpeechHelper
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.theme.BentoBlueLight
 import com.example.ui.theme.BentoBorder
 import com.example.ui.theme.BentoCardWhite
@@ -94,6 +105,47 @@ import com.example.ui.theme.BentoSlate700
 import com.example.ui.theme.BentoSlate900
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.roundToInt
+
+/**
+ * Convenience overload of NewsDetailScreen accepting domain [NewsArticle].
+ */
+@Composable
+fun NewsDetailScreen(
+    article: NewsArticle,
+    onNavigateBack: () -> Unit,
+    onToggleBookmark: () -> Unit,
+    onVerifyWithSearch: () -> Unit = {},
+    onToggleNightMode: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    val entity = remember(article) {
+        NewsArticleEntity(
+            id = article.id.toLongOrNull() ?: 1L,
+            title = article.title,
+            summary = article.snippet,
+            content = article.content.ifBlank { article.snippet },
+            category = article.category,
+            source = article.source,
+            publishedAt = article.timeAgo,
+            isBreaking = article.category.contains("Breaking", ignoreCase = true) ||
+                article.category.contains("Emergency", ignoreCase = true) ||
+                article.category.contains("Alert", ignoreCase = true),
+            imageUrl = null,
+            isBookmarked = article.isBookmarked
+        )
+    }
+    NewsDetailScreen(
+        article = entity,
+        currentUser = null,
+        reviewsFlow = remember { flowOf(emptyList()) },
+        onSubmitReview = { _, _, _ -> },
+        onNavigateBack = onNavigateBack,
+        onToggleBookmark = onToggleBookmark,
+        onVerifyWithSearch = onVerifyWithSearch,
+        onToggleNightMode = onToggleNightMode,
+        modifier = modifier
+    )
+}
 
 /**
  * Dedicated Detail View Screen for News Articles in Balasore.
@@ -132,6 +184,31 @@ fun NewsDetailScreen(
         val minutes = kotlin.math.max(1, (words / 140.0).roundToInt())
         "$minutes min read"
     }
+
+    // Text-To-Speech (TTS) Engine Instance for Regional English & Odia Speech
+    val ttsHelper = remember { NewsTextToSpeechHelper.getInstance(context) }
+    val isTtsSpeaking by ttsHelper.isSpeaking.collectAsStateWithLifecycle()
+    val isTtsPaused by ttsHelper.isPaused.collectAsStateWithLifecycle()
+    val currentTtsLang by ttsHelper.currentLanguage.collectAsStateWithLifecycle()
+    val ttsSpeechSpeed by ttsHelper.speechSpeed.collectAsStateWithLifecycle()
+    val ttsStatusMsg by ttsHelper.statusMessage.collectAsStateWithLifecycle()
+
+    // Stop TTS cleanly when navigating away from this article
+    DisposableEffect(article.id) {
+        onDispose {
+            ttsHelper.stop()
+        }
+    }
+
+    // Resolve Odia translations from repository if present
+    val matchedRepoArticle = remember(article.id, article.title) {
+        BalasoreRepository.newsArticles.find {
+            it.id == article.id.toString() || it.title.equals(article.title, ignoreCase = true)
+        }
+    }
+    val resolvedOdiaTitle = matchedRepoArticle?.odiaTitle ?: article.title
+    val resolvedOdiaContent = matchedRepoArticle?.odiaContent?.ifBlank { null } ?: article.content
+    val resolvedOdiaSummary = matchedRepoArticle?.odiaSnippet?.ifBlank { null } ?: article.summary
 
     Scaffold(
         modifier = modifier
@@ -196,6 +273,32 @@ fun NewsDetailScreen(
                         )
                     }
 
+                    // Text-To-Speech Listen Action
+                    IconButton(
+                        onClick = {
+                            if (isTtsSpeaking) {
+                                ttsHelper.pause()
+                            } else {
+                                val tTitle = if (currentTtsLang == AppLanguage.ODIA) resolvedOdiaTitle else article.title
+                                val tBody = if (currentTtsLang == AppLanguage.ODIA) "$resolvedOdiaSummary. $resolvedOdiaContent" else "${article.summary}. ${article.content}"
+                                ttsHelper.speakArticle(
+                                    articleId = article.id.toString(),
+                                    title = tTitle,
+                                    content = tBody,
+                                    language = currentTtsLang
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .testTag("news_detail_tts_top_button")
+                            .size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isTtsSpeaking) Icons.Default.GraphicEq else Icons.Default.Headphones,
+                            contentDescription = if (isTtsSpeaking) "Pause Article Audio" else "Listen to News Audio in English or Odia",
+                            tint = if (isTtsSpeaking) BentoPrimaryBlue else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     // Share Article Action
                     IconButton(
                         onClick = { shareNewsArticle(context, article) },
@@ -441,6 +544,42 @@ fun NewsDetailScreen(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Text-to-Speech Regional Audio Player (English & Odia)
+                NewsAudioPlayerComponent(
+                    articleId = article.id.toString(),
+                    englishTitle = article.title,
+                    odiaTitle = resolvedOdiaTitle,
+                    englishContent = "${article.summary}. ${article.content}",
+                    odiaContent = "$resolvedOdiaSummary. $resolvedOdiaContent",
+                    isSpeaking = isTtsSpeaking,
+                    isPaused = isTtsPaused,
+                    selectedLanguage = currentTtsLang,
+                    speechSpeed = ttsSpeechSpeed,
+                    statusMessage = ttsStatusMsg,
+                    onPlay = { lang ->
+                        val tTitle = if (lang == AppLanguage.ODIA) resolvedOdiaTitle else article.title
+                        val tBody = if (lang == AppLanguage.ODIA) "$resolvedOdiaSummary. $resolvedOdiaContent" else "${article.summary}. ${article.content}"
+                        ttsHelper.speakArticle(
+                            articleId = article.id.toString(),
+                            title = tTitle,
+                            content = tBody,
+                            language = lang
+                        )
+                    },
+                    onPause = { ttsHelper.pause() },
+                    onStop = { ttsHelper.stop() },
+                    onLanguageChange = { newLang ->
+                        val tTitle = if (newLang == AppLanguage.ODIA) resolvedOdiaTitle else article.title
+                        val tBody = if (newLang == AppLanguage.ODIA) "$resolvedOdiaSummary. $resolvedOdiaContent" else "${article.summary}. ${article.content}"
+                        ttsHelper.setLanguage(newLang, tTitle, tBody)
+                    },
+                    onSpeedChange = { newSpeed ->
+                        ttsHelper.setSpeechSpeed(newSpeed)
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 

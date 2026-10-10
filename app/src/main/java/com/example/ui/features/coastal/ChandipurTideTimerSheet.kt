@@ -429,6 +429,15 @@ fun ChandipurTideTimerSheet(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 24-Hour Interactive D3.js Tidal Curve & Safe Walk Window Profile
+        ChandipurTideD3Chart(
+            dailyPulse = dailyPulse,
+            language = language,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // 72-Hour Interactive Tidal Wave Cycle Telemetry (Recharts Engine)
         ChandipurTidalRechartsCard(
             dailyPulse = dailyPulse,
@@ -471,7 +480,7 @@ fun ChandipurTideTimerSheet(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = if (isAlarmEnabled) "PROACTIVE LOCAL PUSH: ACTIVE" else "NOTIFICATIONS MUTED",
+                                text = if (isAlarmEnabled) "30-MIN BACKGROUND SERVICE: ACTIVE" else "NOTIFICATIONS MUTED",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (isAlarmEnabled) Color(0xFF15803D) else Color(0xFF64748B)
@@ -480,7 +489,7 @@ fun ChandipurTideTimerSheet(
                     }
 
                     Text(
-                        text = "High Priority Channel",
+                        text = "Tidal Telemetry Service",
                         fontSize = 10.sp,
                         color = Color(0xFF0284C7),
                         fontWeight = FontWeight.Bold
@@ -535,9 +544,14 @@ fun ChandipurTideTimerSheet(
                         onCheckedChange = {
                             isAlarmEnabled = it
                             TideAndWeatherNotificationManager.setWalkWindowAlertsEnabled(context, it)
+                            if (it) {
+                                com.example.data.service.ChandipurSafeWalkService.scheduleNextWalkWindowAlert(context)
+                            } else {
+                                com.example.data.service.ChandipurSafeWalkService.cancelAlert(context)
+                            }
                             Toast.makeText(
                                 context,
-                                if (it) "✅ Vanishing Sea Walk Alerts Activated!" else "Muted Walk Notifications",
+                                if (it) "✅ Vanishing Sea Walk 30m Alerts Activated!" else "Muted Walk Notifications",
                                 Toast.LENGTH_SHORT
                             ).show()
                         },

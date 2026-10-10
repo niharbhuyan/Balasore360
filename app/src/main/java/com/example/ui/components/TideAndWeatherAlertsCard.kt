@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Refresh
@@ -86,6 +87,7 @@ fun TideAndWeatherAlertsCard(
     val context = LocalContext.current
 
     var isTideEnabled by remember { mutableStateOf(TideAndWeatherNotificationManager.isTideAlertsEnabled(context)) }
+    var isWalkWindowEnabled by remember { mutableStateOf(TideAndWeatherNotificationManager.isWalkWindowAlertsEnabled(context)) }
     var isWeatherEnabled by remember { mutableStateOf(TideAndWeatherNotificationManager.isWeatherAlertsEnabled(context)) }
     var advanceWarningMinutes by remember { mutableIntStateOf(TideAndWeatherNotificationManager.getAdvanceWarningMinutes(context)) }
     var showAdvancedSettings by remember { mutableStateOf(false) }
@@ -118,9 +120,9 @@ fun TideAndWeatherAlertsCard(
             .fillMaxWidth()
             .testTag("tide_weather_alerts_card"),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        border = BorderStroke(1.dp, BentoSlate200)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             // Header Row with Icon and Title
@@ -135,14 +137,14 @@ fun TideAndWeatherAlertsCard(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = OceanBlue.copy(alpha = 0.12f),
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         modifier = Modifier.size(40.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.NotificationsActive,
                                 contentDescription = null,
-                                tint = OceanBlue,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -153,14 +155,14 @@ fun TideAndWeatherAlertsCard(
                             text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ଜୁଆର ଓ ପାଣିପାଗ ସତର୍କତା" else "Tide & Weather Alerts",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = BentoSlate900,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp
                             )
                         )
                         Text(
                             text = "WorkManager Local Notification Engine",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = BentoSlate600,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp
                             )
                         )
@@ -217,12 +219,12 @@ fun TideAndWeatherAlertsCard(
                             text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ଜୁଆର ପ୍ରତ୍ୟାବର୍ତ୍ତନ ଚେତାବନୀ" else "Chandipur High Tide Alerts",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = BentoSlate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = if (language == AppLanguage.ODIA) "ସମୁଦ୍ର ମାଡ଼ି ଆସିବା ପୂର୍ବରୁ ସତର୍କ ସୂଚନା" else "Alerts before sea rushes back across 5 km seabed",
                             fontSize = 11.sp,
-                            color = BentoSlate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -248,7 +250,7 @@ fun TideAndWeatherAlertsCard(
                         text = "Advance Notice Time Before High Tide:",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
-                        color = BentoSlate700
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
@@ -258,7 +260,7 @@ fun TideAndWeatherAlertsCard(
                             val isSelected = advanceWarningMinutes == mins
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = if (isSelected) OceanBlue else BentoSlate200.copy(alpha = 0.6f),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier.clickable {
                                     advanceWarningMinutes = mins
                                     TideAndWeatherNotificationManager.setAdvanceWarningMinutes(context, mins)
@@ -268,7 +270,7 @@ fun TideAndWeatherAlertsCard(
                                     text = "${mins}m before",
                                     fontSize = 10.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color.White else BentoSlate700,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
@@ -278,10 +280,65 @@ fun TideAndWeatherAlertsCard(
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(color = BentoSlate200.copy(alpha = 0.6f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Setting 2: Weather Updates Toggle
+            // Setting 2: Chandipur 30-Min Safe Walk Window Alerts Toggle
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                        contentDescription = null,
+                        tint = EmeraldGreen,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ସମୁଦ୍ର ଚାଲିବା ୩୦ ମିନିଟ୍ ପୂର୍ବ ଆଲର୍ଟ" else "Safe Walk Window Alert (30m Prior)",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (language == AppLanguage.ODIA) "ଜୁଆର ତଥ୍ୟ ଅନୁସାରେ ସମୁଦ୍ର ଖାଲି ହେବା ୩୦ ମି ପୂର୍ବରୁ ପୁସ୍ ଆଲର୍ଟ" else "Telemetry alert 30 mins before receding sea walk window begins",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Switch(
+                    checked = isWalkWindowEnabled,
+                    onCheckedChange = { checked ->
+                        isWalkWindowEnabled = checked
+                        TideAndWeatherNotificationManager.setWalkWindowAlertsEnabled(context, checked)
+                        if (checked) {
+                            com.example.data.service.ChandipurSafeWalkService.scheduleNextWalkWindowAlert(context)
+                        } else {
+                            com.example.data.service.ChandipurSafeWalkService.cancelAlert(context)
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = EmeraldGreen
+                    ),
+                    modifier = Modifier.testTag("walk_window_alerts_switch")
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Setting 3: Weather Updates Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,12 +360,12 @@ fun TideAndWeatherAlertsCard(
                             text = if (language == AppLanguage.ODIA) "ବାଲେଶ୍ୱର ପାଣିପାଗ ଓ ବାତ୍ୟା ସୂଚନା" else "Balasore Weather Alerts",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = BentoSlate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = if (language == AppLanguage.ODIA) "କାଳବୈଶାଖୀ, ବର୍ଷା ଓ ସାମୁଦ୍ରିକ ପବନ ଅପଡେଟ୍" else "Kalbaisakhi storms, squalls, & temperature updates",
                             fontSize = 11.sp,
-                            color = BentoSlate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -345,20 +402,48 @@ fun TideAndWeatherAlertsCard(
                         .testTag("test_high_tide_button"),
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, OceanBlue),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Waves,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(13.dp),
                         tint = OceanBlue
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = "Test Tide Alert",
-                        fontSize = 11.sp,
+                        text = "High Tide",
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = OceanBlue
+                    )
+                }
+
+                // Test Safe Walk 30m Advance Alert Button
+                OutlinedButton(
+                    onClick = {
+                        com.example.data.service.ChandipurSafeWalkService.triggerImmediateTestAlert(context)
+                        Toast.makeText(context, "🌊 Sent 30m Advance Safe Walk Alert!", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("test_safe_walk_30m_button"),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, EmeraldGreen),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                        contentDescription = null,
+                        modifier = Modifier.size(13.dp),
+                        tint = EmeraldGreen
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "30m Walk Alert",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = EmeraldGreen
                     )
                 }
 
@@ -373,18 +458,18 @@ fun TideAndWeatherAlertsCard(
                         .testTag("test_weather_button"),
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, AmberGold),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Cloud,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(13.dp),
                         tint = AmberGold
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = "Test Weather",
-                        fontSize = 11.sp,
+                        text = "Weather",
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = AmberGold
                     )

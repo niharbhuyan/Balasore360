@@ -459,4 +459,35 @@ class BalasoreUniqueFeaturesTest {
         viewModel.autoProgressCivicReports()
         assertTrue("Civic reports should remain populated after auto-progression", viewModel.uiState.value.myCivicReports.isNotEmpty())
     }
+
+    @Test
+    fun testCitizenCivicEyeGeolocatedPhotoSubmission() {
+        val viewModel = BalasoreViewModel()
+        val initialCount = viewModel.uiState.value.myCivicReports.size
+
+        // Submit geolocated photo report for drainage issue
+        viewModel.submitCivicReport(
+            title = "Storm drain choked near Cinema Chhak",
+            category = "Drain Clog / Waterlogging",
+            wardLocation = "Ward 12 - Cinema Chhak",
+            description = "Monsoon runoff overflowing onto street. Photo evidence attached.",
+            urgency = "CRITICAL",
+            hasPhotoAttached = true,
+            photoUri = "content://media/external/images/media/48291",
+            latitude = 21.4910,
+            longitude = 86.9265,
+            geoAddress = "Cinema Chhak, Ward 12, Balasore"
+        )
+
+        val updatedList = viewModel.uiState.value.myCivicReports
+        assertEquals(initialCount + 1, updatedList.size)
+        val submitted = updatedList.first()
+        assertEquals("Storm drain choked near Cinema Chhak", submitted.title)
+        assertEquals("Drain Clog / Waterlogging", submitted.category)
+        assertTrue(submitted.hasPhotoAttached)
+        assertEquals("content://media/external/images/media/48291", submitted.photoUri)
+        assertEquals(21.4910, submitted.latitude ?: 0.0, 0.0001)
+        assertEquals(86.9265, submitted.longitude ?: 0.0, 0.0001)
+        assertEquals("Cinema Chhak, Ward 12, Balasore", submitted.geoAddress)
+    }
 }

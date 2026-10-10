@@ -709,8 +709,8 @@ fun WeatherScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .testTag("marine_horizon_card"),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, BentoSlate100)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -722,19 +722,19 @@ fun WeatherScreen(
                             text = if (language == AppLanguage.ODIA) "୨୪-ଘଣ୍ଟାର ଉପକୂଳ କ୍ଷିତିଜ ପୂର୍ବାନୁମାନ" else "24-Hour Coastal & Marine Horizon",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = BentoSlate900
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFE0F2FE)
+                            color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Text(
                                 text = "BAY OF BENGAL",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.ExtraBold,
                                     fontSize = 9.sp,
-                                    color = OceanBlue
+                                    color = MaterialTheme.colorScheme.primary
                                 ),
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
@@ -761,8 +761,8 @@ fun WeatherScreen(
                         items(hourlyForecasts) { (time, temp, tide) ->
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
-                                color = if (time == "Now") Color(0xFF0284C7) else Color(0xFFF8FAFC),
-                                border = BorderStroke(1.dp, if (time == "Now") Color(0xFF0284C7) else Color(0xFFE2E8F0)),
+                                color = if (time == "Now") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, if (time == "Now") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                                 modifier = Modifier.width(96.dp)
                             ) {
                                 Column(
@@ -774,14 +774,14 @@ fun WeatherScreen(
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 11.sp,
-                                            color = if (time == "Now") Color.White else BentoSlate500
+                                            color = if (time == "Now") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Icon(
                                         imageVector = if (time in listOf("18:00", "20:00", "22:00", "00:00", "02:00")) Icons.Default.Water else Icons.Default.WbSunny,
                                         contentDescription = null,
-                                        tint = if (time == "Now") Color(0xFFBAE6FD) else if (time in listOf("18:00", "20:00", "22:00", "00:00", "02:00")) OceanBlue else AmberGold,
+                                        tint = if (time == "Now") MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else if (time in listOf("18:00", "20:00", "22:00", "00:00", "02:00")) OceanBlue else AmberGold,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -789,7 +789,7 @@ fun WeatherScreen(
                                         text = temp,
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontWeight = FontWeight.ExtraBold,
-                                            color = if (time == "Now") Color.White else BentoSlate900
+                                            color = if (time == "Now") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                                         )
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
@@ -798,7 +798,7 @@ fun WeatherScreen(
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = if (time == "Now") Color(0xFFE0F2FE) else BentoSlate600
+                                            color = if (time == "Now") MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
                                         ),
                                         maxLines = 1
                                     )
@@ -818,8 +818,8 @@ fun WeatherScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .testTag("chandipur_tidal_clock_card"),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     // Header Row
@@ -833,13 +833,13 @@ fun WeatherScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFE0F2FE)),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Water,
                                     contentDescription = "Tide",
-                                    tint = OceanBlue,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -849,13 +849,13 @@ fun WeatherScreen(
                                     text = if (language == AppLanguage.ODIA) "ଚାନ୍ଦିପୁର ଜୀବନ୍ତ ଟାଇଡାଲ୍ କ୍ଲକ୍" else "Chandipur Live Tidal Clock",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = BentoSlate900
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
                                     text = if (language == AppLanguage.ODIA) tidalClock.odiaPhase else tidalClock.currentPhase,
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = OceanBlueDark,
+                                        color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                 )

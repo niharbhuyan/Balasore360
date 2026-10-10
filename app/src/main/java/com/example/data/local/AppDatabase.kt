@@ -22,7 +22,7 @@ import androidx.room.TypeConverters
         OdiaHoroscopeEntity::class,
         OdiaFestivalEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

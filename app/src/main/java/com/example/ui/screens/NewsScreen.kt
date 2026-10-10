@@ -33,9 +33,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.ManageSearch
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Call
@@ -115,6 +115,10 @@ import com.example.ui.viewmodel.UniqueFeatureSheetType
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.util.NewsTextToSpeechHelper
 
 @Composable
 fun NewsScreen(
@@ -144,6 +148,24 @@ fun NewsScreen(
 ) {
     val context = LocalContext.current
     var autoUpdateSecondsLeft by remember { mutableStateOf(autoUpdateIntervalSeconds) }
+    var selectedArticleForDetail by remember { mutableStateOf<NewsArticle?>(null) }
+
+    // If an article is selected, display the dedicated NewsDetailScreen with full regional TTS player
+    if (selectedArticleForDetail != null) {
+        val currentArticle = selectedArticleForDetail!!
+        NewsDetailScreen(
+            article = currentArticle,
+            onNavigateBack = { selectedArticleForDetail = null },
+            onToggleBookmark = {
+                onToggleBookmark(currentArticle.id)
+                selectedArticleForDetail = currentArticle.copy(
+                    isBookmarked = !bookmarkedIds.contains(currentArticle.id)
+                )
+            },
+            onToggleNightMode = onToggleNightMode
+        )
+        return
+    }
 
     // Auto-update countdown and automatic background refresh ticker
     LaunchedEffect(isAutoUpdateEnabled, autoUpdateIntervalSeconds) {
@@ -922,7 +944,7 @@ fun NewsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.TrendingUp,
+                            imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                             contentDescription = null,
                             tint = OceanBlue,
                             modifier = Modifier.size(13.dp)
@@ -973,7 +995,7 @@ fun NewsScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Icon(
-                                imageVector = Icons.Default.ManageSearch,
+                                imageVector = Icons.AutoMirrored.Filled.ManageSearch,
                                 contentDescription = null,
                                 tint = OceanBlue,
                                 modifier = Modifier.size(16.dp)
@@ -1366,6 +1388,7 @@ fun NewsScreen(
                     searchQuery = searchQuery,
                     isBookmarked = bookmarkedIds.contains(article.id),
                     onToggleBookmark = { onToggleBookmark(article.id) },
+                    onArticleClick = { selectedArticleForDetail = article },
                     onShare = {
                         ShareHelper.shareNews(
                             context = context,
@@ -1441,9 +1464,15 @@ fun NewsCard(
     isBookmarked: Boolean,
     onToggleBookmark: () -> Unit,
     onShare: () -> Unit,
+    onArticleClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val ttsHelper = remember { NewsTextToSpeechHelper.getInstance(context) }
+    val isTtsSpeaking by ttsHelper.isSpeaking.collectAsStateWithLifecycle()
+    val currentlySpeakingId by ttsHelper.currentArticleId.collectAsStateWithLifecycle()
+    val isThisArticleSpeaking = isTtsSpeaking && (currentlySpeakingId == article.id)
 
     val titleText = if (language == AppLanguage.ODIA) article.odiaTitle else article.title
     val snippetText = if (language == AppLanguage.ODIA) article.odiaSnippet else article.snippet
@@ -1458,6 +1487,7 @@ fun NewsCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable(enabled = onArticleClick != null) { onArticleClick?.invoke() }
             .testTag("news_card_${article.id}"),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -1604,7 +1634,7 @@ fun NewsCard(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.MenuBook,
+                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             tint = OceanBlue,
                             modifier = Modifier.size(14.dp)
@@ -1719,6 +1749,89 @@ fun NewsCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Full Article View Button
+                    if (onArticleClick != null) {
+                        Surface(
+                            onClick = onArticleClick,
+                            shape = RoundedCornerShape(8.dp),
+                            color = OceanBlue.copy(alpha = 0.08f),
+                            border = BorderStroke(1.dp, OceanBlue.copy(alpha = 0.2f)),
+                            modifier = Modifier.testTag("open_news_article_${article.id}")
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                                    contentDescription = "Read full article",
+                                    tint = OceanBlue,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = if (language == AppLanguage.ODIA) "ପଢ଼ନ୍ତୁ" else "Read",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = OceanBlue
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // Dedicated Text-To-Speech Listen Button
+                    Surface(
+                        onClick = {
+                            if (isThisArticleSpeaking) {
+                                ttsHelper.stop()
+                            } else {
+                                val tTitle = if (language == AppLanguage.ODIA) article.odiaTitle else article.title
+                                val tBody = if (language == AppLanguage.ODIA) {
+                                    "${article.odiaSnippet}. ${article.odiaContent.ifBlank { article.odiaSnippet }}"
+                                } else {
+                                    "${article.snippet}. ${article.content.ifBlank { article.snippet }}"
+                                }
+                                ttsHelper.speakArticle(
+                                    articleId = article.id,
+                                    title = tTitle,
+                                    content = tBody,
+                                    language = language
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isThisArticleSpeaking) OceanBlue.copy(alpha = 0.2f) else OceanBlue.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, if (isThisArticleSpeaking) OceanBlue else OceanBlue.copy(alpha = 0.25f)),
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = 48.dp, minHeight = 44.dp)
+                            .testTag("listen_news_button_${article.id}")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isThisArticleSpeaking) Icons.Default.GraphicEq else Icons.Default.Headphones,
+                                contentDescription = if (isThisArticleSpeaking) "Stop Speech" else "Listen to News Audio in ${if (language == AppLanguage.ODIA) "Odia" else "English"}",
+                                tint = OceanBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (isThisArticleSpeaking) {
+                                    if (language == AppLanguage.ODIA) "ବନ୍ଦ (Stop)" else "Stop"
+                                } else {
+                                    if (language == AppLanguage.ODIA) "ଶୁଣନ୍ତୁ" else "Listen"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = OceanBlue
+                                )
+                            )
+                        }
+                    }
+
                     // Dedicated Share Button with Android ShareSheet invocation
                     Surface(
                         onClick = onShare,
